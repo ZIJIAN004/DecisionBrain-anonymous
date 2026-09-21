@@ -1,8 +1,15 @@
 # Prompt Resources
 
 DecisionBrain keeps its versioned system prompts and developer contracts in this directory.
-The prompt text is preserved in the language used by the reported experiments; this README and
-the public repository interface remain in English.
+Each prompt file places the Chinese runtime prompt first and its English translation immediately
+below it. The two sections are separated by this fixed marker:
+
+```text
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+```
+
+`src/decisionbrain/core/prompts.py` loads only the text above the marker. The English section is
+for peer review and does not alter the prompt sent to the model in the reported configuration.
 
 ## Layout
 
@@ -28,10 +35,9 @@ Additional prompt pairs support reported ablations and the Gurobi-formulator wor
 
 ## Loading and Validation
 
-`src/decisionbrain/core/prompts.py` selects the exact files required by a runtime configuration.
-For prompt-sensitive ablations, a missing explicit variant is an error rather than an implicit
-fallback. Prompt files are loaded when the runtime starts, so a running service must be restarted
-after a prompt change.
+The loader selects the exact files required by a runtime configuration. For prompt-sensitive
+ablations, a missing explicit variant is an error rather than an implicit fallback. Prompt files
+are loaded when the runtime starts, so a running service must be restarted after a prompt change.
 
 System prompts should describe the Agent's role and decision principles. Developer contracts
 should contain artifact names, structured output requirements, runtime limits, and parser-facing

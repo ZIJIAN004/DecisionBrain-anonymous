@@ -10,6 +10,11 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict
 
 
+ENGLISH_TRANSLATION_MARKER = (
+    "--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---"
+)
+
+
 class PromptBundle(BaseModel):
     """All prompt text required by one Core execution."""
 
@@ -38,13 +43,18 @@ class PromptBundle(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+def _runtime_prompt_text(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    return text.split(ENGLISH_TRANSLATION_MARKER, 1)[0].strip()
+
+
 def _read_prompt(directory: Path, name: str) -> str:
-    return (directory / name).read_text(encoding="utf-8").strip()
+    return _runtime_prompt_text(directory / name)
 
 
 def _read_optional_prompt(directory: Path, name: str, *, fallback: str) -> str:
     path = directory / name
-    return path.read_text(encoding="utf-8").strip() if path.is_file() else fallback
+    return _runtime_prompt_text(path) if path.is_file() else fallback
 
 
 # Use one ordered suffix per ablation dimension for deterministic combined-arm names.
@@ -95,7 +105,7 @@ def _read_variant_prompt(directory: Path, name: str, disabled: frozenset[str]) -
     stem, ext = Path(name).stem, Path(name).suffix
     path = directory / f"{stem}{suffix}{ext}"
     if path.is_file():
-        return path.read_text(encoding="utf-8").strip()
+        return _runtime_prompt_text(path)
     raise MissingPromptVariantError(
         f"Ablation arm is missing prompt variant {path}; `{name}` references content removed "
         "by that arm, so an explicit variant is required."

@@ -85,3 +85,93 @@ stage_outputs/solving.json 三种格式：
 - feasibility_result.json 与 solver_result.validation.feasibility_checker 一致，并且 schema_valid=true、feasible=true。
 - library/hybrid 库调用与 algorithm_design、manifest 和 algorithm_execution 一致；fallback 不得静默发生。
 - 写完所有文件后用 read_file 或 json.load 验收。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+[ENVIRONMENT] The workspace is the current cwd; the shell limit is approximately __TIME_BUDGET__ seconds, and the solver's internal time limit must be shorter.
+
+[REQUIRED ARTIFACTS]
+- from_data_to_input.py: a reproducible conversion program that reads the real `data/` and deterministically generates input.json through JSON parsing and structured mapping; it must be retained after completion.
+- input.json: normalized input conforming to input_schema.json, generated only through one separate `python3 from_data_to_input.py` shell call.
+- solver.py: reads the real data, invokes the selected algorithm, generates and self-checks the result, and is executed by Runtime's `run_solver`.
+- solution.json: the complete business-semantic solution conforming to solution_schema.json, generated only by executing solver.py through `run_solver`.
+- feasibility_result.json: produced by calling feasibility_checker.py.
+- solver_result.json: detailed solve summary.
+- stage_outputs/solving.json: stores only the stage decision and a reference to solver_result.json.
+
+Strict solver_result.json structure:
+{
+  "status": "optimal | time_limit | infeasible | failed",
+  "objective": 0,
+  "mip_gap": null,
+  "optimality": "proven_optimal | heuristic_or_incumbent",
+  "input_file": "input.json",
+  "solution_file": "solution.json",
+  "code_file": "solver.py",
+  "feasibility_result_file": "feasibility_result.json",
+  "algorithm_execution": {
+    "source": "library | generated",
+    "planned_algorithm_id": "manifest id or null",
+    "executed_algorithm_id": "actual manifest id or null",
+    "version": "actual version or null",
+    "guide_consulted": true,
+    "availability_check": {"ok": true, "detail": "Summary of version, import, and environment checks; explain that it is not applicable for generated"},
+    "seed": 0,
+    "runtime_limit_seconds": 0,
+    "fallback_used": false,
+    "deviation_reason": "Empty string when there was no deviation"
+  },
+  "solution_summary": {},
+  "constraint_check": [
+    {"name": "Constraint name", "ok": true, "detail": "Brief summary"}
+  ],
+  "validation": {
+    "schema_check": {"ok": true, "issues": []},
+    "feasibility_checker": {
+      "schema_valid": true,
+      "feasible": true,
+      "objective_value": 0,
+      "violations": [],
+      "warnings": []
+    },
+    "business_semantic_check": {"ok": true, "issues": []},
+    "algorithm_mapping_check": {
+      "ok": true,
+      "issues": [],
+      "mapped_capabilities": ["Business rule -> corresponding capability in the implementation"]
+    },
+    "implementation_check": {"ok": true, "issues": []}
+  },
+  "diagnosis": ""
+}
+
+A library execution must populate executed_algorithm_id/version, set guide_consulted=true, and have availability_check.ok=true. For a generated execution, executed_algorithm_id/version must be null. When the actual algorithm differs from planned_algorithm_id, fallback_used=true and deviation_reason must be nonempty.
+
+Three formats for stage_outputs/solving.json:
+
+Success:
+{
+  "decision": "solved",
+  "message": "Brief explanation",
+  "result": {"solver_result_file": "solver_result.json"}
+}
+
+Clarification required:
+{
+  "decision": "needs_clarification",
+  "message": "Why clarification is required",
+  "questions": [
+    {"id": "short_id", "text": "Specific question", "answer_type": "text", "options": [], "context": "Evidence"}
+  ]
+}
+
+Failure:
+{"decision": "failed", "message": "Reason for failure and actions attempted"}
+
+[MINIMUM STANDARD FOR solved]
+- Do not use write_file, replace_in_file, or a shell command containing the complete instance JSON to directly create, rewrite, or patch input.json. from_data_to_input.py must not hard-code or enumerate instance data item by item. When the source structure already conforms to the schema, it must be serialized unchanged. When conversion is genuinely required, it must explicitly implement and validate required fields, entity counts, ID sets, array/matrix/time-series dimensions, and value-by-value equality for fields without a declared conversion. A conversion failure must exit nonzero and must not leave a partial input.json.
+- solver.py runs successfully; all JSON files exist and are valid.
+- solver_result.json conforms to the structure above, and status is not infeasible/failed.
+- feasibility_result.json agrees with solver_result.validation.feasibility_checker, with schema_valid=true and feasible=true.
+- library/hybrid library calls agree with algorithm_design, the manifest, and algorithm_execution; fallback must not occur silently.
+- After writing all files, validate them with read_file or json.load.

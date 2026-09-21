@@ -50,3 +50,58 @@
 - `input_schema.json` 和 `solution_schema.json` 可被 json.load 读取。
 - `stage_outputs/problem_contract.json` 是合法 JSON 对象。
 - 本阶段自检只验证以上三个 contract 文件；不得因 `input.json` 或 `solution.json` 尚不存在而报错。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+[OUTPUT FILE] `stage_outputs/problem_contract.json`
+
+You must also write the following workspace files:
+- `input_schema.json`
+- `solution_schema.json`
+- `stage_outputs/problem_contract.json`
+
+[TWO EXECUTION MODES]
+
+- If no independent audit feedback is provided, perform the initial design: generate all three complete contract files from the sources of truth.
+- If "current independent audit feedback" is provided, perform a revision after audit return: first read all three existing contract files in full, then make incremental changes using the existing version as the baseline.
+- On audit return, implement the required_change for every `blocking` finding; evaluate each `warning` and do not silently ignore it.
+- Modify only what is necessary to resolve the findings, preserve designs in the original contract that remain correct, and do not change solution semantics or rewrite unrelated parts without reason.
+- Even if a finding concerns only one file, after completion you must revalidate the business semantics and cross-file consistency of all three files.
+- Do not modify `problem.md`, `stage_outputs/intake.json`, `data/`, or the audit result file, and do not begin algorithm design.
+- After the current revision is successfully written, the old audit feedback no longer represents the current version; do not include earlier contract or audit history in the output.
+
+[SCHEMA DESIGN REQUIREMENTS]
+- `input_schema.json` and `solution_schema.json` must be valid JSON objects conforming to JSON Schema Draft 2020-12.
+- The input schema describes the normalized `input.json` assembled from `data/` during the solving stage.
+- The solution schema describes a problem-level semantic solution and must not expose algorithm-level decision variables such as x[i,j], y[k,t], interval_var, or route_arc_binary.
+- The schemas should contain enough fields to express hard constraints, compute the objective value, or explain why the objective cannot be computed.
+
+[FORMAT OF stage_outputs/problem_contract.json]
+Recommended structure:
+
+{
+  "problem_family": "routing/scheduling/assignment/packing/network_flow/inventory/production_planning/facility_location/mixed_combinatorial/other",
+  "message": "Brief explanation",
+  "files": {
+    "input_schema": "input_schema.json",
+    "solution_schema": "solution_schema.json",
+    "expected_input": "input.json",
+    "expected_solution": "solution.json"
+  },
+  "semantic_solution": {
+    "primary_objects": ["Core objects in the business solution"],
+    "required_fields": ["Key fields that solution.json must contain"],
+    "algorithm_independence_notes": "Why this format is not tied to a specific algorithm"
+  },
+  "input_contract": {
+    "required_entities": ["Entities that normalized input.json must contain"],
+    "data_sources": ["Files or fields under data/ that will be used"],
+    "normalization_notes": "How solving assembles input.json from data/"
+  },
+  "assumptions": []
+}
+
+After writing, you must validate the artifacts yourself:
+- `input_schema.json` and `solution_schema.json` can be read by json.load.
+- `stage_outputs/problem_contract.json` is a valid JSON object.
+- This stage's self-check validates only the three contract files above; do not report an error merely because `input.json` or `solution.json` does not yet exist.

@@ -48,3 +48,54 @@
 - answer_type 只允许 text、boolean、choice；choice 应提供 options。
 
 字符串内部双引号必须转义。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+[WORKFLOW]
+This is a tool-calling step. You must first use the available tools (list_files / read_file / shell) to inspect the data files in the working directory and understand field meanings and data scale before making a decision. There is no longer a pre-injected data summary; you must inspect the data proactively.
+
+After inspecting the data, write the final decision to `stage_outputs/intake.json` in the following format.
+
+[OUTPUT FILE] `stage_outputs/intake.json`
+
+Case A - clarification from the user is required:
+{
+  "decision": "clarify",
+  "message": "Briefly explain why this information affects modeling",
+  "questions": [
+    {
+      "id": "clarify_1",
+      "text": "One clear, directly answerable key question",
+      "answer_type": "choice",
+      "options": ["Possible answer one", "Possible answer two"]
+    }
+  ],
+  "problem_definition": null
+}
+
+Case B - the information is complete and modeling can begin:
+{
+  "decision": "proceed",
+  "message": "The information is complete; modeling will begin",
+  "questions": [],
+  "problem_definition": {
+    "problem_type": "Problem type, such as assignment/scheduling/transportation/routing",
+    "business_goal": "One-sentence business objective",
+    "objective": {"direction": "minimize or maximize", "description": "Objective description"},
+    "decision_variables": [{"name": "...", "meaning": "...", "type": "continuous/integer/binary"}],
+    "parameters": [{"name": "...", "meaning": "...", "value_or_source": "Value or data field"}],
+    "constraints": [{"name": "...", "description": "...", "type": "hard or soft", "penalty": ""}],
+    "assumptions": ["Noncritical assumptions that do not affect business semantics and can be adopted without user confirmation"],
+    "feasibility_notes": "Explanation of the completeness of the business definition; do not judge solve feasibility",
+    "scale_notes": "Description of problem scope and data scale; do not assess algorithmic difficulty"
+  }
+}
+
+Hard constraints for structured routing:
+- decision is the only routing keyword used by the system and may only be clarify or proceed.
+- When decision=clarify, questions must contain 1-3 questions; problem_definition may be the current partial definition or null.
+- When decision=proceed, questions must be an empty array and a complete problem_definition must be provided.
+- Any assumption requiring user confirmation must go through clarify and be converted into questions; do not output proceed while asking for user confirmation in message or assumptions.
+- answer_type may only be text, boolean, or choice; choice should provide options.
+
+Double quotation marks inside strings must be escaped.

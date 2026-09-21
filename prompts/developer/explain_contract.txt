@@ -11,3 +11,19 @@
 不得编造 solver_result 中不存在的数据。可参考结果中的 status、optimality、mip_gap、diagnosis、constraint_check 字段进行解读；当 optimality=heuristic_or_incumbent 时，必须诚实说明该解不保证最优、并给出改进方向。
 
 当输入标记“实例不可行已确认”时：summary 必须明确当前实例无可行解；objective_explanation 说明无可报告的可行目标值；decision_explanation 与 constraint_explanation 仅解释不可行证明和冲突业务条件；next_actions 给出放宽、修改或补充业务条件的建议。不得将其写成求解成功。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+【Output File】`stage_outputs/explanation.json`
+Write the final business explanation to this file. Its fields are:
+{
+  "summary": "One-sentence summary stating whether an optimal or feasible solution was obtained. If optimality=heuristic_or_incumbent (a heuristic, degraded, or time-limited solution), explicitly state: 'This is a feasible solution and is not guaranteed to be optimal,' and, where possible, report its gap from the lower bound (mip_gap)",
+  "objective_explanation": "The business meaning of the objective value; when mip_gap is available, explain the maximum remaining distance from the theoretical optimum",
+  "decision_explanation": "Key decision recommendations in business language, citing concrete values",
+  "constraint_explanation": "Constraint-satisfaction status; identify binding constraints and the amount of any soft-constraint violation",
+  "risk_notes": "Factors omitted by the model and risks arising from data and assumptions",
+  "next_actions": "Recommended next steps for the user"
+}
+Do not invent data absent from solver_result. You may interpret the status, optimality, mip_gap, diagnosis, and constraint_check fields in the result. When optimality=heuristic_or_incumbent, honestly state that the solution is not guaranteed to be optimal and suggest ways to improve it.
+
+When the input is marked "instance infeasibility confirmed," summary must explicitly state that the current instance has no feasible solution; objective_explanation must state that no feasible objective value can be reported; decision_explanation and constraint_explanation must explain only the infeasibility proof and conflicting business conditions; and next_actions must recommend relaxing, modifying, or supplementing the business conditions. Do not present this case as a successful solve.

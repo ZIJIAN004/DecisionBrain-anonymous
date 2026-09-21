@@ -1,15 +1,62 @@
+import re
+
 from decisionbrain.paths import PROMPTS_DIR
-from decisionbrain.core.prompts import load_prompt_bundle
+from decisionbrain.core.prompts import (
+    ENGLISH_TRANSLATION_MARKER,
+    _runtime_prompt_text,
+    load_prompt_bundle,
+)
+
+
+PLACEHOLDER_RE = re.compile(r"__[A-Z][A-Z0-9_]*__")
 
 
 def _prompt(group: str, name: str) -> str:
     return (PROMPTS_DIR / group / name).read_text(encoding="utf-8")
 
 
-def test_prompt_markdown_fences_are_balanced() -> None:
+def _prompt_paths():
     for group in ("system", "developer"):
-        for path in (PROMPTS_DIR / group).glob("*.txt"):
-            assert path.read_text(encoding="utf-8").count("```") % 2 == 0, path
+        yield from (PROMPTS_DIR / group).glob("*.txt")
+
+
+def test_every_prompt_has_complete_inline_english_translation() -> None:
+    paths = list(_prompt_paths())
+
+    assert len(paths) == 52
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert text.count(ENGLISH_TRANSLATION_MARKER) == 1, path
+        runtime, english = text.split(ENGLISH_TRANSLATION_MARKER)
+        assert runtime.strip(), path
+        assert english.strip(), path
+        assert set(PLACEHOLDER_RE.findall(runtime)) == set(PLACEHOLDER_RE.findall(english)), path
+        assert runtime.count("```") % 2 == 0, path
+        assert english.count("```") % 2 == 0, path
+        assert _runtime_prompt_text(path) == runtime.strip(), path
+
+
+def test_all_supported_prompt_configurations_exclude_english_translation() -> None:
+    configurations = (
+        {},
+        {"input_schema_enabled": False},
+        {"algorithm_library_enabled": False},
+        {"feasibility_review_enabled": False},
+        {"input_schema_enabled": False, "algorithm_library_enabled": False},
+        {"components_enabled": False},
+        {"components_enabled": False, "algorithm_design_enabled": False},
+    )
+
+    for configuration in configurations:
+        bundle = load_prompt_bundle(PROMPTS_DIR, **configuration)
+        for value in bundle.model_dump().values():
+            if isinstance(value, str):
+                assert ENGLISH_TRANSLATION_MARKER not in value
+
+
+def test_prompt_markdown_fences_are_balanced() -> None:
+    for path in _prompt_paths():
+        assert path.read_text(encoding="utf-8").count("```") % 2 == 0, path
 
 
 def test_solving_prompts_require_deterministic_input_conversion():

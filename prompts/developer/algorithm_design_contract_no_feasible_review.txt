@@ -128,3 +128,136 @@ formulation 结构：
 - package API、能力、版本和保证只能引用完整 guide。
 - formulation 必须覆盖当前范围内全部硬约束，Big-M 和整数缩放必须可解释。
 - 提交 solver 内的所有组件预算、转换、checker 和输出必须闭合于 SOLVER_TIMEOUT；算法设计阶段的 API/数据结构探针和方案比较不计入该 solver 预算。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+[OUTPUT] `stage_outputs/algorithm_design.json`
+
+Write exactly one JSON object:
+
+{
+  "schema_version": "1.1",
+  "problem_family": "linear_programming | resource_scheduling | routing | assignment | packing | network_flow | inventory | production_planning | facility_location | cutting_stock | robust_optimization | distributionally_robust_optimization | nonlinear_programming | mixed_combinatorial | other",
+  "diagnosis": {
+    "summary": "Summary of the problem structure",
+    "decision_type": "assign | select | sequence | schedule | route | allocate | batch | partition | activate | quantity | mixed",
+    "key_difficulty": "Most important solving difficulty"
+  },
+  "scale": {
+    "primary_items": 0,
+    "resources": 0,
+    "estimated_variables": 0,
+    "estimated_constraints": 0,
+    "risk": "low | medium | high",
+    "confidence": "low | medium | high",
+    "reason": "Basis recomputed from real data"
+  },
+  "candidates": [
+    {
+      "method": "Method enum",
+      "method_class": "exact | constructive_heuristic | local_search | metaheuristic | other",
+      "source": "package | generated",
+      "package_id": "Package manifest id or null",
+      "solver_id": "Manifest solver id or null",
+      "fit_reason": "Why it is suitable",
+      "main_risk": "Primary risk",
+      "recommendation": "primary | backup | reject"
+    }
+  ],
+  "selection": {
+    "kind": "single | hybrid",
+    "reason": "Overall selection rationale and component coordination logic",
+    "components": []
+  },
+  "strategy": {
+    "representation": "Global solution representation",
+    "feasibility": "Final feasibility responsibility",
+    "objective": "Global objective and multi-objective ordering",
+    "construction": "Initialization and component order",
+    "improvement": "Improvement, acceptance, and rollback",
+    "stopping": "Total budget and stopping conditions",
+    "output": "Business output and diagnostics"
+  },
+  "fallback": {
+    "trigger": "Trigger condition",
+    "description": "Degraded action and guarantee boundary",
+    "components": []
+  },
+  "risks": ["Risks that still require attention during solving"]
+}
+
+Method enum:
+`mixed_integer_linear_programming | mixed_integer_nonlinear_programming | linear_programming | robust_optimization | distributionally_robust_optimization | constraint_programming | constraint_programming_sat | network_flow | dynamic_programming | iterated_local_search | large_neighborhood_search | simulated_annealing | dispatching_rule | vehicle_routing_search | greedy | custom_search | other`.
+
+Each component must use the following structure:
+
+{
+  "component_id": "Stable and unique lowercase ID",
+  "role": "This component's responsibility in the plan",
+  "source": "package | generated",
+  "package": {"id": "Manifest id", "version": "Verified version"},
+  "solver_id": "Solver id in the manifest",
+  "method": "Method enum",
+  "method_class": "exact | constructive_heuristic | local_search | metaheuristic | other",
+  "optimality": "proven_optimal | exact_or_incumbent | heuristic_or_incumbent",
+  "reason": "Reason for selecting the component",
+  "capability_mapping": [
+    {
+      "business_requirement": "Hard constraint or key requirement",
+      "manifest_capability": "Actual capability in the manifest",
+      "evidence": "Explicit evidence in the guide"
+    }
+  ],
+  "integration": {
+    "primary_api": "Exact API of the selected solver",
+    "input_mapping": "Business IDs, units, and input mapping",
+    "result_mapping": "Mapping from solver results to the business solution",
+    "runtime_control": "Component budget and stopping conditions",
+    "random_seed": 0,
+    "availability_check": "Version, import, and license checks"
+  },
+  "formulation": null
+}
+
+source rules:
+- package: package, solver_id, capability_mapping, and integration must all be present. method, method_class, and optimality must exactly match the selected solver in the guide.
+- generated: package, solver_id, and integration must be null, capability_mapping must be an empty array, and manifest evidence must not be fabricated.
+
+formulation rules:
+- The following methods must provide formulation: mixed_integer_linear_programming, mixed_integer_nonlinear_programming, linear_programming, robust_optimization, distributionally_robust_optimization, constraint_programming, constraint_programming_sat, network_flow, and dynamic_programming.
+- formulation must be null for other methods.
+- formulation.method must exactly match component.method.
+
+formulation structure:
+
+{
+  "method": "Formal-method enum",
+  "scope": "full_problem | subproblem | relaxation | repair_model",
+  "summary": "Summary of the current business model",
+  "variables": ["Variables, indices, domains, and business meanings"],
+  "objective": "Objective function, unit, and direction",
+  "constraints": ["Expression and business meaning of each hard constraint"],
+  "big_m_notes": "Big-M derivation; empty string when not used"
+}
+
+Composition rules:
+- When selection.kind=single, components has exactly one item.
+- When selection.kind=hybrid, components has at least two items, and component_id values must not repeat.
+- A hybrid must explain component order, data transfer, warm start, budget, failure states, acceptance, and rollback.
+- fallback.components uses the same component structure; it may be an empty array when package fallback is not enabled.
+
+Acceptance rules:
+- Multiple rounds of pilots or modeling validation must preferentially reuse data preparation, index mappings, candidate sets, and model skeletons in Runtime's pre-created `scratch/`; do not create another temporary root. Runtime clears `scratch/` contents after each stage while retaining the directory, so scripts are guaranteed reusable only within the current stage. Subsequent calls must not reparse all data or rebuild all variables and constraints without necessity. Rebuild affected parts only when input mappings, variable definitions, or constraint semantics change materially.
+- Reusable scripts should separate data preparation, model construction, solving, and result checking, and use independent parameter/output files. Do not depend on memory state from a previous process or scripts under `/tmp` that are not guaranteed to persist. Temporary artifacts must not masquerade as final stage outputs.
+- If the design itself already includes multiple mutually independent plan, solver, or pilot validations, they may run in parallel; do not add candidates or change the selection scope because of parallelism. Steps with data dependencies, shared mutable state, or warm starts must remain serial.
+- The host has 16 logical processing units, and the number of concurrent subprocesses/tasks in one shell call must not exceed eight; do not exceed the limit through nested scripts or multiple layers of thread/process pools.
+- Parallel tasks must isolate inputs, `scratch/<task-id>/` subdirectories, and outputs, retaining task ID, exit code, duration, timeout, and key metrics. A failed task must not contaminate or block other tasks. Do not rerun the same failed command or change the total solver_timeout_seconds budget.
+- If parallel validation is used, the final plan must record the established validation task set, concurrency limit, and aggregation basis.
+- Key scale figures must come from tool computation; use null when they cannot be estimated reliably.
+- Package discovery must first use the system-injected one-sentence catalog summaries for initial screening; do not traverse every package by calling get_algorithm_guide one by one.
+- Read the complete guide only for packages on the shortlist that require serious comparison, are finally selected, or serve as fallback. A package written into candidates, selection.components, or fallback.components must have had its guide read.
+- Do not describe status=experimental or not_benchmarked as verified efficient.
+- Heuristic failure may only be marked unknown and cannot prove that the original problem is infeasible.
+- Package APIs, capabilities, versions, and guarantees may only be cited from the complete guide.
+- formulation must cover all hard constraints in the current scope, and Big-M and integer scaling must be explainable.
+- All component budgets, conversion, checker, and output within the submitted solver must fit within SOLVER_TIMEOUT; API/data-structure probes and plan comparisons in the algorithm design stage do not count against that solver budget.

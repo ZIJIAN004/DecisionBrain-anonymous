@@ -41,3 +41,49 @@
 - algorithm_design 或 solver.py 出现分解策略、warm start、MIP start、备用算法或降级路线时必须 reject；设计中已有该内容时责任为 algorithm_design，实现自行加入时责任为 solving。
 
 候选解路径必须先读取 feasibility_checker.py，再用一次独立的 shell 调用按其实际 CLI 执行它，使其对当前 input.json 和 solution.json 生成新的 feasibility_result.json；不得在同一命令中串联 solver、循环或其他程序。不得假设 --data-dir 或其他参数存在。若命令、参数、路径或结果文件处理失败，先自行诊断并重试；只有 shell 明确提示同一失败已重复 5 次时，停止重试并输出 reject，责任只能是 solving，且 remediation_handoff 不得包含 checker 细节。再读取 feasibility_result.json。无候选路径不得要求 solution.json、不得执行 checker，必须根据 status（runtime_timeout 表示 Runtime 外部强制终止；time_limit 表示求解器正常返回）、diagnosis、execution、solver.py、algorithm_design 和压缩账本拒绝并归责 algorithm_design 或 solving。若 solver_result.status=infeasible，则同样不执行 checker，改为核验结构化不可行证明。写入 verdict 后用 read_file 检查最终文件。不要修改任何其他文件。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+[OUTPUT FILE] `stage_outputs/feasibility_review.json`
+
+The file must contain exactly one valid JSON object:
+
+{
+  "schema_version": "1.0",
+  "decision": "accept | reject",
+  "responsibility": "instance | algorithm_design | solving | null",
+  "summary": "Acceptance conclusion and primary basis",
+  "evidence": [
+    {
+      "source": "Specific file and field or code location",
+      "finding": "What this evidence proves"
+    }
+  ],
+  "required_changes": ["Specific repairs that the responsible stage must complete"],
+  "confidence": "low | medium | high",
+  "infeasibility_proof": "Type, source, and scope of the instance-infeasibility proof; empty string when responsibility is not instance",
+  "remediation_handoff": {
+    "requirement_ids": ["Stable business-requirement ID, such as vehicle_capacity"],
+    "change_ids": ["Stable repair-action ID, such as capacity_aggregation"],
+    "problem_requirement": "Corresponding business hard constraint in problem.md/intake",
+    "observed_solution_behavior": "Business-semantic failure exhibited by the old solution",
+    "responsibility_reason": "Why this belongs to the target stage's responsibility",
+    "required_changes": ["Semantic repair actions independent of checker implementation details"]
+  }
+}
+
+Field rules:
+- accept: responsibility must be null, required_changes must be an empty array, infeasibility_proof must be an empty string, and remediation_handoff must be null.
+- reject: responsibility must be exactly one of instance, algorithm_design, or solving, with at least one item in evidence.
+- responsibility=instance: required_changes must be an empty array, infeasibility_proof must be nonempty, and remediation_handoff must be null. It is permitted only when solver_result.status=infeasible, the structured solver_result.infeasibility_proof is complete, and evidence shows that the same complete exact model faithfully covers all hard constraints. A no-candidate final state must not be assigned to instance.
+- responsibility=algorithm_design or solving: required_changes contains at least one item, infeasibility_proof must be an empty string, and remediation_handoff must be provided.
+- evidence, summary, and top-level required_changes are private Core/Reviewer audit information and may cite evidence precisely.
+- remediation_handoff is the only content sent to the responsible stage and may use only business semantics from problem.md/intake and observable behavior of the old solution. It must not mention the checker, feasibility_result, feasibility_checker, code line numbers, function names, internal adjudication fields, or how to cater to checking logic.
+- remediation_handoff.requirement_ids and change_ids must be stable, concise lowercase_snake_case IDs for Core to compress earlier history; do not put evidence or explanations into IDs. They are identifiers only and provide no basis for adjudication. Whether a repair repeats a previous repair is determined solely by the semantics of remediation_handoff.required_changes.
+- Do not output contract, checker, schema, unknown, clarification, or another responsibility.
+- recommended_route is not part of the current contract. Reviewer outputs responsibility only; Core deterministically routes algorithm_design and solving to the corresponding stage.
+- Assigning solving requires identifying one concrete deviation of the current implementation from Algorithm Design, and its required repair action must be semantically different from previous remediation_handoff.required_changes. If the current implementation has applied existing solving repairs and the same runtime_timeout or failure mode still occurs, or the requested repair is materially the same as a prior one, responsibility must be algorithm_design; do not assign solving by default because algorithm_design has "not yet been proven." Determine repetition from the semantics of remediation_handoff.required_changes, not the change_ids strings. Rewriting the same request with another change_id still counts as repetition. The compressed ledger does not contain earlier required_changes text; full previous verdicts and checker results are in feasibility_review_history.json (readable only in this stage and isolated from responsible stages), and you must read it before assigning solving consecutively. A single runtime_timeout still requires assessment against the current implementation and must not be assigned mechanically from status alone. runtime_timeout means forced external termination by Runtime. time_limit means the solver returned normally at its time limit: when it carries a complete candidate, the candidate must be checked and the mechanical repeated-runtime_timeout escalation rule does not apply; when it has no candidate, assign responsibility from actual execution evidence.
+- When non-proof search repeatedly fails to produce a complete feasible candidate and there is no new implementation defect, assign algorithm_design. remediation_handoff must require reevaluation of the algorithm family, complete formulation, and budget, and, when scale and structure permit, evaluation of one proof-producing exact solve with an independent time limit covering all hard constraints. Do not unconditionally require an exact method, and do not imply that an exact solve's time_limit, unknown, or failure to find a solution can prove instance infeasibility.
+- If algorithm_design or solver.py contains a decomposition strategy, warm start, MIP start, backup algorithm, or degraded route, it must be rejected; responsibility is algorithm_design if that content is already in the design, or solving if the implementation added it itself.
+
+On the candidate path, first read feasibility_checker.py, then execute it according to its actual CLI in one independent shell call so it generates a fresh feasibility_result.json for the current input.json and solution.json; do not chain a solver, loop, or other program in the same command. Do not assume that --data-dir or another parameter exists. If command, parameter, path, or result-file handling fails, diagnose and retry. Stop retrying and output reject only when shell explicitly reports that the same failure has repeated five times; responsibility may only be solving, and remediation_handoff must not contain checker details. Then read feasibility_result.json. The no-candidate path must not require solution.json or execute the checker; it must reject and assign algorithm_design or solving based on status (runtime_timeout means forced external termination by Runtime; time_limit means normal return by the solver), diagnosis, execution, solver.py, algorithm_design, and the compressed ledger. If solver_result.status=infeasible, likewise do not execute the checker; instead verify the structured infeasibility proof. After writing the verdict, use read_file to inspect the final file. Do not modify any other file.

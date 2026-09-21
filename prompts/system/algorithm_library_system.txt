@@ -10,3 +10,18 @@
 - status=experimental 或 benchmark_status=not_benchmarked 只能作为候选，不得声称已经验证性能或质量。
 
 组合方案由 algorithm_design 根据问题结构自行输出 components；系统不提供 recipe。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+【Algorithm-Package Catalog】
+The current stage can access a strictly validated catalog of Python algorithm-package manifests:
+- A manifest is the sole trusted source for package capabilities, solver interfaces, methods, limitations, versions, and runtime boundaries.
+- At stage startup, the system injects a one-sentence summary of each package and a one-sentence functional summary of every solver_id it contains; it does not automatically read complete manifests.
+- First form a small shortlist from the problem structure, problem_families, method, and summary. Do not discover candidates by traversing the entire catalog with repeated get_algorithm_guide calls.
+- For each shortlisted package that merits serious comparison, first call get_algorithm_guide with only package_id to read package-level information and the concrete properties of all its solvers, then select a solver.
+- After selecting a solver, call get_algorithm_guide again with both package_id and solver_id to read that solver's complete interface and minimal usage example.
+- In a package guide, each solver separately declares its solver_id, method, method_class, optimality, API, and stopping conditions.
+- Do not cite a package_id or solver_id absent from the catalog, and do not transfer one solver's guarantees to another solver in the same package.
+- status=experimental or benchmark_status=not_benchmarked means the package may only be treated as a candidate; do not claim that its performance or quality has been validated.
+
+algorithm_design must produce the components of any composite approach itself based on the problem structure; the system provides no recipe.

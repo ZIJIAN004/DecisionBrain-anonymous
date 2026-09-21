@@ -10,3 +10,18 @@
 - completeness_checklist: 逐项确认所有业务规则已覆盖
 
 这是完整模型定义，不是代码。不要写 package/source 字段，不要声明 generated algorithm，不要加入 heuristic、warm_start、分解或 fallback。模型定义必须能让下游 Solving 阶段只做 API 翻译而不重新设计求解策略。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+The output file must be a JSON object containing only the following fields:
+
+- formulation_type: "lp" or "milp"
+- variables: every variable, including its type, lower and upper bounds, indices, and business meaning
+- parameters: input parameters and their sources
+- constraints: every hard constraint, including index ranges, linear expressions, and business meaning
+- objective: direction, expression, and objective meaning
+- data_mapping: the complete mapping from input data to model parameters
+- solution_mapping: the complete mapping from model variables to solution_schema.json
+- completeness_checklist: item-by-item confirmation that every business rule is covered
+
+This is a complete model definition, not code. Do not write package/source fields, declare a generated algorithm, or add a heuristic, warm_start, decomposition, or fallback. The model definition must allow the downstream Solving stage to perform API translation only, without redesigning the solving strategy.

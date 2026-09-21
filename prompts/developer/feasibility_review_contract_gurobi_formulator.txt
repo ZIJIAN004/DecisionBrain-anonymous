@@ -48,3 +48,56 @@
 - 只有完整模型的可信 Gurobi INFEASIBLE 状态或证书可归 instance。
 
 写入 verdict 后用 read_file 检查最终文件。不要修改其他文件。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+[OUTPUT FILE] `stage_outputs/feasibility_review.json`
+
+The file must contain exactly one valid JSON object:
+
+{
+  "schema_version": "1.0",
+  "decision": "accept | reject",
+  "responsibility": "instance | solving | null",
+  "summary": "Acceptance conclusion and primary basis",
+  "evidence": [
+    {"source": "Specific file and field or code location", "finding": "What this evidence proves"}
+  ],
+  "required_changes": ["Specific repairs that the Formulator must complete"],
+  "confidence": "low | medium | high",
+  "infeasibility_proof": "Type, source, and scope of the instance-infeasibility proof; empty string when responsibility is not instance",
+  "remediation_handoff": {
+    "requirement_ids": ["Stable business-requirement ID"],
+    "change_ids": ["Stable repair-action ID"],
+    "problem_requirement": "Corresponding business hard constraint in problem.md/intake",
+    "observed_solution_behavior": "Observable business failure in the old solution",
+    "responsibility_reason": "Specific reason why the Formulator's complete model is responsible",
+    "required_changes": ["Semantic repair actions independent of checker implementation details"]
+  }
+}
+
+Field rules:
+- accept: responsibility is null, required_changes is an empty array, infeasibility_proof is an empty string, and remediation_handoff is null.
+- reject: responsibility is instance or solving, with at least one item in evidence.
+- instance: required_changes is an empty array, infeasibility_proof is nonempty, and remediation_handoff is null; solver_result.status must be infeasible, the structured proof must be complete, and code and execution evidence must show that one complete and exact model covers all hard constraints.
+- solving: required_changes contains at least one item, infeasibility_proof is an empty string, and remediation_handoff must be provided.
+- remediation_handoff contains only business requirements, observable behavior of the old solution, the responsibility reason, and semantic repair actions; it must not contain the checker, feasibility_result, code line numbers, function names, or internal adjudication fields.
+- requirement_ids and change_ids use stable, concise lowercase_snake_case.
+
+Candidate-solution path:
+- First read feasibility_checker.py, then use run_feasibility_checker according to its actual CLI to execute it once against the current input.json and solution.json, causing it to generate a fresh feasibility_result.json.
+- Do not assume checker parameters; diagnose and retry execution or path failures. When the tool explicitly reports that the same failure has repeated five times, reject and assign responsibility to solving.
+- feasibility_check_receipt.json must still agree with the current checker, input, solution, and result.
+- You may accept only when feasibility_result.schema_valid=true and feasible=true.
+
+No-candidate path:
+- Do not require solution.json and do not execute the checker.
+- Review status, diagnosis, execution, solver.py, runtime_solver_outcome.json (if present), and repair history.
+- runtime_timeout, time_limit, unknown, no_solution_found, and infeasible_or_unbounded all require rejection with responsibility assigned to solving, identifying the specific item that the Formulator must repair in the complete model, solve invocation, status handling, or business-result mapping.
+
+Formal-infeasibility path:
+- Do not execute the checker.
+- Verify infeasibility_proof, solver.py, actual execution, all variables, all hard constraints, and the complete objective.
+- Responsibility may be assigned to instance only with a trustworthy Gurobi INFEASIBLE status or certificate from a complete model.
+
+After writing the verdict, use read_file to inspect the final file. Do not modify other files.

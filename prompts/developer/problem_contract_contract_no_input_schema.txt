@@ -98,3 +98,106 @@ python feasibility_checker.py --input input.json --solution solution.json --data
 - `feasibility_checker.py` Python 语法正确，并包含 check()。
 - `stage_outputs/problem_contract.json` 是合法 JSON 对象。
 - 本阶段自检只验证以上三个 contract 文件；不得因 `input.json`、`solution.json` 或 `feasibility_result.json` 尚不存在而报错。
+
+--- BEGIN ENGLISH TRANSLATION (DOCUMENTATION ONLY; NOT LOADED AT RUNTIME) ---
+
+[OUTPUT FILE] `stage_outputs/problem_contract.json`
+
+You must also write the following workspace files:
+- `solution_schema.json`
+- `feasibility_checker.py`
+- `stage_outputs/problem_contract.json`
+
+[TWO EXECUTION MODES]
+
+- If no independent audit feedback is provided, perform the initial design: generate all three complete contract files from the sources of truth.
+- If "current independent audit feedback" is provided, perform a revision after audit return: first read all three existing contract files in full, then make incremental changes using the existing version as the baseline.
+- On audit return, implement the required_change for every `blocking` finding; evaluate each `warning` and do not silently ignore it.
+- Modify only what is necessary to resolve the findings, preserve designs in the original contract that remain correct, and do not change solution semantics or rewrite unrelated parts without reason.
+- Even if a finding concerns only one file, after completion you must revalidate the business semantics and cross-file consistency of all three files.
+- Do not modify `problem.md`, `stage_outputs/intake.json`, `data/`, or the audit result file, and do not begin algorithm design.
+- After the current revision is successfully written, the old audit feedback no longer represents the current version; do not include earlier contract or audit history in the output.
+
+[SCHEMA DESIGN REQUIREMENTS]
+- `solution_schema.json` must be a valid JSON object conforming to JSON Schema Draft 2020-12.
+- This run provides no input-structure contract: there is neither an input_schema.json nor a description of the input structure. You must determine the fields, types, and dimensions of normalized input.json yourself by reading `data/`.
+- The solution schema describes a problem-level semantic solution and must not expose algorithm-level decision variables such as x[i,j], y[k,t], interval_var, or route_arc_binary.
+- The schema should contain enough fields for the checker to adjudicate hard constraints, compute the objective value, or explain why the objective cannot be computed.
+
+[feasibility_checker.py REQUIREMENTS]
+
+[feasibility_checker SELF-CHECK BOUNDARY]
+- feasibility_checker must check the candidate solution against the public problem definition and must not depend on solver.py, algorithm_design, or other external artifacts not written into the contract.
+- Self-checks must use manually constructed negative examples with complete fields and clear constraint violations; do not first search for a feasible solution and do not use an incomplete solution as test input.
+- Do not repeatedly run feasibility_checker on full-scale data to search for, complete, or re-solve combinatorial arrangements missing from an incomplete solution.
+- If an adjudication inherently requires a combinatorial feasibility check, execute it only on small manually constructed negative examples needed for self-checking; this stage must not use large-scale completion search as a debugging path.
+
+It must expose:
+
+def check(input_data: dict, solution: dict, data_dir: str | Path = "data") -> dict
+
+It must support the CLI:
+
+python feasibility_checker.py --input input.json --solution solution.json --data-dir data --output feasibility_result.json
+
+The command above is a CLI contract for downstream stages, not this stage's acceptance command. `input.json`, `solution.json`, and `feasibility_result.json` have not yet been constructed in this stage: record only their future filenames in `stage_outputs/problem_contract.json`; never create or overwrite them, require them to exist, or execute the CLI with them.
+
+The output must be a JSON-serializable dict with the following structure:
+
+{
+  "schema_valid": true,
+  "feasible": false,
+  "objective_value": null,
+  "violations": [
+    {
+      "constraint": "vehicle_capacity",
+      "message": "Vehicle 3 exceeds capacity by 12.5",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}
+
+Field meanings:
+- schema_valid: whether input/solution conforms to the schemas; if schema validation fails, feasible must be false.
+- feasible: whether all hard constraints are satisfied.
+- objective_value: the objective value computed from the solution and data; null when it cannot be computed, with an explanation in warnings.
+- violations: a structured violation item for every hard-constraint or schema error.
+- warnings: notices that do not affect feasibility, descriptions of soft constraints, or cautions about objective computation.
+
+[FORMAT OF stage_outputs/problem_contract.json]
+Recommended structure:
+
+{
+  "problem_family": "routing/scheduling/assignment/packing/network_flow/inventory/production_planning/facility_location/mixed_combinatorial/other",
+  "message": "Brief explanation",
+  "files": {
+    "solution_schema": "solution_schema.json",
+    "feasibility_checker": "feasibility_checker.py",
+    "expected_input": "input.json",
+    "expected_solution": "solution.json",
+    "expected_feasibility_result": "feasibility_result.json"
+  },
+  "semantic_solution": {
+    "primary_objects": ["Core objects in the business solution"],
+    "required_fields": ["Key fields that solution.json must contain"],
+    "algorithm_independence_notes": "Why this format is not tied to a specific algorithm"
+  },
+  "input_contract": {
+    "required_entities": ["Entities that normalized input.json must contain"],
+    "data_sources": ["Files or fields under data/ that will be used"],
+    "normalization_notes": "How solving assembles input.json from data/"
+  },
+  "checker_contract": {
+    "entrypoint": "check(input_data, solution, data_dir='data')",
+    "cli": "python feasibility_checker.py --input input.json --solution solution.json --data-dir data --output feasibility_result.json",
+    "checks": ["Hard constraints and objective items that will be checked independently"]
+  },
+  "assumptions": []
+}
+
+After writing, you must validate the artifacts yourself:
+- `solution_schema.json` can be read by json.load.
+- `feasibility_checker.py` has valid Python syntax and contains check().
+- `stage_outputs/problem_contract.json` is a valid JSON object.
+- This stage's self-check validates only the three contract files above; do not report an error merely because `input.json`, `solution.json`, or `feasibility_result.json` does not yet exist.
