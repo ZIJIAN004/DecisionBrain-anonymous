@@ -1,0 +1,12 @@
+{
+  "name": "<str> Identifier of the underlying Li & Lim PDPTW instance.",
+  "num_nodes": "<int> Total number of nodes including the depot. Node 0 is the depot; nodes 1..num_nodes-1 are pickup and drop-off locations.",
+  "num_requests": "<int> Number of transport requests. Each request contributes exactly one pickup node and one drop-off node.",
+  "capacity": "<int> Carrying capacity of every vehicle.",
+  "max_vehicles": "<int> Hard upper bound on the number of vehicles that may be used. A plan using more vehicles is infeasible.",
+  "coordinates": "<list of [<int> x, <int> y]> Location of each node, indexed from 0. Travel time and distance between two nodes equal the Euclidean distance between their coordinates rounded to the nearest integer.",
+  "demand": "<list of <int>> Load change at each node: positive at a pickup, the matching negative value at its drop-off, zero at the depot.",
+  "time_window": "<list of [<int> earliest, <int> latest]> Interval during which service may begin at each node. Arriving earlier is allowed and the vehicle waits; arriving later is infeasible. Entry 0 bounds the working day at the depot.",
+  "service_time": "<list of <int>> Time spent serving each node; zero at the depot.",
+  "requests": "<list of [<int> pickup, <int> delivery]> The transport requests. Both nodes of a request must be served by the same vehicle, with the pickup earlier in that vehicle's route."
+}

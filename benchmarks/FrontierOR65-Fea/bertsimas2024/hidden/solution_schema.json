@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total cost combining construction costs, expected transportation costs, and the expected quadratic congestion penalty across all scenarios.",
+  "z": "<dict, key: '{edge}'> Whether each edge is activated for use in the network (1 = constructed, 0 = not constructed)."
+}

@@ -1,0 +1,15 @@
+{
+  "objective_value": "<float> Makespan of the proposed schedule: the largest completion time over all jobs (max over jobs of completion_time). Must equal the recomputed makespan.",
+  "schedule": [
+    {
+      "job_id": "<int> Identifier of the job, matching jobs[].job_id in the instance (each job appears exactly once).",
+      "completion_time": "<float> Time the job's last operation finishes; must equal start_time of its last scheduled operation plus that operation's processing_time.",
+      "operations": [
+        {
+          "machine": "<int> Machine this scheduled operation runs on, matching the instance operation at the same position in the job's sequence.",
+          "start_time": "<float> Time (>= 0) at which this operation starts on its machine."
+        }
+      ]
+    }
+  ]
+}

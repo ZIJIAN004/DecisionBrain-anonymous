@@ -1,0 +1,16 @@
+{
+  "paper_id": "desaulniers2010",
+  "paper_title": "Branch-and-Price-and-Cut for the Split-Delivery Vehicle Routing Problem with Time Windows",
+  "publication": "Operations Research",
+  "year": 2010,
+  "direction": "min",
+  "problem_class": "Vehicle Routing & TSP",
+  "category": "operational",
+  "formulation_type": "MIP",
+  "application_field": "Transportation & Logistics",
+  "avg_num_var": 98817.0,
+  "avg_num_int_var": 92289.0,
+  "avg_num_constr": 99008.0,
+  "source_link": "https://doi.org/10.1287/opre.1090.0713",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

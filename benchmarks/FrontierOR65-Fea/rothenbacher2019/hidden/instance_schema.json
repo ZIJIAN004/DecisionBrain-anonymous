@@ -1,0 +1,41 @@
+{
+  "num_customers": "<int> Total number of customers to be served over the planning horizon.",
+  "num_days": "<int> Number of days in the cyclic planning horizon.",
+  "num_vehicles": "<int> Number of identical vehicles available for dispatching each day.",
+  "vehicle_capacity": "<int> Maximum total delivery quantity that a single vehicle can carry on one route.",
+  "max_route_duration": "<int> Maximum allowable duration for any single vehicle route.",
+  "depot": {
+    "id": "<int> Unique identifier for the depot location.",
+    "x": "<float> Horizontal coordinate of the depot.",
+    "y": "<float> Vertical coordinate of the depot.",
+    "time_window": "<list[int], length 2> Earliest departure and latest return time for vehicles at the depot.",
+    "service_time": "<int> Duration of service at the depot (always zero)."
+  },
+  "customers": [
+    {
+      "id": "<int> Unique identifier for the customer.",
+      "x": "<float> Horizontal coordinate of the customer location.",
+      "y": "<float> Vertical coordinate of the customer location.",
+      "demand_per_day": "<int> Quantity of goods the customer requires each day.",
+      "time_window": "<list[float], length 2> Earliest and latest time at which service may begin at this customer.",
+      "service_time": "<int> Duration of the service stop at this customer.",
+      "visit_frequency_original": "<int> Number of visits this customer requires per planning horizon.",
+      "schedules": [
+        {
+          "days": "<list[int], length visit_frequency> Days within the planning horizon on which the customer is visited under this schedule.",
+          "visit_frequency": "<int> Number of visits in this schedule over the planning horizon.",
+          "parts": [
+            {
+              "visit_day": "<int> Day on which this delivery visit occurs.",
+              "days_covered": "<int> Number of consecutive demand-days supplied by this single delivery.",
+              "demand_per_visit": "<int> Total quantity to be delivered on this visit."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "distance_matrix_type": "<str> Method used to compute distances between all location pairs.",
+  "cost_type": "<str> Method used to compute the travel cost between locations.",
+  "planning_horizon_cyclic": "<bool> Whether the last day of the planning horizon wraps around to the first day."
+}

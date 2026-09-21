@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total profit from individual item profits plus pairwise profits of items sharing a knapsack.",
+  "assignment": "<list[list[int]], shape [num_assigned_items][2]> List of [item_index, knapsack_index] pairs; item indices 0-indexed in [0, n-1] and knapsack indices 0-indexed in [0, m-1]. Unassigned items are omitted. An item index appearing more than once indicates a multi-assignment infeasibility (math_model label {assign})."
+}

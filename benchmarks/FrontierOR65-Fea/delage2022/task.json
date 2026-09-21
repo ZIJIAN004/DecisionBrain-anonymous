@@ -1,0 +1,11 @@
+{
+  "paper_id": "delage2022",
+  "paper_title": "Logic-Based Benders Decomposition for Integrated Process Configuration and Production Planning Problems",
+  "year": 2022,
+  "direction": "min",
+  "problem_class": "Cutting Stock / Production Planning",
+  "category": "operational",
+  "formulation_type": "MIP",
+  "application_field": "Manufacturing",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

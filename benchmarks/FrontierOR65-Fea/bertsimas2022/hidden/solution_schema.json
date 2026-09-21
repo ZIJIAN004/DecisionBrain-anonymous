@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total cost combining portfolio variance, ridge regularization penalty, and weighted expected return.",
+  "x": "<list[float], length n> Fractional allocation of capital to each security in the portfolio."
+}

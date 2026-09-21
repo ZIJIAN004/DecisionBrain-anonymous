@@ -1,0 +1,16 @@
+{
+    "paper_id":  "xie2019",
+    "paper_title":  "A Branch-and-Price Algorithm for the Integrated Berth Allocation and Quay Crane Assignment Problem",
+    "publication":  "Transportation Science",
+    "year":  2019,
+    "direction":  "min",
+    "problem_class":  "Other (Container Terminal)",
+    "category":  "strategic",
+    "formulation_type":  "MIP",
+    "application_field":  "Transportation \u0026 Logistics",
+    "avg_num_var":  125916.0,
+    "avg_num_int_var":  125756.0,
+    "avg_num_constr":  229352.0,
+    "source_link":  "https://doi.org/10.1287/trsc.2019.0894",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

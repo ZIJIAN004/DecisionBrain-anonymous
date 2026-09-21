@@ -1,0 +1,16 @@
+{
+    "paper_id":  "gschwind2021",
+    "paper_title":  "A Branch-and-Price Framework for Decomposing Graphs into Relaxed Cliques",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2021,
+    "direction":  "min",
+    "problem_class":  "Graph Optimization",
+    "category":  "operational",
+    "formulation_type":  "MIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  500.0,
+    "avg_num_int_var":  0.0,
+    "avg_num_constr":  500.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2020.0984",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

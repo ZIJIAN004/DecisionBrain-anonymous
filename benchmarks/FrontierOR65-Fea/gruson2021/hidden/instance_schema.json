@@ -1,0 +1,17 @@
+{
+  "num_periods": "<int> Number of discrete time periods in the planning horizon.",
+  "num_warehouses": "<int> Number of warehouses in the distribution network.",
+  "num_retailers": "<int> Number of retailers served by the warehouses.",
+  "num_scenarios": "<int> Number of demand scenarios representing uncertainty.",
+  "initial_inventory": "<int> Starting inventory level at all facilities at the beginning of the planning horizon.",
+  "initial_setups_imposed": "<bool> Whether all facilities must be activated in the first period.",
+  "retailer_to_warehouse": "<list[int], length num_retailers> Index of the warehouse that exclusively supplies each retailer.",
+  "scenario_probabilities": "<list[float], length num_scenarios> Probability of occurrence for each demand scenario.",
+  "holding_cost_plant": "<float> Per-unit per-period cost of holding inventory at the plant.",
+  "holding_cost_warehouse": "<float> Per-unit per-period cost of holding inventory at each warehouse.",
+  "holding_costs_retailers": "<list[float], length num_retailers> Per-unit per-period cost of holding inventory at each retailer.",
+  "setup_costs_plant": "<list[int], length num_periods> Fixed cost incurred when the plant is activated for production in each period.",
+  "setup_costs_warehouses": "<list[list[int]], shape [num_warehouses][num_periods]> Fixed cost incurred when each warehouse is activated for ordering in each period.",
+  "setup_costs_retailers": "<list[list[int]], shape [num_retailers][num_periods]> Fixed cost incurred when each retailer is activated for ordering in each period.",
+  "demands": "<list[list[list[int]]], shape [num_scenarios][num_retailers][num_periods]> Quantity of product demanded by each retailer in each period under each scenario."
+}

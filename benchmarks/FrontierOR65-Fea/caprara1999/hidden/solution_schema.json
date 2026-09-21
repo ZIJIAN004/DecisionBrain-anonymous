@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total profit from individual item profits and joint profits of all selected item pairs.",
+  "selected_items": "<list[int], length n> Whether each item is placed in the knapsack (1 = selected, 0 = not selected)."
+}

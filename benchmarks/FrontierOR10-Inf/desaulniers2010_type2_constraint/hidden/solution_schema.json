@@ -1,0 +1,17 @@
+{
+  "objective_value": "<float> Total travel distance summed over all arcs traversed by all vehicles.",
+  "num_vehicles_used": "<int> Number of vehicles that leave the depot to visit at least one customer.",
+  "routes": [
+    {
+      "vehicle": "<int> Identifier of the vehicle assigned to this route.",
+      "route": "<list[int], length varies> Ordered sequence of node identifiers visited, starting at the departure depot (0) and ending at the return depot (num_customers+1).",
+      "deliveries": "<dict, key: '{customer_id}'> Quantity of goods this vehicle delivers to each customer it visits on this route."
+    }
+  ],
+  "deliveries": {
+    "<customer_id>": {
+      "demand": "<int> Original demand quantity of the customer.",
+      "total_delivered": "<float> Total quantity delivered to the customer summed across all vehicles that visit it."
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "num_patients": "<int> Total number of patients requiring surgical scheduling.",
+  "num_surgeons": "<int> Total number of surgeons available across all hospitals.",
+  "num_hospitals": "<int> Total number of hospitals in the coalition.",
+  "ORs_per_hospital": "<int> Number of operating rooms in each hospital.",
+  "num_days": "<int> Number of days in the planning horizon.",
+  "alpha": "<float> Schedule tightness parameter controlling how surgeon workload is measured, where 0 counts full OR-occupation time and 1 counts only surgical procedure time.",
+  "patients": [
+    {
+      "patient_id": "<int> Unique identifier for this patient.",
+      "due_date": "<int> Latest day by which this patient must be scheduled, where values within the planning horizon indicate a mandatory patient and values beyond indicate an optional patient.",
+      "is_mandatory": "<bool> Whether this patient must be scheduled within the planning horizon.",
+      "preparation_time": "<float> Pre-incision setup time in minutes required before the surgeon begins operating on this patient.",
+      "cleaning_time": "<float> OR turnover time in minutes required after this patient's surgery is completed.",
+      "base_surgical_time": "<float> Baseline surgical procedure duration in minutes before surgeon-specific adjustment.",
+      "eligible_surgeons": "<list[int], length varies> Surgeons qualified to operate on this patient.",
+      "eligible_ORs_by_hospital": {
+        "{hospital_id}": "<list[int], length varies> Operating rooms at this hospital where this patient can be scheduled."
+      },
+      "surgeon_specific_times": {
+        "{surgeon_id}": "<float> Surgical procedure duration in minutes when this specific surgeon operates on this patient."
+      },
+      "reward": "<float> Benefit earned for scheduling this optional patient within the current planning horizon, or 0 for mandatory patients."
+    }
+  ],
+  "surgeons": [
+    {
+      "surgeon_id": "<int> Unique identifier for this surgeon.",
+      "availability_by_day": {
+        "{day}": "<int> Maximum number of minutes this surgeon is available to operate on this day."
+      },
+      "operating_days": "<list[int], length varies> Days within the planning horizon on which this surgeon is available to operate."
+    }
+  ],
+  "hospitals": [
+    {
+      "hospital_id": "<int> Unique identifier for this hospital.",
+      "hospital_name": "<str> Name of this hospital.",
+      "ORs": [
+        {
+          "or_id": "<int> Unique identifier for this operating room within its hospital.",
+          "regular_time": "<int> Default regular session time in minutes for this operating room.",
+          "max_overtime": "<int> Default maximum allowable overtime in minutes for this operating room.",
+          "fixed_cost_per_hour": "<float> Hourly cost incurred when this operating room is opened for a day.",
+          "overtime_cost_per_hour": "<float> Hourly cost charged for each hour of overtime used in this operating room.",
+          "daily": {
+            "{day}": {
+              "regular_time": "<int> Regular session time in minutes for this operating room on this day.",
+              "max_overtime": "<int> Maximum allowable overtime in minutes for this operating room on this day."
+            }
+          }
+        }
+      ],
+      "surgeon_fixed_costs_per_day": {
+        "{surgeon_id}": "<float> Fixed cost incurred when this surgeon is assigned to operate at this hospital on any given day."
+      }
+    }
+  ]
+}

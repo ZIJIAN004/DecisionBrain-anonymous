@@ -1,0 +1,16 @@
+{
+    "paper_id":  "pettersson2020",
+    "paper_title":  "Multiobjective Integer Programming: Synergistic Parallel Approaches",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2020,
+    "direction":  "min",
+    "problem_class":  "Other (General MIP)",
+    "category":  "planning",
+    "formulation_type":  "IP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  10000000.0,
+    "avg_num_int_var":  10000000.0,
+    "avg_num_constr":  1.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2018.0875",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

@@ -1,0 +1,12 @@
+输出文件必须是一个 JSON 对象，且只能包含以下字段：
+
+- formulation_type: "lp" 或 "milp"
+- variables: 全部变量及其类型、上下界、索引和业务含义
+- parameters: 输入参数及其来源
+- constraints: 全部硬约束、索引范围、线性表达式和业务含义
+- objective: 方向、表达式、目标含义
+- data_mapping: 从输入数据到模型参数的完整映射
+- solution_mapping: 从模型变量到 solution_schema.json 的完整映射
+- completeness_checklist: 逐项确认所有业务规则已覆盖
+
+这是完整模型定义，不是代码。不要写 package/source 字段，不要声明 generated algorithm，不要加入 heuristic、warm_start、分解或 fallback。模型定义必须能让下游 Solving 阶段只做 API 翻译而不重新设计求解策略。

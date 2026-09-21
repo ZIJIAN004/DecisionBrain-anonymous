@@ -1,0 +1,5 @@
+{
+  "objective_value": "<int> Total number of non-dominated objective vectors found.",
+  "non_dominated_objective_vectors": "<list[list[int]], shape [objective_value][num_objectives]> Objective values achieved by each non-dominated item selection.",
+  "solutions": "<list[list[int]], shape [objective_value][num_items]> Item selections corresponding to each non-dominated objective vector (1 = included, 0 = excluded)."
+}

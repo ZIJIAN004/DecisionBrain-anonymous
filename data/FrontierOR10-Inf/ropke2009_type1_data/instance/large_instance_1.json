@@ -1,0 +1,2162 @@
+{
+  "problem": "PDPTW",
+  "description": "Pickup and Delivery Problem with Time Windows",
+  "source": "Ropke and Cordeau (2009), Transportation Science 43(3):267-286",
+  "instance_class": "DD",
+  "num_requests": 43,
+  "num_nodes": 88,
+  "num_vehicles": 43,
+  "vehicle_capacity": 0,
+  "time_window_width": 120,
+  "planning_horizon": 600,
+  "fixed_cost_per_vehicle": 10000,
+  "objective": {
+    "primary": "minimize_vehicles",
+    "secondary": "minimize_total_distance"
+  },
+  "depot": {
+    "x": 25.0,
+    "y": 25.0,
+    "time_window": [
+      0,
+      600
+    ]
+  },
+  "requests": [
+    {
+      "request_id": 1,
+      "pickup_node": 1,
+      "delivery_node": 44,
+      "load": 7,
+      "pickup_coord": [
+        33.44,
+        36.91
+      ],
+      "delivery_coord": [
+        7.11,
+        47.86
+      ],
+      "pickup_time_window": [
+        50.81,
+        170.81
+      ],
+      "delivery_time_window": [
+        79.33,
+        199.33
+      ],
+      "travel_time_pickup_to_delivery": 28.51616
+    },
+    {
+      "request_id": 2,
+      "pickup_node": 2,
+      "delivery_node": 45,
+      "load": 11,
+      "pickup_coord": [
+        37.71,
+        28.96
+      ],
+      "delivery_coord": [
+        19.02,
+        15.37
+      ],
+      "pickup_time_window": [
+        190.35,
+        310.35
+      ],
+      "delivery_time_window": [
+        213.46,
+        333.46
+      ],
+      "travel_time_pickup_to_delivery": 23.108531
+    },
+    {
+      "request_id": 3,
+      "pickup_node": 3,
+      "delivery_node": 46,
+      "load": 9,
+      "pickup_coord": [
+        25.97,
+        23.88
+      ],
+      "delivery_coord": [
+        14.0,
+        47.59
+      ],
+      "pickup_time_window": [
+        412.83,
+        532.83
+      ],
+      "delivery_time_window": [
+        439.39,
+        559.39
+      ],
+      "travel_time_pickup_to_delivery": 26.560215
+    },
+    {
+      "request_id": 4,
+      "pickup_node": 4,
+      "delivery_node": 47,
+      "load": 17,
+      "pickup_coord": [
+        24.16,
+        36.89
+      ],
+      "delivery_coord": [
+        7.63,
+        39.12
+      ],
+      "pickup_time_window": [
+        275.29,
+        395.29
+      ],
+      "delivery_time_window": [
+        291.97,
+        411.97
+      ],
+      "travel_time_pickup_to_delivery": 16.679742
+    },
+    {
+      "request_id": 5,
+      "pickup_node": 5,
+      "delivery_node": 48,
+      "load": 13,
+      "pickup_coord": [
+        41.24,
+        15.25
+      ],
+      "delivery_coord": [
+        46.59,
+        27.43
+      ],
+      "pickup_time_window": [
+        376.03,
+        496.03
+      ],
+      "delivery_time_window": [
+        389.33,
+        509.33
+      ],
+      "travel_time_pickup_to_delivery": 13.303191
+    },
+    {
+      "request_id": 6,
+      "pickup_node": 6,
+      "delivery_node": 49,
+      "load": 5,
+      "pickup_coord": [
+        0.61,
+        42.2
+      ],
+      "delivery_coord": [
+        12.08,
+        20.51
+      ],
+      "pickup_time_window": [
+        214.34,
+        334.34
+      ],
+      "delivery_time_window": [
+        238.88,
+        358.88
+      ],
+      "travel_time_pickup_to_delivery": 24.536035
+    },
+    {
+      "request_id": 7,
+      "pickup_node": 7,
+      "delivery_node": 50,
+      "load": 12,
+      "pickup_coord": [
+        7.86,
+        7.4
+      ],
+      "delivery_coord": [
+        29.54,
+        12.73
+      ],
+      "pickup_time_window": [
+        121.14,
+        241.14
+      ],
+      "delivery_time_window": [
+        143.47,
+        263.47
+      ],
+      "travel_time_pickup_to_delivery": 22.325575
+    },
+    {
+      "request_id": 8,
+      "pickup_node": 8,
+      "delivery_node": 51,
+      "load": 17,
+      "pickup_coord": [
+        41.35,
+        21.63
+      ],
+      "delivery_coord": [
+        31.98,
+        23.15
+      ],
+      "pickup_time_window": [
+        538.45,
+        658.45
+      ],
+      "delivery_time_window": [
+        547.94,
+        667.94
+      ],
+      "travel_time_pickup_to_delivery": 9.492487
+    },
+    {
+      "request_id": 9,
+      "pickup_node": 9,
+      "delivery_node": 52,
+      "load": 8,
+      "pickup_coord": [
+        38.99,
+        26.33
+      ],
+      "delivery_coord": [
+        40.64,
+        27.61
+      ],
+      "pickup_time_window": [
+        545.06,
+        665.06
+      ],
+      "delivery_time_window": [
+        547.15,
+        667.15
+      ],
+      "travel_time_pickup_to_delivery": 2.088277
+    },
+    {
+      "request_id": 10,
+      "pickup_node": 10,
+      "delivery_node": 53,
+      "load": 8,
+      "pickup_coord": [
+        33.04,
+        24.12
+      ],
+      "delivery_coord": [
+        12.38,
+        46.9
+      ],
+      "pickup_time_window": [
+        202.62,
+        322.62
+      ],
+      "delivery_time_window": [
+        233.37,
+        353.37
+      ],
+      "travel_time_pickup_to_delivery": 30.753276
+    },
+    {
+      "request_id": 11,
+      "pickup_node": 11,
+      "delivery_node": 54,
+      "load": 14,
+      "pickup_coord": [
+        26.82,
+        39.49
+      ],
+      "delivery_coord": [
+        43.71,
+        27.87
+      ],
+      "pickup_time_window": [
+        120.67,
+        240.67
+      ],
+      "delivery_time_window": [
+        141.17,
+        261.17
+      ],
+      "travel_time_pickup_to_delivery": 20.501134
+    },
+    {
+      "request_id": 12,
+      "pickup_node": 12,
+      "delivery_node": 55,
+      "load": 13,
+      "pickup_coord": [
+        37.84,
+        37.84
+      ],
+      "delivery_coord": [
+        15.61,
+        12.06
+      ],
+      "pickup_time_window": [
+        518.8,
+        638.8
+      ],
+      "delivery_time_window": [
+        552.84,
+        672.84
+      ],
+      "travel_time_pickup_to_delivery": 34.040877
+    },
+    {
+      "request_id": 13,
+      "pickup_node": 13,
+      "delivery_node": 56,
+      "load": 5,
+      "pickup_coord": [
+        26.86,
+        37.56
+      ],
+      "delivery_coord": [
+        39.72,
+        33.91
+      ],
+      "pickup_time_window": [
+        360.41,
+        480.41
+      ],
+      "delivery_time_window": [
+        373.78,
+        493.78
+      ],
+      "travel_time_pickup_to_delivery": 13.36795
+    },
+    {
+      "request_id": 14,
+      "pickup_node": 14,
+      "delivery_node": 57,
+      "load": 20,
+      "pickup_coord": [
+        48.6,
+        40.05
+      ],
+      "delivery_coord": [
+        12.45,
+        41.37
+      ],
+      "pickup_time_window": [
+        505.31,
+        625.31
+      ],
+      "delivery_time_window": [
+        541.48,
+        661.48
+      ],
+      "travel_time_pickup_to_delivery": 36.174092
+    },
+    {
+      "request_id": 15,
+      "pickup_node": 15,
+      "delivery_node": 58,
+      "load": 15,
+      "pickup_coord": [
+        21.52,
+        49.13
+      ],
+      "delivery_coord": [
+        31.5,
+        3.77
+      ],
+      "pickup_time_window": [
+        405.2,
+        525.2
+      ],
+      "delivery_time_window": [
+        451.64,
+        571.64
+      ],
+      "travel_time_pickup_to_delivery": 46.444914
+    },
+    {
+      "request_id": 16,
+      "pickup_node": 16,
+      "delivery_node": 59,
+      "load": 6,
+      "pickup_coord": [
+        16.02,
+        37.74
+      ],
+      "delivery_coord": [
+        46.97,
+        4.87
+      ],
+      "pickup_time_window": [
+        84.21,
+        204.21
+      ],
+      "delivery_time_window": [
+        129.36,
+        249.36
+      ],
+      "travel_time_pickup_to_delivery": 45.147972
+    },
+    {
+      "request_id": 17,
+      "pickup_node": 17,
+      "delivery_node": 60,
+      "load": 19,
+      "pickup_coord": [
+        39.5,
+        46.49
+      ],
+      "delivery_coord": [
+        28.84,
+        32.4
+      ],
+      "pickup_time_window": [
+        538.7,
+        658.7
+      ],
+      "delivery_time_window": [
+        556.37,
+        676.37
+      ],
+      "travel_time_pickup_to_delivery": 17.668155
+    },
+    {
+      "request_id": 18,
+      "pickup_node": 18,
+      "delivery_node": 61,
+      "load": 8,
+      "pickup_coord": [
+        31.09,
+        30.88
+      ],
+      "delivery_coord": [
+        22.56,
+        35.8
+      ],
+      "pickup_time_window": [
+        249.36,
+        369.36
+      ],
+      "delivery_time_window": [
+        259.21,
+        379.21
+      ],
+      "travel_time_pickup_to_delivery": 9.847198
+    },
+    {
+      "request_id": 19,
+      "pickup_node": 19,
+      "delivery_node": 62,
+      "load": 11,
+      "pickup_coord": [
+        20.8,
+        16.72
+      ],
+      "delivery_coord": [
+        7.61,
+        49.3
+      ],
+      "pickup_time_window": [
+        350.95,
+        470.95
+      ],
+      "delivery_time_window": [
+        386.1,
+        506.1
+      ],
+      "travel_time_pickup_to_delivery": 35.14872
+    },
+    {
+      "request_id": 20,
+      "pickup_node": 20,
+      "delivery_node": 63,
+      "load": 15,
+      "pickup_coord": [
+        5.05,
+        21.65
+      ],
+      "delivery_coord": [
+        45.07,
+        42.14
+      ],
+      "pickup_time_window": [
+        370.11,
+        490.11
+      ],
+      "delivery_time_window": [
+        415.07,
+        535.07
+      ],
+      "travel_time_pickup_to_delivery": 44.960433
+    },
+    {
+      "request_id": 21,
+      "pickup_node": 21,
+      "delivery_node": 64,
+      "load": 17,
+      "pickup_coord": [
+        21.47,
+        17.46
+      ],
+      "delivery_coord": [
+        44.49,
+        0.18
+      ],
+      "pickup_time_window": [
+        119.86,
+        239.86
+      ],
+      "delivery_time_window": [
+        148.64,
+        268.64
+      ],
+      "travel_time_pickup_to_delivery": 28.784003
+    },
+    {
+      "request_id": 22,
+      "pickup_node": 22,
+      "delivery_node": 65,
+      "load": 7,
+      "pickup_coord": [
+        39.78,
+        38.74
+      ],
+      "delivery_coord": [
+        12.34,
+        27.65
+      ],
+      "pickup_time_window": [
+        534.5,
+        654.5
+      ],
+      "delivery_time_window": [
+        564.1,
+        684.1
+      ],
+      "travel_time_pickup_to_delivery": 29.596312
+    },
+    {
+      "request_id": 23,
+      "pickup_node": 23,
+      "delivery_node": 66,
+      "load": 19,
+      "pickup_coord": [
+        33.22,
+        32.18
+      ],
+      "delivery_coord": [
+        4.39,
+        30.81
+      ],
+      "pickup_time_window": [
+        131.06,
+        251.06
+      ],
+      "delivery_time_window": [
+        159.92,
+        279.92
+      ],
+      "travel_time_pickup_to_delivery": 28.862533
+    },
+    {
+      "request_id": 24,
+      "pickup_node": 24,
+      "delivery_node": 67,
+      "load": 13,
+      "pickup_coord": [
+        2.69,
+        46.27
+      ],
+      "delivery_coord": [
+        8.01,
+        6.49
+      ],
+      "pickup_time_window": [
+        17.31,
+        137.31
+      ],
+      "delivery_time_window": [
+        57.44,
+        177.44
+      ],
+      "travel_time_pickup_to_delivery": 40.13416
+    },
+    {
+      "request_id": 25,
+      "pickup_node": 25,
+      "delivery_node": 68,
+      "load": 14,
+      "pickup_coord": [
+        7.27,
+        32.83
+      ],
+      "delivery_coord": [
+        30.8,
+        37.65
+      ],
+      "pickup_time_window": [
+        61.8,
+        181.8
+      ],
+      "delivery_time_window": [
+        85.82,
+        205.82
+      ],
+      "travel_time_pickup_to_delivery": 24.018603
+    },
+    {
+      "request_id": 26,
+      "pickup_node": 26,
+      "delivery_node": 69,
+      "load": 8,
+      "pickup_coord": [
+        48.6,
+        26.05
+      ],
+      "delivery_coord": [
+        10.78,
+        9.11
+      ],
+      "pickup_time_window": [
+        198.12,
+        318.12
+      ],
+      "delivery_time_window": [
+        239.56,
+        359.56
+      ],
+      "travel_time_pickup_to_delivery": 41.440512
+    },
+    {
+      "request_id": 27,
+      "pickup_node": 27,
+      "delivery_node": 70,
+      "load": 7,
+      "pickup_coord": [
+        20.73,
+        46.93
+      ],
+      "delivery_coord": [
+        47.66,
+        11.98
+      ],
+      "pickup_time_window": [
+        293.58,
+        413.58
+      ],
+      "delivery_time_window": [
+        337.7,
+        457.7
+      ],
+      "travel_time_pickup_to_delivery": 44.121734
+    },
+    {
+      "request_id": 28,
+      "pickup_node": 28,
+      "delivery_node": 71,
+      "load": 6,
+      "pickup_coord": [
+        20.28,
+        8.18
+      ],
+      "delivery_coord": [
+        7.51,
+        42.3
+      ],
+      "pickup_time_window": [
+        156.92,
+        276.92
+      ],
+      "delivery_time_window": [
+        193.35,
+        313.35
+      ],
+      "travel_time_pickup_to_delivery": 36.431405
+    },
+    {
+      "request_id": 29,
+      "pickup_node": 29,
+      "delivery_node": 72,
+      "load": 16,
+      "pickup_coord": [
+        19.95,
+        9.0
+      ],
+      "delivery_coord": [
+        30.07,
+        1.46
+      ],
+      "pickup_time_window": [
+        479.6,
+        599.6
+      ],
+      "delivery_time_window": [
+        492.22,
+        612.22
+      ],
+      "travel_time_pickup_to_delivery": 12.620063
+    },
+    {
+      "request_id": 30,
+      "pickup_node": 30,
+      "delivery_node": 73,
+      "load": 18,
+      "pickup_coord": [
+        30.63,
+        6.13
+      ],
+      "delivery_coord": [
+        45.57,
+        7.74
+      ],
+      "pickup_time_window": [
+        330.64,
+        450.64
+      ],
+      "delivery_time_window": [
+        345.67,
+        465.67
+      ],
+      "travel_time_pickup_to_delivery": 15.0265
+    },
+    {
+      "request_id": 31,
+      "pickup_node": 31,
+      "delivery_node": 74,
+      "load": 6,
+      "pickup_coord": [
+        36.37,
+        39.61
+      ],
+      "delivery_coord": [
+        38.24,
+        3.7
+      ],
+      "pickup_time_window": [
+        471.08,
+        591.08
+      ],
+      "delivery_time_window": [
+        507.04,
+        627.04
+      ],
+      "travel_time_pickup_to_delivery": 35.958657
+    },
+    {
+      "request_id": 32,
+      "pickup_node": 32,
+      "delivery_node": 75,
+      "load": 19,
+      "pickup_coord": [
+        22.44,
+        4.73
+      ],
+      "delivery_coord": [
+        38.39,
+        13.39
+      ],
+      "pickup_time_window": [
+        241.12,
+        361.12
+      ],
+      "delivery_time_window": [
+        259.27,
+        379.27
+      ],
+      "travel_time_pickup_to_delivery": 18.149328
+    },
+    {
+      "request_id": 33,
+      "pickup_node": 33,
+      "delivery_node": 76,
+      "load": 15,
+      "pickup_coord": [
+        26.18,
+        1.79
+      ],
+      "delivery_coord": [
+        1.16,
+        35.22
+      ],
+      "pickup_time_window": [
+        30.83,
+        150.83
+      ],
+      "delivery_time_window": [
+        72.59,
+        192.59
+      ],
+      "travel_time_pickup_to_delivery": 41.756021
+    },
+    {
+      "request_id": 34,
+      "pickup_node": 34,
+      "delivery_node": 77,
+      "load": 20,
+      "pickup_coord": [
+        46.41,
+        27.17
+      ],
+      "delivery_coord": [
+        25.64,
+        29.85
+      ],
+      "pickup_time_window": [
+        55.84,
+        175.84
+      ],
+      "delivery_time_window": [
+        76.78,
+        196.78
+      ],
+      "travel_time_pickup_to_delivery": 20.942189
+    },
+    {
+      "request_id": 35,
+      "pickup_node": 35,
+      "delivery_node": 78,
+      "load": 19,
+      "pickup_coord": [
+        2.57,
+        19.86
+      ],
+      "delivery_coord": [
+        25.0,
+        40.85
+      ],
+      "pickup_time_window": [
+        512.01,
+        632.01
+      ],
+      "delivery_time_window": [
+        542.73,
+        662.73
+      ],
+      "travel_time_pickup_to_delivery": 30.719456
+    },
+    {
+      "request_id": 36,
+      "pickup_node": 36,
+      "delivery_node": 79,
+      "load": 15,
+      "pickup_coord": [
+        32.06,
+        39.46
+      ],
+      "delivery_coord": [
+        32.26,
+        43.2
+      ],
+      "pickup_time_window": [
+        473.44,
+        593.44
+      ],
+      "delivery_time_window": [
+        477.19,
+        597.19
+      ],
+      "travel_time_pickup_to_delivery": 3.745344
+    },
+    {
+      "request_id": 37,
+      "pickup_node": 37,
+      "delivery_node": 80,
+      "load": 19,
+      "pickup_coord": [
+        5.22,
+        32.82
+      ],
+      "delivery_coord": [
+        31.48,
+        20.63
+      ],
+      "pickup_time_window": [
+        100.08,
+        220.08
+      ],
+      "delivery_time_window": [
+        129.03,
+        249.03
+      ],
+      "travel_time_pickup_to_delivery": 28.951402
+    },
+    {
+      "request_id": 38,
+      "pickup_node": 38,
+      "delivery_node": 81,
+      "load": 12,
+      "pickup_coord": [
+        24.91,
+        5.75
+      ],
+      "delivery_coord": [
+        22.61,
+        33.07
+      ],
+      "pickup_time_window": [
+        362.91,
+        482.91
+      ],
+      "delivery_time_window": [
+        390.33,
+        510.33
+      ],
+      "travel_time_pickup_to_delivery": 27.416645
+    },
+    {
+      "request_id": 39,
+      "pickup_node": 39,
+      "delivery_node": 82,
+      "load": 19,
+      "pickup_coord": [
+        35.17,
+        40.99
+      ],
+      "delivery_coord": [
+        10.36,
+        42.22
+      ],
+      "pickup_time_window": [
+        503.35,
+        623.35
+      ],
+      "delivery_time_window": [
+        528.19,
+        648.19
+      ],
+      "travel_time_pickup_to_delivery": 24.840471
+    },
+    {
+      "request_id": 40,
+      "pickup_node": 40,
+      "delivery_node": 83,
+      "load": 13,
+      "pickup_coord": [
+        38.1,
+        42.61
+      ],
+      "delivery_coord": [
+        36.55,
+        8.05
+      ],
+      "pickup_time_window": [
+        145.48,
+        265.48
+      ],
+      "delivery_time_window": [
+        180.07,
+        300.07
+      ],
+      "travel_time_pickup_to_delivery": 34.594741
+    },
+    {
+      "request_id": 41,
+      "pickup_node": 41,
+      "delivery_node": 84,
+      "load": 16,
+      "pickup_coord": [
+        25.48,
+        0.99
+      ],
+      "delivery_coord": [
+        29.17,
+        1.92
+      ],
+      "pickup_time_window": [
+        19.75,
+        139.75
+      ],
+      "delivery_time_window": [
+        23.56,
+        143.56
+      ],
+      "travel_time_pickup_to_delivery": 3.805391
+    },
+    {
+      "request_id": 42,
+      "pickup_node": 42,
+      "delivery_node": 85,
+      "load": 16,
+      "pickup_coord": [
+        36.21,
+        15.01
+      ],
+      "delivery_coord": [
+        14.26,
+        31.8
+      ],
+      "pickup_time_window": [
+        419.92,
+        539.92
+      ],
+      "delivery_time_window": [
+        447.56,
+        567.56
+      ],
+      "travel_time_pickup_to_delivery": 27.635242
+    },
+    {
+      "request_id": 43,
+      "pickup_node": 43,
+      "delivery_node": 86,
+      "load": 6,
+      "pickup_coord": [
+        7.44,
+        11.45
+      ],
+      "delivery_coord": [
+        20.59,
+        38.44
+      ],
+      "pickup_time_window": [
+        355.79,
+        475.79
+      ],
+      "delivery_time_window": [
+        385.81,
+        505.81
+      ],
+      "travel_time_pickup_to_delivery": 30.023034
+    }
+  ],
+  "nodes": [
+    {
+      "id": 0,
+      "type": "depot_origin",
+      "x": 25.0,
+      "y": 25.0,
+      "demand": 0,
+      "service_time": 0,
+      "time_window": [
+        0,
+        600
+      ]
+    },
+    {
+      "id": 1,
+      "type": "pickup",
+      "x": 33.44,
+      "y": 36.91,
+      "demand": 7,
+      "service_time": 0,
+      "time_window": [
+        50.81,
+        170.81
+      ],
+      "pair": 44
+    },
+    {
+      "id": 2,
+      "type": "pickup",
+      "x": 37.71,
+      "y": 28.96,
+      "demand": 11,
+      "service_time": 0,
+      "time_window": [
+        190.35,
+        310.35
+      ],
+      "pair": 45
+    },
+    {
+      "id": 3,
+      "type": "pickup",
+      "x": 25.97,
+      "y": 23.88,
+      "demand": 9,
+      "service_time": 0,
+      "time_window": [
+        412.83,
+        532.83
+      ],
+      "pair": 46
+    },
+    {
+      "id": 4,
+      "type": "pickup",
+      "x": 24.16,
+      "y": 36.89,
+      "demand": 17,
+      "service_time": 0,
+      "time_window": [
+        275.29,
+        395.29
+      ],
+      "pair": 47
+    },
+    {
+      "id": 5,
+      "type": "pickup",
+      "x": 41.24,
+      "y": 15.25,
+      "demand": 13,
+      "service_time": 0,
+      "time_window": [
+        376.03,
+        496.03
+      ],
+      "pair": 48
+    },
+    {
+      "id": 6,
+      "type": "pickup",
+      "x": 0.61,
+      "y": 42.2,
+      "demand": 5,
+      "service_time": 0,
+      "time_window": [
+        214.34,
+        334.34
+      ],
+      "pair": 49
+    },
+    {
+      "id": 7,
+      "type": "pickup",
+      "x": 7.86,
+      "y": 7.4,
+      "demand": 12,
+      "service_time": 0,
+      "time_window": [
+        121.14,
+        241.14
+      ],
+      "pair": 50
+    },
+    {
+      "id": 8,
+      "type": "pickup",
+      "x": 41.35,
+      "y": 21.63,
+      "demand": 17,
+      "service_time": 0,
+      "time_window": [
+        538.45,
+        658.45
+      ],
+      "pair": 51
+    },
+    {
+      "id": 9,
+      "type": "pickup",
+      "x": 38.99,
+      "y": 26.33,
+      "demand": 8,
+      "service_time": 0,
+      "time_window": [
+        545.06,
+        665.06
+      ],
+      "pair": 52
+    },
+    {
+      "id": 10,
+      "type": "pickup",
+      "x": 33.04,
+      "y": 24.12,
+      "demand": 8,
+      "service_time": 0,
+      "time_window": [
+        202.62,
+        322.62
+      ],
+      "pair": 53
+    },
+    {
+      "id": 11,
+      "type": "pickup",
+      "x": 26.82,
+      "y": 39.49,
+      "demand": 14,
+      "service_time": 0,
+      "time_window": [
+        120.67,
+        240.67
+      ],
+      "pair": 54
+    },
+    {
+      "id": 12,
+      "type": "pickup",
+      "x": 37.84,
+      "y": 37.84,
+      "demand": 13,
+      "service_time": 0,
+      "time_window": [
+        518.8,
+        638.8
+      ],
+      "pair": 55
+    },
+    {
+      "id": 13,
+      "type": "pickup",
+      "x": 26.86,
+      "y": 37.56,
+      "demand": 5,
+      "service_time": 0,
+      "time_window": [
+        360.41,
+        480.41
+      ],
+      "pair": 56
+    },
+    {
+      "id": 14,
+      "type": "pickup",
+      "x": 48.6,
+      "y": 40.05,
+      "demand": 20,
+      "service_time": 0,
+      "time_window": [
+        505.31,
+        625.31
+      ],
+      "pair": 57
+    },
+    {
+      "id": 15,
+      "type": "pickup",
+      "x": 21.52,
+      "y": 49.13,
+      "demand": 15,
+      "service_time": 0,
+      "time_window": [
+        405.2,
+        525.2
+      ],
+      "pair": 58
+    },
+    {
+      "id": 16,
+      "type": "pickup",
+      "x": 16.02,
+      "y": 37.74,
+      "demand": 6,
+      "service_time": 0,
+      "time_window": [
+        84.21,
+        204.21
+      ],
+      "pair": 59
+    },
+    {
+      "id": 17,
+      "type": "pickup",
+      "x": 39.5,
+      "y": 46.49,
+      "demand": 19,
+      "service_time": 0,
+      "time_window": [
+        538.7,
+        658.7
+      ],
+      "pair": 60
+    },
+    {
+      "id": 18,
+      "type": "pickup",
+      "x": 31.09,
+      "y": 30.88,
+      "demand": 8,
+      "service_time": 0,
+      "time_window": [
+        249.36,
+        369.36
+      ],
+      "pair": 61
+    },
+    {
+      "id": 19,
+      "type": "pickup",
+      "x": 20.8,
+      "y": 16.72,
+      "demand": 11,
+      "service_time": 0,
+      "time_window": [
+        350.95,
+        470.95
+      ],
+      "pair": 62
+    },
+    {
+      "id": 20,
+      "type": "pickup",
+      "x": 5.05,
+      "y": 21.65,
+      "demand": 15,
+      "service_time": 0,
+      "time_window": [
+        370.11,
+        490.11
+      ],
+      "pair": 63
+    },
+    {
+      "id": 21,
+      "type": "pickup",
+      "x": 21.47,
+      "y": 17.46,
+      "demand": 17,
+      "service_time": 0,
+      "time_window": [
+        119.86,
+        239.86
+      ],
+      "pair": 64
+    },
+    {
+      "id": 22,
+      "type": "pickup",
+      "x": 39.78,
+      "y": 38.74,
+      "demand": 7,
+      "service_time": 0,
+      "time_window": [
+        534.5,
+        654.5
+      ],
+      "pair": 65
+    },
+    {
+      "id": 23,
+      "type": "pickup",
+      "x": 33.22,
+      "y": 32.18,
+      "demand": 19,
+      "service_time": 0,
+      "time_window": [
+        131.06,
+        251.06
+      ],
+      "pair": 66
+    },
+    {
+      "id": 24,
+      "type": "pickup",
+      "x": 2.69,
+      "y": 46.27,
+      "demand": 13,
+      "service_time": 0,
+      "time_window": [
+        17.31,
+        137.31
+      ],
+      "pair": 67
+    },
+    {
+      "id": 25,
+      "type": "pickup",
+      "x": 7.27,
+      "y": 32.83,
+      "demand": 14,
+      "service_time": 0,
+      "time_window": [
+        61.8,
+        181.8
+      ],
+      "pair": 68
+    },
+    {
+      "id": 26,
+      "type": "pickup",
+      "x": 48.6,
+      "y": 26.05,
+      "demand": 8,
+      "service_time": 0,
+      "time_window": [
+        198.12,
+        318.12
+      ],
+      "pair": 69
+    },
+    {
+      "id": 27,
+      "type": "pickup",
+      "x": 20.73,
+      "y": 46.93,
+      "demand": 7,
+      "service_time": 0,
+      "time_window": [
+        293.58,
+        413.58
+      ],
+      "pair": 70
+    },
+    {
+      "id": 28,
+      "type": "pickup",
+      "x": 20.28,
+      "y": 8.18,
+      "demand": 6,
+      "service_time": 0,
+      "time_window": [
+        156.92,
+        276.92
+      ],
+      "pair": 71
+    },
+    {
+      "id": 29,
+      "type": "pickup",
+      "x": 19.95,
+      "y": 9.0,
+      "demand": 16,
+      "service_time": 0,
+      "time_window": [
+        479.6,
+        599.6
+      ],
+      "pair": 72
+    },
+    {
+      "id": 30,
+      "type": "pickup",
+      "x": 30.63,
+      "y": 6.13,
+      "demand": 18,
+      "service_time": 0,
+      "time_window": [
+        330.64,
+        450.64
+      ],
+      "pair": 73
+    },
+    {
+      "id": 31,
+      "type": "pickup",
+      "x": 36.37,
+      "y": 39.61,
+      "demand": 6,
+      "service_time": 0,
+      "time_window": [
+        471.08,
+        591.08
+      ],
+      "pair": 74
+    },
+    {
+      "id": 32,
+      "type": "pickup",
+      "x": 22.44,
+      "y": 4.73,
+      "demand": 19,
+      "service_time": 0,
+      "time_window": [
+        241.12,
+        361.12
+      ],
+      "pair": 75
+    },
+    {
+      "id": 33,
+      "type": "pickup",
+      "x": 26.18,
+      "y": 1.79,
+      "demand": 15,
+      "service_time": 0,
+      "time_window": [
+        30.83,
+        150.83
+      ],
+      "pair": 76
+    },
+    {
+      "id": 34,
+      "type": "pickup",
+      "x": 46.41,
+      "y": 27.17,
+      "demand": 20,
+      "service_time": 0,
+      "time_window": [
+        55.84,
+        175.84
+      ],
+      "pair": 77
+    },
+    {
+      "id": 35,
+      "type": "pickup",
+      "x": 2.57,
+      "y": 19.86,
+      "demand": 19,
+      "service_time": 0,
+      "time_window": [
+        512.01,
+        632.01
+      ],
+      "pair": 78
+    },
+    {
+      "id": 36,
+      "type": "pickup",
+      "x": 32.06,
+      "y": 39.46,
+      "demand": 15,
+      "service_time": 0,
+      "time_window": [
+        473.44,
+        593.44
+      ],
+      "pair": 79
+    },
+    {
+      "id": 37,
+      "type": "pickup",
+      "x": 5.22,
+      "y": 32.82,
+      "demand": 19,
+      "service_time": 0,
+      "time_window": [
+        100.08,
+        220.08
+      ],
+      "pair": 80
+    },
+    {
+      "id": 38,
+      "type": "pickup",
+      "x": 24.91,
+      "y": 5.75,
+      "demand": 12,
+      "service_time": 0,
+      "time_window": [
+        362.91,
+        482.91
+      ],
+      "pair": 81
+    },
+    {
+      "id": 39,
+      "type": "pickup",
+      "x": 35.17,
+      "y": 40.99,
+      "demand": 19,
+      "service_time": 0,
+      "time_window": [
+        503.35,
+        623.35
+      ],
+      "pair": 82
+    },
+    {
+      "id": 40,
+      "type": "pickup",
+      "x": 38.1,
+      "y": 42.61,
+      "demand": 13,
+      "service_time": 0,
+      "time_window": [
+        145.48,
+        265.48
+      ],
+      "pair": 83
+    },
+    {
+      "id": 41,
+      "type": "pickup",
+      "x": 25.48,
+      "y": 0.99,
+      "demand": 16,
+      "service_time": 0,
+      "time_window": [
+        19.75,
+        139.75
+      ],
+      "pair": 84
+    },
+    {
+      "id": 42,
+      "type": "pickup",
+      "x": 36.21,
+      "y": 15.01,
+      "demand": 16,
+      "service_time": 0,
+      "time_window": [
+        419.92,
+        539.92
+      ],
+      "pair": 85
+    },
+    {
+      "id": 43,
+      "type": "pickup",
+      "x": 7.44,
+      "y": 11.45,
+      "demand": 6,
+      "service_time": 0,
+      "time_window": [
+        355.79,
+        475.79
+      ],
+      "pair": 86
+    },
+    {
+      "id": 44,
+      "type": "delivery",
+      "x": 7.11,
+      "y": 47.86,
+      "demand": -7,
+      "service_time": 0,
+      "time_window": [
+        79.33,
+        199.33
+      ],
+      "pair": 1
+    },
+    {
+      "id": 45,
+      "type": "delivery",
+      "x": 19.02,
+      "y": 15.37,
+      "demand": -11,
+      "service_time": 0,
+      "time_window": [
+        213.46,
+        333.46
+      ],
+      "pair": 2
+    },
+    {
+      "id": 46,
+      "type": "delivery",
+      "x": 14.0,
+      "y": 47.59,
+      "demand": -9,
+      "service_time": 0,
+      "time_window": [
+        439.39,
+        559.39
+      ],
+      "pair": 3
+    },
+    {
+      "id": 47,
+      "type": "delivery",
+      "x": 7.63,
+      "y": 39.12,
+      "demand": -17,
+      "service_time": 0,
+      "time_window": [
+        291.97,
+        411.97
+      ],
+      "pair": 4
+    },
+    {
+      "id": 48,
+      "type": "delivery",
+      "x": 46.59,
+      "y": 27.43,
+      "demand": -13,
+      "service_time": 0,
+      "time_window": [
+        389.33,
+        509.33
+      ],
+      "pair": 5
+    },
+    {
+      "id": 49,
+      "type": "delivery",
+      "x": 12.08,
+      "y": 20.51,
+      "demand": -5,
+      "service_time": 0,
+      "time_window": [
+        238.88,
+        358.88
+      ],
+      "pair": 6
+    },
+    {
+      "id": 50,
+      "type": "delivery",
+      "x": 29.54,
+      "y": 12.73,
+      "demand": -12,
+      "service_time": 0,
+      "time_window": [
+        143.47,
+        263.47
+      ],
+      "pair": 7
+    },
+    {
+      "id": 51,
+      "type": "delivery",
+      "x": 31.98,
+      "y": 23.15,
+      "demand": -17,
+      "service_time": 0,
+      "time_window": [
+        547.94,
+        667.94
+      ],
+      "pair": 8
+    },
+    {
+      "id": 52,
+      "type": "delivery",
+      "x": 40.64,
+      "y": 27.61,
+      "demand": -8,
+      "service_time": 0,
+      "time_window": [
+        547.15,
+        667.15
+      ],
+      "pair": 9
+    },
+    {
+      "id": 53,
+      "type": "delivery",
+      "x": 12.38,
+      "y": 46.9,
+      "demand": -8,
+      "service_time": 0,
+      "time_window": [
+        233.37,
+        353.37
+      ],
+      "pair": 10
+    },
+    {
+      "id": 54,
+      "type": "delivery",
+      "x": 43.71,
+      "y": 27.87,
+      "demand": -14,
+      "service_time": 0,
+      "time_window": [
+        141.17,
+        261.17
+      ],
+      "pair": 11
+    },
+    {
+      "id": 55,
+      "type": "delivery",
+      "x": 15.61,
+      "y": 12.06,
+      "demand": -13,
+      "service_time": 0,
+      "time_window": [
+        552.84,
+        672.84
+      ],
+      "pair": 12
+    },
+    {
+      "id": 56,
+      "type": "delivery",
+      "x": 39.72,
+      "y": 33.91,
+      "demand": -5,
+      "service_time": 0,
+      "time_window": [
+        373.78,
+        493.78
+      ],
+      "pair": 13
+    },
+    {
+      "id": 57,
+      "type": "delivery",
+      "x": 12.45,
+      "y": 41.37,
+      "demand": -20,
+      "service_time": 0,
+      "time_window": [
+        541.48,
+        661.48
+      ],
+      "pair": 14
+    },
+    {
+      "id": 58,
+      "type": "delivery",
+      "x": 31.5,
+      "y": 3.77,
+      "demand": -15,
+      "service_time": 0,
+      "time_window": [
+        451.64,
+        571.64
+      ],
+      "pair": 15
+    },
+    {
+      "id": 59,
+      "type": "delivery",
+      "x": 46.97,
+      "y": 4.87,
+      "demand": -6,
+      "service_time": 0,
+      "time_window": [
+        129.36,
+        249.36
+      ],
+      "pair": 16
+    },
+    {
+      "id": 60,
+      "type": "delivery",
+      "x": 28.84,
+      "y": 32.4,
+      "demand": -19,
+      "service_time": 0,
+      "time_window": [
+        556.37,
+        676.37
+      ],
+      "pair": 17
+    },
+    {
+      "id": 61,
+      "type": "delivery",
+      "x": 22.56,
+      "y": 35.8,
+      "demand": -8,
+      "service_time": 0,
+      "time_window": [
+        259.21,
+        379.21
+      ],
+      "pair": 18
+    },
+    {
+      "id": 62,
+      "type": "delivery",
+      "x": 7.61,
+      "y": 49.3,
+      "demand": -11,
+      "service_time": 0,
+      "time_window": [
+        386.1,
+        506.1
+      ],
+      "pair": 19
+    },
+    {
+      "id": 63,
+      "type": "delivery",
+      "x": 45.07,
+      "y": 42.14,
+      "demand": -15,
+      "service_time": 0,
+      "time_window": [
+        415.07,
+        535.07
+      ],
+      "pair": 20
+    },
+    {
+      "id": 64,
+      "type": "delivery",
+      "x": 44.49,
+      "y": 0.18,
+      "demand": -17,
+      "service_time": 0,
+      "time_window": [
+        148.64,
+        268.64
+      ],
+      "pair": 21
+    },
+    {
+      "id": 65,
+      "type": "delivery",
+      "x": 12.34,
+      "y": 27.65,
+      "demand": -7,
+      "service_time": 0,
+      "time_window": [
+        564.1,
+        684.1
+      ],
+      "pair": 22
+    },
+    {
+      "id": 66,
+      "type": "delivery",
+      "x": 4.39,
+      "y": 30.81,
+      "demand": -19,
+      "service_time": 0,
+      "time_window": [
+        159.92,
+        279.92
+      ],
+      "pair": 23
+    },
+    {
+      "id": 67,
+      "type": "delivery",
+      "x": 8.01,
+      "y": 6.49,
+      "demand": -13,
+      "service_time": 0,
+      "time_window": [
+        57.44,
+        177.44
+      ],
+      "pair": 24
+    },
+    {
+      "id": 68,
+      "type": "delivery",
+      "x": 30.8,
+      "y": 37.65,
+      "demand": -14,
+      "service_time": 0,
+      "time_window": [
+        85.82,
+        205.82
+      ],
+      "pair": 25
+    },
+    {
+      "id": 69,
+      "type": "delivery",
+      "x": 10.78,
+      "y": 9.11,
+      "demand": -8,
+      "service_time": 0,
+      "time_window": [
+        239.56,
+        359.56
+      ],
+      "pair": 26
+    },
+    {
+      "id": 70,
+      "type": "delivery",
+      "x": 47.66,
+      "y": 11.98,
+      "demand": -7,
+      "service_time": 0,
+      "time_window": [
+        337.7,
+        457.7
+      ],
+      "pair": 27
+    },
+    {
+      "id": 71,
+      "type": "delivery",
+      "x": 7.51,
+      "y": 42.3,
+      "demand": -6,
+      "service_time": 0,
+      "time_window": [
+        193.35,
+        313.35
+      ],
+      "pair": 28
+    },
+    {
+      "id": 72,
+      "type": "delivery",
+      "x": 30.07,
+      "y": 1.46,
+      "demand": -16,
+      "service_time": 0,
+      "time_window": [
+        492.22,
+        612.22
+      ],
+      "pair": 29
+    },
+    {
+      "id": 73,
+      "type": "delivery",
+      "x": 45.57,
+      "y": 7.74,
+      "demand": -18,
+      "service_time": 0,
+      "time_window": [
+        345.67,
+        465.67
+      ],
+      "pair": 30
+    },
+    {
+      "id": 74,
+      "type": "delivery",
+      "x": 38.24,
+      "y": 3.7,
+      "demand": -6,
+      "service_time": 0,
+      "time_window": [
+        507.04,
+        627.04
+      ],
+      "pair": 31
+    },
+    {
+      "id": 75,
+      "type": "delivery",
+      "x": 38.39,
+      "y": 13.39,
+      "demand": -19,
+      "service_time": 0,
+      "time_window": [
+        259.27,
+        379.27
+      ],
+      "pair": 32
+    },
+    {
+      "id": 76,
+      "type": "delivery",
+      "x": 1.16,
+      "y": 35.22,
+      "demand": -15,
+      "service_time": 0,
+      "time_window": [
+        72.59,
+        192.59
+      ],
+      "pair": 33
+    },
+    {
+      "id": 77,
+      "type": "delivery",
+      "x": 25.64,
+      "y": 29.85,
+      "demand": -20,
+      "service_time": 0,
+      "time_window": [
+        76.78,
+        196.78
+      ],
+      "pair": 34
+    },
+    {
+      "id": 78,
+      "type": "delivery",
+      "x": 25.0,
+      "y": 40.85,
+      "demand": -19,
+      "service_time": 0,
+      "time_window": [
+        542.73,
+        662.73
+      ],
+      "pair": 35
+    },
+    {
+      "id": 79,
+      "type": "delivery",
+      "x": 32.26,
+      "y": 43.2,
+      "demand": -15,
+      "service_time": 0,
+      "time_window": [
+        477.19,
+        597.19
+      ],
+      "pair": 36
+    },
+    {
+      "id": 80,
+      "type": "delivery",
+      "x": 31.48,
+      "y": 20.63,
+      "demand": -19,
+      "service_time": 0,
+      "time_window": [
+        129.03,
+        249.03
+      ],
+      "pair": 37
+    },
+    {
+      "id": 81,
+      "type": "delivery",
+      "x": 22.61,
+      "y": 33.07,
+      "demand": -12,
+      "service_time": 0,
+      "time_window": [
+        390.33,
+        510.33
+      ],
+      "pair": 38
+    },
+    {
+      "id": 82,
+      "type": "delivery",
+      "x": 10.36,
+      "y": 42.22,
+      "demand": -19,
+      "service_time": 0,
+      "time_window": [
+        528.19,
+        648.19
+      ],
+      "pair": 39
+    },
+    {
+      "id": 83,
+      "type": "delivery",
+      "x": 36.55,
+      "y": 8.05,
+      "demand": -13,
+      "service_time": 0,
+      "time_window": [
+        180.07,
+        300.07
+      ],
+      "pair": 40
+    },
+    {
+      "id": 84,
+      "type": "delivery",
+      "x": 29.17,
+      "y": 1.92,
+      "demand": -16,
+      "service_time": 0,
+      "time_window": [
+        23.56,
+        143.56
+      ],
+      "pair": 41
+    },
+    {
+      "id": 85,
+      "type": "delivery",
+      "x": 14.26,
+      "y": 31.8,
+      "demand": -16,
+      "service_time": 0,
+      "time_window": [
+        447.56,
+        567.56
+      ],
+      "pair": 42
+    },
+    {
+      "id": 86,
+      "type": "delivery",
+      "x": 20.59,
+      "y": 38.44,
+      "demand": -6,
+      "service_time": 0,
+      "time_window": [
+        385.81,
+        505.81
+      ],
+      "pair": 43
+    },
+    {
+      "id": 87,
+      "type": "depot_destination",
+      "x": 25.0,
+      "y": 25.0,
+      "demand": 0,
+      "service_time": 0,
+      "time_window": [
+        0,
+        600
+      ]
+    }
+  ],
+  "generation_seed": 100207,
+  "instance_name": "DD43"
+}

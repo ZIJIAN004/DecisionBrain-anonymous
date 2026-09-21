@@ -1,0 +1,10 @@
+{
+  "objective_value": "<float> Total operating cost across all vehicle duties, summing depot pull-out, trip-to-trip transition, and depot pull-in costs.",
+  "routes": [
+    {
+      "depot": "<int> Identifier of the depot from which this vehicle is pulled out and to which it returns at the end of the day (1-indexed).",
+      "trips": "<list[int], length variable> Ordered sequence of trip identifiers performed consecutively by this vehicle between leaving and returning to the depot (1-indexed)."
+    }
+  ],
+  "num_vehicles": "<int> Total number of vehicles dispatched across all depots to cover every trip."
+}

@@ -1,0 +1,16 @@
+{
+    "paper_id":  "belhoul2014",
+    "paper_title":  "An efficient procedure for finding best compromise solutions to the multi-objective assignment problem",
+    "publication":  "Computers \u0026 Operations Research",
+    "year":  2014,
+    "direction":  "min",
+    "problem_class":  "Other (Assignment)",
+    "category":  "strategic",
+    "formulation_type":  "IP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  1265626.0,
+    "avg_num_int_var":  1265625.0,
+    "avg_num_constr":  2252.0,
+    "source_link":  "https://doi.org/10.1016/j.cor.2014.03.013",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

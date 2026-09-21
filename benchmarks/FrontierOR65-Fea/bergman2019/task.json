@@ -1,0 +1,16 @@
+{
+    "paper_id":  "bergman2019",
+    "paper_title":  "An Exact Algorithm for the Quadratic Multiknapsack Problem with an Application to Event Seating",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2019,
+    "direction":  "max",
+    "problem_class":  "Packing / Cutting Stock",
+    "category":  "operational",
+    "formulation_type":  "QP/MIQP",
+    "application_field":  "Sports \u0026 Entertainment",
+    "avg_num_var":  350.0,
+    "avg_num_int_var":  350.0,
+    "avg_num_constr":  45.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2018.0840",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

@@ -1,0 +1,16 @@
+{
+    "paper_id":  "kobayashi2021",
+    "paper_title":  "Bilevel Cutting-plane Algorithm for Solving Cardinality-constrained Mean-CVaR Portfolio Optimization Problems",
+    "publication":  "Journal of Global Optimization",
+    "year":  2021,
+    "direction":  "min",
+    "problem_class":  "Portfolio Optimization",
+    "category":  "strategic",
+    "formulation_type":  "Bilevel/Multi-level",
+    "application_field":  "Finance \u0026 Investment",
+    "avg_num_var":  10452.0,
+    "avg_num_int_var":  225.0,
+    "avg_num_constr":  10229.0,
+    "source_link":  "https://doi.org/10.1007/s10898-021-01048-5",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

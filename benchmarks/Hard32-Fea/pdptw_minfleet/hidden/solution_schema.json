@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total distance travelled by all vehicles, computed as the sum over every traversed arc of the Euclidean distance between its endpoints rounded to the nearest integer.",
+  "routes": "<dict, key: '{vehicle}'> Ordered sequence of node indices visited by each vehicle. The depot is implicit: every route starts and ends at node 0 and must not list it. Every pickup and drop-off node must appear in exactly one route, a request's two nodes must share a route with the pickup first, and the number of non-empty routes must not exceed max_vehicles."
+}

@@ -1,0 +1,82 @@
+【环境】workspace 是当前 cwd；shell 上限约 __TIME_BUDGET__ 秒，solver 内部总时限必须更短。
+
+【必须生成】
+- from_data_to_input.py：从真实 data/ 确定性生成 input.json 的可重复执行转换程序。
+- input.json：符合 input_schema.json，只能由独立运行 from_data_to_input.py 生成。
+- solver.py：由 Gurobi Formulator 使用 gurobipy 实现覆盖全部业务变量、硬约束和完整目标的单一精确模型及完整业务结果映射。
+- solution.json：由 run_solver 执行 solver.py 生成的完整业务语义解；无候选路径不生成。
+- solver_result.json 与 stage_outputs/solving.json：通过 submit_solving_outcome 验收并写入。
+
+solver_result.json 严格结构：
+
+{
+  "status": "optimal | feasible | time_limit | unknown | no_solution_found | infeasible_or_unbounded | infeasible | failed",
+  "objective": 0,
+  "mip_gap": null,
+  "optimality": "proven_optimal | exact_or_incumbent | heuristic_or_incumbent | null",
+  "input_file": "input.json",
+  "solution_file": "solution.json | null",
+  "code_file": "solver.py",
+  "execution": {
+    "source": "package",
+    "planned_package_id": "gurobipy",
+    "planned_solver_id": "milp | lp（按完整模型类型选择）",
+    "executed_package_id": "gurobipy",
+    "executed_solver_id": "与 planned_solver_id 相同",
+    "method": "mixed_integer_linear_programming",
+    "method_class": "exact",
+    "version": "实际版本",
+    "guide_consulted": true,
+    "availability_check": {"ok": true, "detail": "导入、版本和许可证检查"},
+    "seed": 0,
+    "runtime_limit_seconds": 0
+  },
+  "solution_summary": {},
+  "constraint_check": [
+    {"name": "约束名", "ok": true, "detail": "简短摘要"}
+  ],
+  "validation": {
+    "schema_check": {"ok": true, "issues": []},
+    "business_semantic_check": {"ok": true, "issues": []},
+    "algorithm_mapping_check": {
+      "ok": true,
+      "issues": [],
+      "mapped_capabilities": ["业务规则 -> Gurobi 模型结构"]
+    },
+    "implementation_check": {"ok": true, "issues": []}
+  },
+  "diagnosis": "",
+  "infeasibility_proof": null
+}
+
+【输入转换】
+- from_data_to_input.py 使用 JSON 解析和结构化字段映射；不得硬编码或逐项复述实例数据。
+- 源数据已经符合 schema 时原样序列化；需要规范化时显式实现字段、结构、单位或索引转换。
+- 写出前核对必需字段、实体数量、ID 集合、数组/矩阵/时间序列维度和未转换字段逐值相等性。
+- 转换失败必须非零退出且不得保留部分 input.json。
+
+【完整 Gurobi Formulator】
+- solver.py 必须由同一个 Gurobi 模型覆盖 problem contract 的全部硬约束和完整目标。
+- 每项业务硬约束都应能定位到对应变量、约束构造和 constraint_check。
+- Formulator 必须从求解变量确定性恢复全部业务实体、ID、顺序、时间、数量、分配和目标字段，并按 solution_schema.json 校验。
+- 有候选时 solution_file 为 solution.json 且 optimality 非空；infeasibility_proof 为 null。
+- status=infeasible 时 objective、mip_gap、optimality 和 solution_file 为 null，并提供 `proof_type`、`solver`、`raw_status`、`model_scope=complete`、`hard_constraints_covered` 和 `evidence`。
+- time_limit、unknown、no_solution_found 或 infeasible_or_unbounded 没有候选时，objective、mip_gap、optimality 和 solution_file 为 null，diagnosis 说明真实终态。
+
+stage_outputs/solving.json：
+
+提交求解尝试：
+{"decision":"solved","message":"简短说明","result":{"solver_result_file":"solver_result.json"}}
+
+需要澄清：
+{"decision":"needs_clarification","message":"原因","questions":[{"id":"short_id","text":"问题","answer_type":"text","options":[],"context":"证据"}]}
+
+失败：
+{"decision":"failed","message":"失败原因和已尝试动作"}
+
+【提交要求】
+- solution.json 只能由 run_solver 执行 solver.py 生成；正式文件由 submit_solving_outcome 验收写入。
+- run_solver 超时时沿用 Runtime 的 runtime_solver_outcome.json；不得把超时当作普通执行错误在同一轮再次运行。
+- 不读取、运行或引用 feasibility_checker.py，不生成或改写 feasibility_result.json。
+- 写完后用 read_file 或 json.load 验收所有产物。
+- decision=failed 仅用于基础执行错误在阶段预算内仍无法形成可审查产物；正常求解终态使用 decision=solved。

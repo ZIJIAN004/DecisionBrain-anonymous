@@ -1,0 +1,16 @@
+{
+  "paper_id": "wangk2020",
+  "paper_title": "A Stochastic Integer Programming Approach to Air Traffic Scheduling and Operations",
+  "publication": "Operations Research",
+  "year": 2020,
+  "direction": "min",
+  "problem_class": "Vehicle Scheduling",
+  "category": "operational",
+  "formulation_type": "Stochastic/Robust/DRO",
+  "application_field": "Aerospace & Aviation",
+  "avg_num_var": 2270298.0,
+  "avg_num_int_var": 1861248.0,
+  "avg_num_constr": 6929616.0,
+  "source_link": "https://doi.org/10.1287/opre.2020.1985",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Maximum idle time across all stations on the assembly line.",
+  "task_assignments": "<dict, key: '{task}'> Station to which each task is assigned."
+}

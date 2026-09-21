@@ -1,0 +1,23 @@
+{
+  "objective_value": "<float> Total weighted system cost combining electricity commitment-plus-dispatch cost and gas dispatch cost.",
+  "primary_variables": {
+    "o_{generator}_{period}": "<float> Whether the generator is on (1) or off (0) in each period, with period 0 being the fixed pre-horizon state.",
+    "vp_{generator}_{period}": "<float> Whether the generator starts up at the beginning of each period.",
+    "vm_{generator}_{period}": "<float> Whether the generator shuts down at the beginning of each period.",
+    "w_{generator}_{bid}_{period}": "<float> Whether the given supply bid of the generator is selected in each period.",
+    "r_{generator}_{period}": "<float> Startup cost incurred by the generator in each period.",
+    "phimax_{generator}_{period}": "<float> Maximum allowable gas price at which the committed gas-fired power plant's scheduled output remains profitable in each period.",
+    "p_{generator}_{period}": "<float> Real power output of the generator in each period, with period 0 being the fixed pre-horizon output.",
+    "se_{generator}_{bid}_{period}": "<float> Real power output supplied by the given bid of the generator in each period.",
+    "f_{line}_{period}": "<float> Real power flow on the transmission line from its from-bus to its to-bus in each period.",
+    "theta_{bus}_{period}": "<float> Voltage angle at the bus in each period.",
+    "sg_{junction}_{period}": "<float> Total gas supply provided at the junction in each period.",
+    "sgs_{junction}_{supply_interval}_{period}": "<float> Gas supply provided from the given supply interval of the source junction in each period.",
+    "pisq_{junction}_{period}": "<float> Squared pressure at the gas junction in each period.",
+    "phig_{connection}_{period}": "<float> Gas flow on the gas-network connection from its from-junction to its to-junction in each period.",
+    "lg_{junction}_{period}": "<float> Satisfied gas demand at the junction in each period.",
+    "qg_{junction}_{period}": "<float> Shed gas demand at the junction in each period.",
+    "gamma_{junction}_{period}": "<float> Total gas consumed by gas-fired power plants at the junction in each period.",
+    "psi_{pricing_zone}_{period}": "<float> Zonal gas price for the pricing zone in each period."
+  }
+}

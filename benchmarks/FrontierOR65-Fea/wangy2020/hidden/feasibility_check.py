@@ -1,0 +1,269 @@
+"""
+Feasibility checker for the Rank-One Quadratic Assignment Problem (QAP-R1).
+
+Checks the three hard constraints from the mathematical formulation:
+  (1) Row assignment:    sum_j x_{ij} = 1 for each i
+  (2) Column assignment: sum_i x_{ij} = 1 for each j
+  (3) Binary domain:     x_{ij} in {0, 1}
+  (4) Binary domain (auto-generated): assignment values must be 0/1 if dict-form
+  (5) Integer domain (auto-generated)
+  (6) Objective consistency: reported objective_value must equal
+      (sum a_{ij} x_{ij}) * (sum b_{ij} x_{ij}) + sum c_{ij} x_{ij}.
+
+The solution is represented as a permutation array assignment[i] = j,
+which implicitly defines a binary assignment matrix X where x_{i, assignment[i]} = 1.
+"""
+
+import argparse
+import json
+
+
+def check_feasibility(instance, solution):
+    tol = 1e-5
+    eps = 1e-5
+
+    n = instance["n"]
+    assignment = solution["assignment"]
+
+    violated_constraints = set()
+    violations = []
+    violation_magnitudes = []
+
+    # --- Constraint (1): Row assignment: sum_j x_{ij} = 1 for each i ---
+    # Each row i must have exactly one assignment. Since the solution is an array
+    # of length len(assignment), each index i has exactly one value assignment[i].
+    # Violation occurs if the assignment array length != n (missing or extra rows).
+    if len(assignment) != n:
+        violated_constraints.add(1)
+        lhs = len(assignment)
+        rhs = n
+        violation_amount = abs(lhs - rhs)
+        normalizer = max(abs(rhs), eps)
+        violations.append(
+            f"Row assignment violated: assignment has {lhs} entries but n={n}"
+        )
+        violation_magnitudes.append({
+            "constraint": 1,
+            "lhs": float(lhs),
+            "rhs": float(rhs),
+            "raw_excess": float(violation_amount),
+            "normalizer": float(normalizer),
+            "ratio": float(violation_amount / normalizer),
+        })
+
+    # --- Constraint (3): Binary domain: x_{ij} in {0,1}, i,j = 1..n ---
+    # Each assignment[i] must be a valid integer index in {0, 1, ..., n-1}.
+    for i, j in enumerate(assignment):
+        if not isinstance(j, int) or j < 0 or j >= n:
+            violated_constraints.add(3)
+            violations.append(
+                f"Binary domain violated: assignment[{i}] = {j} is not a valid "
+                f"index in {{0, ..., {n-1}}}"
+            )
+            # LHS: the assigned value; RHS: valid range bound
+            # For out-of-range values, measure distance to nearest valid bound
+            if isinstance(j, (int, float)):
+                if j < 0:
+                    violation_amount = abs(j)
+                    rhs_val = 0.0
+                else:
+                    violation_amount = j - (n - 1)
+                    rhs_val = float(n - 1)
+            else:
+                violation_amount = 1.0
+                rhs_val = 0.0
+            normalizer = max(abs(rhs_val), eps)
+            violation_magnitudes.append({
+                "constraint": 3,
+                "lhs": float(j) if isinstance(j, (int, float)) else 0.0,
+                "rhs": rhs_val,
+                "raw_excess": float(violation_amount),
+                "normalizer": float(normalizer),
+                "ratio": float(violation_amount / normalizer),
+            })
+
+    # --- Constraint (2): Column assignment: sum_i x_{ij} = 1 for each j ---
+    # Each column j in {0, ..., n-1} must be assigned exactly once.
+    # Count how many times each column index appears.
+    col_count = {}
+    for i, j in enumerate(assignment):
+        if isinstance(j, int) and 0 <= j < n:
+            col_count[j] = col_count.get(j, 0) + 1
+
+    # Check for columns assigned more than once
+    for j in range(n):
+        count = col_count.get(j, 0)
+        if count != 1:
+            lhs = float(count)
+            rhs = 1.0
+            violation_amount = abs(lhs - rhs)
+            if violation_amount > tol:
+                violated_constraints.add(2)
+                normalizer = max(abs(rhs), eps)
+                if count == 0:
+                    violations.append(
+                        f"Column assignment violated: column {j} is not assigned "
+                        f"to any row"
+                    )
+                else:
+                    violations.append(
+                        f"Column assignment violated: column {j} is assigned to "
+                        f"{count} rows instead of 1"
+                    )
+                violation_magnitudes.append({
+                    "constraint": 2,
+                    "lhs": lhs,
+                    "rhs": rhs,
+                    "raw_excess": float(violation_amount),
+                    "normalizer": float(normalizer),
+                    "ratio": float(violation_amount / normalizer),
+                })
+
+    _domain_check_vars_binary = [("assignment", assignment)]
+    _domain_check_vars_integer = []
+
+    # =====================================================================
+    # Variable Domain Checks (auto-generated by add_domain_checks.py)
+    # =====================================================================
+    # Constraint 4: Binary domain — variables must be 0 or 1
+    for var_name, var_dict in _domain_check_vars_binary:
+        if isinstance(var_dict, dict):
+            for key, val in var_dict.items():
+                try:
+                    v = float(val)
+                except (TypeError, ValueError):
+                    continue
+                if abs(v - round(v)) > tol or round(v) not in (0, 1):
+                    viol = min(abs(v - 0), abs(v - 1))
+                    if viol > tol:
+                        violated_constraints.add(4)
+                        violations.append(
+                            f"Constraint 4 (binary domain): {var_name}[{key}] = {v} not in {0, 1}")
+                        violation_magnitudes.append({
+                            "constraint": 4,
+                            "lhs": v,
+                            "rhs": 1.0,
+                            "raw_excess": float(viol),
+                            "normalizer": 1.0,
+                            "ratio": float(viol),
+                        })
+
+    # Constraint 5: Integer domain — variables must be integral
+    for var_name, var_dict in _domain_check_vars_integer:
+        if isinstance(var_dict, dict):
+            for key, val in var_dict.items():
+                try:
+                    v = float(val)
+                except (TypeError, ValueError):
+                    continue
+                frac = abs(v - round(v))
+                if frac > tol:
+                    violated_constraints.add(5)
+                    violations.append(
+                        f"Constraint 5 (integer domain): {var_name}[{key}] = {v} is not integer")
+                    violation_magnitudes.append({
+                        "constraint": 5,
+                        "lhs": v,
+                        "rhs": round(v),
+                        "raw_excess": float(frac),
+                        "normalizer": max(abs(round(v)), eps),
+                        "ratio": float(frac / max(abs(round(v)), eps)),
+                    })
+
+    # =====================================================================
+    # Constraint 6: Objective consistency (Tier C defense against score-gaming).
+    # Recompute obj = (A.X) * (B.X) + C.X from the assignment matrix X and
+    # compare to the reported objective_value. Only run when the assignment
+    # is well-formed (length n, all indices in [0,n)); otherwise skip so the
+    # constraint-level violations above stay the primary report.
+    # =====================================================================
+    A = instance.get("A")
+    B = instance.get("B")
+    C = instance.get("C")
+    reported_raw = solution.get("objective_value")
+    assignment_well_formed = (
+        len(assignment) == n
+        and all(isinstance(j, int) and 0 <= j < n for j in assignment)
+    )
+    if (
+        assignment_well_formed
+        and A is not None and B is not None and C is not None
+        and reported_raw is not None
+    ):
+        try:
+            reported = float(reported_raw)
+        except (TypeError, ValueError):
+            reported = None
+        if reported is not None:
+            AX = sum(int(A[i][assignment[i]]) for i in range(n))
+            BX = sum(int(B[i][assignment[i]]) for i in range(n))
+            CX = sum(int(C[i][assignment[i]]) for i in range(n))
+            true_obj = float(AX * BX + CX)
+            abs_diff = abs(reported - true_obj)
+            # 0.1% relative tolerance with 1e-3 absolute floor; obj is integer-valued
+            # for integer A, B, C so this comfortably rejects any meaningful exploit.
+            obj_tol = max(1e-3, 1e-3 * abs(true_obj))
+            if abs_diff > obj_tol:
+                violated_constraints.add(6)
+                normalizer = max(abs(true_obj), eps)
+                violations.append(
+                    f"Objective consistency violated: reported objective_value="
+                    f"{reported} differs from recomputed (A.X)*(B.X)+C.X="
+                    f"{true_obj} (|diff|={abs_diff:.6g}, tol={obj_tol:.6g})"
+                )
+                violation_magnitudes.append({
+                    "constraint": 6,
+                    "lhs": float(reported),
+                    "rhs": float(true_obj),
+                    "raw_excess": float(abs_diff),
+                    "normalizer": float(normalizer),
+                    "ratio": float(abs_diff / normalizer),
+                })
+
+    feasible = len(violated_constraints) == 0
+    return {
+        "feasible": feasible,
+        "violated_constraints": sorted(violated_constraints),
+        "violations": violations,
+        "violation_magnitudes": violation_magnitudes,
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Feasibility checker for the Rank-One QAP (QAP-R1)."
+    )
+    parser.add_argument(
+        "--instance_path", type=str, required=True,
+        help="Path to the JSON file containing the data instance."
+    )
+    parser.add_argument(
+        "--solution_path", type=str, required=True,
+        help="Path to the JSON file containing the candidate solution."
+    )
+    parser.add_argument(
+        "--result_path", type=str, required=True,
+        help="Path to write the JSON file containing the feasibility result."
+    )
+    args = parser.parse_args()
+
+    with open(args.instance_path, "r") as f:
+        instance = json.load(f)
+    with open(args.solution_path, "r") as f:
+        solution = json.load(f)
+
+    result = check_feasibility(instance, solution)
+
+    with open(args.result_path, "w") as f:
+        json.dump(result, f, indent=2)
+
+    if result["feasible"]:
+        print("Solution is FEASIBLE.")
+    else:
+        print("Solution is INFEASIBLE.")
+        for v in result["violations"]:
+            print(f"  - {v}")
+
+
+if __name__ == "__main__":
+    main()

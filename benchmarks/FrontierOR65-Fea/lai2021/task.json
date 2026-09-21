@@ -1,0 +1,16 @@
+{
+    "paper_id":  "lai2021",
+    "paper_title":  "Neighborhood decomposition based variable neighborhood search and tabu search for maximally diverse grouping",
+    "publication":  "European Journal of Operational Research",
+    "year":  2021,
+    "direction":  "max",
+    "problem_class":  "Other (Grouping / Partitioning)",
+    "category":  "planning",
+    "formulation_type":  "MIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  20000.0,
+    "avg_num_int_var":  20000.0,
+    "avg_num_constr":  500.0,
+    "source_link":  "https://www.sciencedirect.com/science/article/abs/pii/S0377221720306743",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

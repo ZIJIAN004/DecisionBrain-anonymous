@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total cost of all edges whose endpoints are assigned to different groups.",
+  "partition_S": "<list[int]> Node identifiers assigned to the group containing the reference node (node 0).",
+  "partition_complement": "<list[int]> Node identifiers assigned to the group not containing the reference node."
+}

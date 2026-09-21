@@ -1,0 +1,16 @@
+{
+    "paper_id":  "roberti2015",
+    "paper_title":  "The Fixed Charge Transportation Problem: An Exact Algorithm Based on a New Integer Programming Formulation",
+    "publication":  "Management Science",
+    "year":  2015,
+    "direction":  "min",
+    "problem_class":  "Other (Transportation)",
+    "category":  "planning",
+    "formulation_type":  "MIP",
+    "application_field":  "Transportation \u0026 Logistics",
+    "avg_num_var":  9800.0,
+    "avg_num_int_var":  4900.0,
+    "avg_num_constr":  5040.0,
+    "source_link":  "https://doi.org/10.1287/mnsc.2014.1947",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

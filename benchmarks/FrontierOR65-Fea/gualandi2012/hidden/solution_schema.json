@@ -1,0 +1,5 @@
+{
+  "objective_value": "<int> Total number of distinct colors used in the coloring.",
+  "coloring": "<dict, key: '{vertex}'> Color assigned to each vertex.",
+  "color_classes": "<dict, key: '{color}'> List of vertices assigned to each color."
+}

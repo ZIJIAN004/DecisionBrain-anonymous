@@ -1,0 +1,42 @@
+【输出文件】`stage_outputs/feasibility_review.json`
+
+文件必须是且仅是一个合法 JSON 对象：
+
+{
+  "schema_version": "1.0",
+  "decision": "accept | reject",
+  "responsibility": "instance | algorithm_design | solving | null",
+  "summary": "验收结论及主要依据",
+  "evidence": [
+    {
+      "source": "具体文件及字段或代码位置",
+      "finding": "该证据证明了什么"
+    }
+  ],
+  "required_changes": ["责任阶段需要完成的具体修复"],
+  "confidence": "low | medium | high",
+  "infeasibility_proof": "实例不可行证明的类型、来源和适用范围；非 instance 时为空字符串",
+  "remediation_handoff": {
+    "requirement_ids": ["稳定的业务要求 ID，例如 vehicle_capacity"],
+    "change_ids": ["稳定的修复动作 ID，例如 capacity_aggregation"],
+    "problem_requirement": "problem.md/intake 中对应的业务硬约束",
+    "observed_solution_behavior": "旧 solution 在业务语义上的失败表现",
+    "responsibility_reason": "为什么属于目标阶段的职责",
+    "required_changes": ["不依赖 checker 实现细节的语义修复动作"]
+  }
+}
+
+字段规则：
+- accept：responsibility 必须为 null，required_changes 必须为空数组，infeasibility_proof 必须为空字符串，remediation_handoff 必须为 null。
+- reject：responsibility 必须且只能是 instance、algorithm_design、solving，evidence 至少一条。
+- responsibility=instance：required_changes 必须为空数组，infeasibility_proof 必须非空，remediation_handoff 必须为 null；只有 solver_result.status=infeasible、结构化 solver_result.infeasibility_proof 完整，且证据表明同一个完整精确模型忠实覆盖全部硬约束时才允许使用。无候选终态不得归为 instance。
+- responsibility=algorithm_design 或 solving：required_changes 至少一条，infeasibility_proof 必须为空字符串，remediation_handoff 必须提供。
+- evidence、summary 和顶层 required_changes 属于 Core/Reviewer 私有审计信息，可以精确引用证据。
+- remediation_handoff 是唯一会发给责任阶段的内容，只能使用 problem.md/intake 中的业务语义和旧 solution 的可观察行为。不得出现 checker、feasibility_result、feasibility_checker、代码行号、函数名、内部判定字段或如何迎合检查逻辑的描述。
+- remediation_handoff.requirement_ids 与 change_ids 必须是稳定、简短的 lowercase_snake_case ID，供 Core 压缩早期历史；不得把证据或解释塞入 ID。它们只是标识，不构成任何判定依据；是否重复既往修复一律以 remediation_handoff.required_changes 的语义为准。
+- 不得输出 contract、checker、schema、unknown、clarification 或其他责任。
+- recommended_route 不属于当前契约；Reviewer 只输出责任，Core 会把 algorithm_design 和 solving 确定性路由到对应阶段。
+- 归责 solving 必须指出当前实现相对 Algorithm Design 的一个具体偏差，且该偏差要求的修复动作必须与既往 remediation_handoff.required_changes 语义不同。若当前实现已落实既有 solving 修复、同一 runtime_timeout 或失败模式仍然出现，或者本轮要求的修复动作与既往实质相同，则必须归责 algorithm_design；不得以“尚不能证明 algorithm_design”为由默认归责 solving。判断是否重复只看 remediation_handoff.required_changes 的语义，不看 change_ids 字符串；换一个 change_id 写法但要求同一件事，仍属重复。压缩账本不含既往 required_changes 原文；历次裁决全文与 checker 结果在 feasibility_review_history.json（仅本阶段可读，责任阶段被隔离），连续判 solving 前必须读取它核对。单次 runtime_timeout 仍需结合当前实现判断，不得仅按状态机械归责；runtime_timeout 表示 Runtime 外部强制终止。time_limit 表示求解器正常返回时间限制：携带完整候选时必须检查候选，不适用重复 runtime_timeout 的机械升级规则；没有候选时再依据实际执行证据归责。
+- 非证明型搜索多次无法产生完整可行候选且没有新的实现缺陷时，归责 algorithm_design。remediation_handoff 必须要求重新评估算法族、完整 formulation、分解策略、fallback 和预算，并在规模与结构允许时评估一次带独立时限、覆盖全部硬约束的证明型精确求解；不得要求无条件使用精确法，也不得暗示精确求解的 time_limit、unknown 或未找到解能够证明实例不可行。
+
+候选解路径必须先读取 feasibility_checker.py，再用一次独立的 shell 调用按其实际 CLI 执行它，使其对当前 input.json 和 solution.json 生成新的 feasibility_result.json；不得在同一命令中串联 solver、循环或其他程序。不得假设 --data-dir 或其他参数存在。若命令、参数、路径或结果文件处理失败，先自行诊断并重试；只有 shell 明确提示同一失败已重复 5 次时，停止重试并输出 reject，责任只能是 solving，且 remediation_handoff 不得包含 checker 细节。再读取 feasibility_result.json。无候选路径不得要求 solution.json、不得执行 checker，必须根据 status（runtime_timeout 表示 Runtime 外部强制终止；time_limit 表示求解器正常返回）、diagnosis、executions、solver.py、algorithm_design 和压缩账本拒绝并归责 algorithm_design 或 solving。若 solver_result.status=infeasible，则同样不执行 checker，改为核验结构化不可行证明。写入 verdict 后用 read_file 检查最终文件。不要修改任何其他文件。

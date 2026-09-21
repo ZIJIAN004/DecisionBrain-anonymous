@@ -1,0 +1,16 @@
+{
+    "paper_id":  "rostami2021",
+    "paper_title":  "Stochastic single-allocation hub location",
+    "publication":  "European Journal of Operational Research",
+    "year":  2021,
+    "direction":  "min",
+    "problem_class":  "Facility Location",
+    "category":  "planning",
+    "formulation_type":  "Stochastic/Robust/DRO",
+    "application_field":  "Transportation \u0026 Logistics",
+    "avg_num_var":  5049600.0,
+    "avg_num_int_var":  49600.0,
+    "avg_num_constr":  150501.0,
+    "source_link":  "https://doi.org/10.1016/j.ejor.2020.07.051",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

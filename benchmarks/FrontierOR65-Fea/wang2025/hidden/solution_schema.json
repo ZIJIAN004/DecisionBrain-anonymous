@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total benefit obtained by the chosen subset of elements under the instance's value function.",
+  "selected_elements": "<list[int], length at most k> Zero-based indices of the elements chosen for inclusion in the subset."
+}

@@ -1,0 +1,55 @@
+{
+  "network": {
+    "num_nodes": "<int> Total number of nodes in the network, including both junctions and centroids.",
+    "num_links": "<int> Total number of directed links in the network, including road links and centroid connectors.",
+    "num_junctions": "<int> Number of junction nodes representing road intersections.",
+    "num_centroids": "<int> Number of centroid nodes representing zones where travelers originate, arrive, and vehicles park.",
+    "grid_rows": "<int> Number of rows in the rectangular grid of junction nodes.",
+    "grid_cols": "<int> Number of columns in the rectangular grid of junction nodes.",
+    "nodes": [
+      {
+        "id": "<str> Unique identifier for the node.",
+        "type": "<str> Whether this node is a 'junction' (road intersection) or a 'centroid' (traveler origin/destination zone)."
+      }
+    ],
+    "links": [
+      {
+        "id": "<int> Unique identifier for the directed link.",
+        "from": "<str> Node identifier at the upstream (tail) end of the link.",
+        "to": "<str> Node identifier at the downstream (head) end of the link.",
+        "type": "<str> Whether this link is a 'road' between junctions or a 'centroid_connector' linking a centroid to the road network.",
+        "length_ft": "<int> Physical length of the link in feet.",
+        "free_flow_speed_mph": "<int> Speed at which vehicles traverse the link under uncongested conditions, in miles per hour.",
+        "capacity_vph": "<int> Maximum flow rate of vehicles that can enter or exit the link per hour.",
+        "free_flow_travel_time_steps": "<int> Number of time steps required to traverse the link at free-flow speed.",
+        "congested_wave_speed_mph": "<int> Speed at which a congestion wave propagates backward along the link, in miles per hour.",
+        "congested_travel_time_steps": "<int> Number of time steps for a congestion wave to traverse the full link length.",
+        "jam_density_vehicles": "<float> Maximum number of vehicles that can physically occupy the link at standstill."
+      }
+    ]
+  },
+  "time_parameters": {
+    "time_horizon_T": "<int> Total number of discrete time steps in the analysis period.",
+    "time_step_duration_seconds": "<int> Duration of each time step in seconds.",
+    "demand_period_steps": "<int> Number of time steps during which new traveler demand arises.",
+    "demand_period_duration_minutes": "<float> Duration of the demand arrival period in minutes."
+  },
+  "demand": {
+    "scenario": "<str> Label describing the spatial pattern of demand across origin-destination pairs.",
+    "demand_percentage": "<float> Scaling factor applied to the base demand level.",
+    "total_travelers": "<int> Total number of person-trips across all origin-destination pairs.",
+    "od_pairs": [
+      {
+        "origin": "<str> Centroid identifier where travelers in this group begin their trip.",
+        "destination": "<str> Centroid identifier where travelers in this group wish to arrive.",
+        "num_travelers": "<int> Number of travelers wishing to travel from this origin to this destination.",
+        "departure_times": "<list[int], length num_travelers> Time step at which each individual traveler wishes to depart from the origin centroid."
+      }
+    ]
+  },
+  "fleet": {
+    "total_fleet_size": "<int> Total number of shared autonomous vehicles available in the system.",
+    "fleet_rule": "<str> Rule used to determine the fleet size relative to total demand.",
+    "initial_distribution": "<dict, key: '{centroid_id}'> Number of vehicles initially parked at each centroid at the start of the analysis."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "num_sources": "<int> Number of sources in the logistics network.",
+  "num_sinks": "<int> Number of sinks in the logistics network.",
+  "B": "<int> Upper bound on individual supply and demand values.",
+  "delta": "<float> Ratio controlling the proportion of per-unit transportation cost relative to fixed cost.",
+  "total_supply": "<int> Total supply across all sources, which equals total demand across all sinks.",
+  "supply": "<list[int], length num_sources> Quantity of goods available at each source that must be shipped out entirely.",
+  "demand": "<list[int], length num_sinks> Quantity of goods required at each sink that must be satisfied exactly.",
+  "fixed_cost": "<list[list[int]], shape [num_sources][num_sinks]> Fixed cost charged for using the route from each source to each sink, incurred whenever any goods are shipped along that route.",
+  "variable_cost": "<list[list[float]], shape [num_sources][num_sinks]> Per-unit transportation cost for shipping goods along the route from each source to each sink.",
+  "capacity": "<list[list[int]], shape [num_sources][num_sinks]> Maximum quantity of goods that can be shipped along the route from each source to each sink."
+}

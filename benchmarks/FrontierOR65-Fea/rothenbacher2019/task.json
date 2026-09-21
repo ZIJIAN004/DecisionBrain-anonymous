@@ -1,0 +1,16 @@
+{
+    "paper_id":  "rothenbacher2019",
+    "paper_title":  "Branch-and-Price-and-Cut for the Periodic Vehicle Routing Problem with Flexible Schedule Structures",
+    "publication":  "Transportation Science",
+    "year":  2019,
+    "direction":  "min",
+    "problem_class":  "Lot Sizing / Inventory",
+    "category":  "operational",
+    "formulation_type":  "BIP",
+    "application_field":  "Supply Chain \u0026 Inventory",
+    "avg_num_var":  64115.0,
+    "avg_num_int_var":  64115.0,
+    "avg_num_constr":  214.0,
+    "source_link":  "https://doi.org/10.1287/trsc.2018.0855",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

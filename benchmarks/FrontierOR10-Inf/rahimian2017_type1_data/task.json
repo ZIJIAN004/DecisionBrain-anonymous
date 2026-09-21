@@ -1,0 +1,18 @@
+{
+  "paper_id": "rahimian2017",
+  "paper_title": "A Hybrid Integer Programming and Variable Neighbourhood Search Algorithm to Solve Nurse Rostering Problems",
+  "publication": "European Journal of Operational Research",
+  "year": 2017,
+  "direction": "min",
+  "problem_class": "Other (Nurse Rostering)",
+  "category": "strategic",
+  "formulation_type": "MIP",
+  "application_field": "Healthcare",
+  "avg_num_var": 112684.0,
+  "avg_num_int_var": 112684.0,
+  "avg_num_constr": 166431.0,
+  "source_link": "https://doi.org/10.1016/j.ejor.2016.09.030",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)",
+  "instance": "infeasible",
+  "infeasibility_type": "data"
+}

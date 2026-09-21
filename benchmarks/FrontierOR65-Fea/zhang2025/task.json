@@ -1,0 +1,16 @@
+{
+    "paper_id":  "zhang2025",
+    "paper_title":  "A Unified Column Generation and Elimination Method for Solving Large-Scale Set Partitioning Problems",
+    "publication":  "arXiv",
+    "year":  2025,
+    "direction":  "min",
+    "problem_class":  "Other (Set Covering / Partitioning)",
+    "category":  "planning",
+    "formulation_type":  "IP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  120000.0,
+    "avg_num_int_var":  120000.0,
+    "avg_num_constr":  260.0,
+    "source_link":  "https://arxiv.org/abs/2503.16652",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

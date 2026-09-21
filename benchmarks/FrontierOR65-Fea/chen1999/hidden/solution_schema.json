@@ -1,0 +1,7 @@
+{
+  "objective_value": "<float> Total weighted completion time of all jobs, or total weight of tardy jobs, depending on which scheduling objective the instance specifies.",
+  "schedule": "<dict, key: '{machine}'> Ordered list of job indices assigned to each machine, in the sequence they are processed starting from time zero (present for the weighted completion time variant; lists only on-time jobs for the tardy variant).",
+  "completion_times": "<dict, key: '{job}'> Time at which each scheduled job finishes processing on its assigned machine.",
+  "tardy_jobs": "<list[int]> Indices of the jobs left tardy in the weighted tardy jobs variant.",
+  "on_time_jobs": "<list[int]> Indices of the jobs completed by their due dates in the weighted tardy jobs variant."
+}

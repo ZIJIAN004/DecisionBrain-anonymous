@@ -1,0 +1,11 @@
+{
+  "objective_value": "<float> Total project delay, computed as the sum over all projects of the difference between the actual completion time of the project and the sum of its release date and its critical path duration.",
+  "schedule": [
+    {
+      "job_id": "<int> Identifier of the scheduled job.",
+      "mode_id": "<int> Execution mode chosen for this job.",
+      "start_time": "<int> Time period at which this job begins processing."
+    }
+  ],
+  "makespan": "<int> Latest completion time across all projects, used as a tiebreaker among schedules with equal total project delay."
+}

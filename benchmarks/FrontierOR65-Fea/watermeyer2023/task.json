@@ -1,0 +1,16 @@
+{
+  "paper_id": "watermeyer2023",
+  "paper_title": "A constructive branch-and-bound algorithm for the project duration problem with partially renewable resources and general temporal constraints",
+  "publication": "Journal of Scheduling",
+  "year": 2023,
+  "direction": "min",
+  "problem_class": "Other (Project Scheduling)",
+  "category": "operational",
+  "formulation_type": "CP",
+  "application_field": "Manufacturing & Production",
+  "avg_num_var": 30383.0,
+  "avg_num_int_var": 30383.0,
+  "avg_num_constr": 3108.0,
+  "source_link": "https://link.springer.com/article/10.1007/s10951-022-00735-9",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

@@ -1,0 +1,18 @@
+{
+  "paper_id": "freling2003",
+  "paper_title": "A Branch-and-Price Algorithm for the Multiperiod Single-Sourcing Problem",
+  "publication": "Operations Research",
+  "year": 2003,
+  "direction": "min",
+  "problem_class": "Facility Location",
+  "category": "strategic",
+  "formulation_type": "MIP",
+  "application_field": "Manufacturing & Production",
+  "avg_num_var": 1974.0,
+  "avg_num_int_var": 1890.0,
+  "avg_num_constr": 219.0,
+  "source_link": "https://doi.org/10.1287/opre.51.6.922.24914",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)",
+  "instance": "infeasible",
+  "infeasibility_type": "data"
+}

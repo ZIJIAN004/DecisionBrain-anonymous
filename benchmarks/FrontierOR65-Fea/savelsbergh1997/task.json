@@ -1,0 +1,16 @@
+{
+    "paper_id":  "savelsbergh1997",
+    "paper_title":  "A Branch-and-Price Algorithm for the Generalized Assignment Problem",
+    "publication":  "Operations Research",
+    "year":  1997,
+    "direction":  "max",
+    "problem_class":  "Other (Generalized Assignment)",
+    "category":  "strategic",
+    "formulation_type":  "MIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  2000.0,
+    "avg_num_int_var":  2000.0,
+    "avg_num_constr":  120.0,
+    "source_link":  "https://doi.org/10.1287/opre.45.6.831",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

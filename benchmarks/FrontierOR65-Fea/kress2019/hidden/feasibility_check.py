@@ -1,0 +1,855 @@
+#!/usr/bin/env python3
+"""
+Feasibility checker for the PCSP-SL (Preemptive Crane Scheduling Problem with
+Seaside and Landside containers) from Kress, Dornseifer & Jaehn (2019).
+
+Checks constraints from the mathematical formulation (Appendix A):
+  Constraint 1: Initial crane positions (A.4)
+  Constraint 2: Crane movement speed — at most 1 slot per time unit (A.5)
+  Constraint 3: Non-crossing — seaside crane always left of landside crane (A.6)
+  Constraint 4: Cranes within block bounds (A.7)
+  Constraint 5: All seaside containers reach target slots (A.20, A.21)
+  Constraint 6: Landside containers delivered within time windows (A.30)
+  Constraint 7: Makespan consistency — C >= finish time of last seaside container
+  Constraint 26: Objective consistency — reported objective_value equals the
+                 makespan recomputed from the seaside-container completion times
+
+For solutions that only contain an objective_value (e.g., from the efficient DP),
+only basic checks are performed (non-null, positive).
+"""
+
+import argparse
+import json
+
+
+def load_json(path):
+    with open(path, 'r') as f:
+        return json.load(f)
+
+
+def check_feasibility(instance, solution):
+    tol = 1e-5
+    eps = 1e-5
+
+    S = instance["S"]
+    n = instance["n"]
+    m = instance["m"]
+    p = instance["p"]
+    sigma_w = instance["sigma_w"]
+    sigma_l = instance["sigma_l"]
+
+    seaside = instance["seaside_containers"]
+    s_target = {sc["id"]: sc["target_slot"] for sc in seaside}
+
+    landside = instance["landside_containers"]
+    land_info = {}
+    for lc in landside:
+        land_info[lc["id"]] = {
+            "source": lc["source_slot"],
+            "r": lc["earliest_finish_time"],
+            "d": lc["deadline"]
+        }
+
+    violations = []
+    violation_magnitudes = []
+    violated_constraint_set = set()
+
+    obj = solution.get("objective_value")
+    status = solution.get("status")
+    status_name = solution.get("status_name", "")
+    if obj is None:
+        # No solution was found by the solver -- return null (not false)
+        return {
+            "feasible": None,
+            "violated_constraints": [],
+            "violations": [f"No solution to check: objective_value is null (status={status}, status_name={status_name})"],
+            "violation_magnitudes": [],
+        }
+
+    # If solution only has objective_value (no detailed schedule), basic checks only
+    has_schedule = "crane_w_positions" in solution and "crane_l_positions" in solution
+    if not has_schedule:
+        if obj <= 0:
+            violated_constraint_set.add(7)
+            violations.append(
+                f"Constraint 7 (makespan): objective_value={obj} must be positive"
+            )
+            violation_magnitudes.append({
+                "constraint": 7,
+                "lhs": float(obj),
+                "rhs": 0.0,
+                "raw_excess": float(abs(obj)),
+                "normalizer": eps,
+                "ratio": float(abs(obj) / eps)
+            })
+
+
+    # =====================================================================
+    # List-based domain checks for kress2019
+    # Binary l^I_t, l^J_{t,i,s}: each container lifted by each crane at most once.
+    for event_type, events in [("seaside_events", solution.get("seaside_events", [])),
+                                ("landside_events", solution.get("landside_events", []))]:
+        seen_containers = set()
+        for ev in events:
+            cid = ev.get("container_id")
+            if cid in seen_containers:
+                violated_constraint_set.add(9)
+                violations.append(
+                    f"Constraint 9 (binary domain): container {cid} appears twice in {event_type}"
+                )
+                violation_magnitudes.append({
+                    "constraint": 9, "lhs": 2.0, "rhs": 1.0,
+                    "raw_excess": 1.0, "normalizer": 1.0, "ratio": 1.0,
+                })
+            seen_containers.add(cid)
+            for tkey in ("seaside_drop_time", "lift_time", "drop_time"):
+                if tkey in ev:
+                    try:
+                        tv = float(ev[tkey])
+                    except (TypeError, ValueError):
+                        continue
+                    if abs(tv - round(tv)) > 1e-5:
+                        violated_constraint_set.add(9)
+                        violations.append(
+                            f"Constraint 9 (integer domain): {tkey}={tv} for container {cid} not integer"
+                        )
+                        violation_magnitudes.append({
+                            "constraint": 9, "lhs": tv, "rhs": round(tv),
+                            "raw_excess": abs(tv - round(tv)),
+                            "normalizer": max(abs(round(tv)), 1e-5),
+                            "ratio": abs(tv - round(tv)) / max(abs(round(tv)), 1e-5),
+                        })
+
+    _domain_check_vars_binary = []
+    _domain_check_vars_integer = []
+
+    # Variable Domain Checks (auto-generated by add_domain_checks.py)
+    # =====================================================================
+    # Constraint 8: Binary domain — variables must be 0 or 1
+    for var_name, var_dict in _domain_check_vars_binary:
+        if isinstance(var_dict, dict):
+            for key, val in var_dict.items():
+                try:
+                    v = float(val)
+                except (TypeError, ValueError):
+                    continue
+                if abs(v - round(v)) > tol or round(v) not in (0, 1):
+                    viol = min(abs(v - 0), abs(v - 1))
+                    if viol > tol:
+                        violated_constraint_set.add(8)
+                        violations.append(
+                            f"Constraint 8 (binary domain): {var_name}[{key}] = {v} not in {0, 1}")
+                        violation_magnitudes.append({
+                            "constraint": 8,
+                            "lhs": v,
+                            "rhs": 1.0,
+                            "raw_excess": float(viol),
+                            "normalizer": 1.0,
+                            "ratio": float(viol),
+                        })
+
+    # Constraint 9: Integer domain — variables must be integral
+    for var_name, var_dict in _domain_check_vars_integer:
+        if isinstance(var_dict, dict):
+            for key, val in var_dict.items():
+                try:
+                    v = float(val)
+                except (TypeError, ValueError):
+                    continue
+                frac = abs(v - round(v))
+                if frac > tol:
+                    violated_constraint_set.add(9)
+                    violations.append(
+                        f"Constraint 9 (integer domain): {var_name}[{key}] = {v} is not integer")
+                    violation_magnitudes.append({
+                        "constraint": 9,
+                        "lhs": v,
+                        "rhs": round(v),
+                        "raw_excess": float(frac),
+                        "normalizer": max(abs(round(v)), eps),
+                        "ratio": float(frac / max(abs(round(v)), eps)),
+                    })
+
+
+    if not has_schedule:
+        return _build_result(violated_constraint_set, violations, violation_magnitudes)
+
+    # Detailed schedule available — thorough checks
+    C = solution.get("makespan", obj)
+
+    # Parse crane positions (keys may be string)
+    x_w = {}
+    x_l = {}
+    for k, v in solution["crane_w_positions"].items():
+        x_w[int(k)] = float(v)
+    for k, v in solution["crane_l_positions"].items():
+        x_l[int(k)] = float(v)
+
+    T_max = max(max(x_w.keys()), max(x_l.keys()))
+
+    # =========================================================================
+    # Constraint 1 (A.4): Initial crane positions
+    # =========================================================================
+    if abs(x_w[0] - sigma_w) > tol:
+        violation_amount = abs(x_w[0] - sigma_w)
+        normalizer = max(abs(sigma_w), eps)
+        violated_constraint_set.add(1)
+        violations.append(
+            f"Constraint 1 (initial position): seaside crane x_w[0]={x_w[0]}, "
+            f"expected sigma_w={sigma_w}"
+        )
+        violation_magnitudes.append({
+            "constraint": 1,
+            "lhs": float(x_w[0]),
+            "rhs": float(sigma_w),
+            "raw_excess": float(violation_amount),
+            "normalizer": float(normalizer),
+            "ratio": float(violation_amount / normalizer)
+        })
+
+    if abs(x_l[0] - sigma_l) > tol:
+        violation_amount = abs(x_l[0] - sigma_l)
+        normalizer = max(abs(sigma_l), eps)
+        violated_constraint_set.add(1)
+        violations.append(
+            f"Constraint 1 (initial position): landside crane x_l[0]={x_l[0]}, "
+            f"expected sigma_l={sigma_l}"
+        )
+        violation_magnitudes.append({
+            "constraint": 1,
+            "lhs": float(x_l[0]),
+            "rhs": float(sigma_l),
+            "raw_excess": float(violation_amount),
+            "normalizer": float(normalizer),
+            "ratio": float(violation_amount / normalizer)
+        })
+
+    # =========================================================================
+    # Constraint 2 (A.5): Crane movement speed
+    # =========================================================================
+    for t in range(1, T_max + 1):
+        if t in x_w and (t - 1) in x_w:
+            move = abs(x_w[t] - x_w[t - 1])
+            if move > 1 + tol:
+                violated_constraint_set.add(2)
+                violations.append(
+                    f"Constraint 2 (movement): seaside crane moves {move:.4f} "
+                    f"slots at t={t} (max 1)"
+                )
+                violation_magnitudes.append({
+                    "constraint": 2,
+                    "lhs": float(move),
+                    "rhs": 1.0,
+                    "raw_excess": float(move - 1),
+                    "normalizer": 1.0,
+                    "ratio": float(move - 1)
+                })
+        if t in x_l and (t - 1) in x_l:
+            move = abs(x_l[t] - x_l[t - 1])
+            if move > 1 + tol:
+                violated_constraint_set.add(2)
+                violations.append(
+                    f"Constraint 2 (movement): landside crane moves {move:.4f} "
+                    f"slots at t={t} (max 1)"
+                )
+                violation_magnitudes.append({
+                    "constraint": 2,
+                    "lhs": float(move),
+                    "rhs": 1.0,
+                    "raw_excess": float(move - 1),
+                    "normalizer": 1.0,
+                    "ratio": float(move - 1)
+                })
+
+    # =========================================================================
+    # Constraint 3 (A.6): Non-crossing
+    # =========================================================================
+    for t in range(0, T_max + 1):
+        if t in x_w and t in x_l:
+            if x_w[t] > x_l[t] - 1 + tol:
+                gap = x_w[t] - (x_l[t] - 1)
+                violated_constraint_set.add(3)
+                violations.append(
+                    f"Constraint 3 (non-crossing): at t={t}, x_w={x_w[t]:.4f}, "
+                    f"x_l={x_l[t]:.4f}, need x_w <= x_l - 1"
+                )
+                violation_magnitudes.append({
+                    "constraint": 3,
+                    "lhs": float(x_w[t]),
+                    "rhs": float(x_l[t] - 1),
+                    "raw_excess": float(gap),
+                    "normalizer": max(abs(x_l[t] - 1), eps),
+                    "ratio": float(gap / max(abs(x_l[t] - 1), eps))
+                })
+
+    # =========================================================================
+    # Constraint 4 (A.7): Cranes within bounds
+    # =========================================================================
+    for t in range(0, T_max + 1):
+        if t in x_w:
+            if x_w[t] < -tol or x_w[t] > S + 1 + tol:
+                violated_constraint_set.add(4)
+                violations.append(
+                    f"Constraint 4 (bounds): x_w[{t}]={x_w[t]:.4f} out of [0, {S+1}]"
+                )
+                violation_magnitudes.append({
+                    "constraint": 4,
+                    "lhs": float(x_w[t]),
+                    "rhs": float(S + 1),
+                    "raw_excess": float(max(x_w[t] - (S + 1), -x_w[t])),
+                    "normalizer": float(S + 1),
+                    "ratio": float(max(x_w[t] - (S + 1), -x_w[t]) / (S + 1))
+                })
+        if t in x_l:
+            if x_l[t] < -tol or x_l[t] > S + 1 + tol:
+                violated_constraint_set.add(4)
+                violations.append(
+                    f"Constraint 4 (bounds): x_l[{t}]={x_l[t]:.4f} out of [0, {S+1}]"
+                )
+                violation_magnitudes.append({
+                    "constraint": 4,
+                    "lhs": float(x_l[t]),
+                    "rhs": float(S + 1),
+                    "raw_excess": float(max(x_l[t] - (S + 1), -x_l[t])),
+                    "normalizer": float(S + 1),
+                    "ratio": float(max(x_l[t] - (S + 1), -x_l[t]) / (S + 1))
+                })
+
+    # =========================================================================
+    # Constraint 5: All seaside containers reach target (from events)
+    # =========================================================================
+    if "seaside_events" in solution:
+        for event in solution["seaside_events"]:
+            cid = event["container_id"]
+            target = s_target.get(cid, None)
+            if target is None:
+                continue
+            has_direct_drop = "seaside_drop_slot" in event and event["seaside_drop_slot"] == target
+            has_landside_drop = "landside_drop_time" in event
+            has_handover = "landside_lift_slot" in event
+            if not has_direct_drop and not (has_handover or has_landside_drop):
+                violated_constraint_set.add(5)
+                violations.append(
+                    f"Constraint 5 (seaside target): container {cid} does not "
+                    f"reach target slot {target}"
+                )
+                violation_magnitudes.append({
+                    "constraint": 5,
+                    "lhs": 0.0,
+                    "rhs": 1.0,
+                    "raw_excess": 1.0,
+                    "normalizer": 1.0,
+                    "ratio": 1.0
+                })
+
+    # =========================================================================
+    # Constraint A.8: Seaside container drop ordering (i < j => t_drop_i <= t_drop_j)
+    # =========================================================================
+    if "seaside_events" in solution:
+        _sd_time = {}
+        for event in solution["seaside_events"]:
+            if "seaside_drop_time" in event:
+                _sd_time[event["container_id"]] = event["seaside_drop_time"]
+        _ids = sorted(_sd_time.keys())
+        for _a in range(len(_ids)):
+            for _b in range(_a + 1, len(_ids)):
+                i, j = _ids[_a], _ids[_b]
+                if i < j and _sd_time[i] > _sd_time[j] + tol:
+                    excess = _sd_time[i] - _sd_time[j]
+                    violated_constraint_set.add(10)
+                    violations.append(
+                        f"Constraint A.8 (seaside drop order): container {i} seaside_drop_time={_sd_time[i]} > container {j} seaside_drop_time={_sd_time[j]}"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 10, "lhs": float(_sd_time[i]), "rhs": float(_sd_time[j]),
+                        "raw_excess": float(excess),
+                        "normalizer": max(abs(_sd_time[j]), eps),
+                        "ratio": float(excess / max(abs(_sd_time[j]), eps)),
+                    })
+
+    # =========================================================================
+    # Constraint A.10: Seaside crane at drop slot during [t, t+p]
+    # =========================================================================
+    if "seaside_events" in solution:
+        for event in solution["seaside_events"]:
+            if "seaside_drop_time" in event and "seaside_drop_slot" in event:
+                t_d = int(round(event["seaside_drop_time"]))
+                s_d = event["seaside_drop_slot"]
+                for tp in range(t_d, min(t_d + p + 1, T_max + 1)):
+                    if tp in x_w and abs(x_w[tp] - s_d) > tol:
+                        excess = abs(x_w[tp] - s_d)
+                        violated_constraint_set.add(11)
+                        violations.append(
+                            f"Constraint A.10 (seaside pos during drop): container {event['container_id']} drops at slot {s_d} starting t={t_d}, but x_w[{tp}]={x_w[tp]}"
+                        )
+                        violation_magnitudes.append({
+                            "constraint": 11, "lhs": float(x_w[tp]), "rhs": float(s_d),
+                            "raw_excess": float(excess),
+                            "normalizer": max(abs(s_d), eps),
+                            "ratio": float(excess / max(abs(s_d), eps)),
+                        })
+
+    # =========================================================================
+    # Constraint A.11: Landside crane at lift slot during landside lift of
+    # seaside container, held for [t, t+p]
+    # =========================================================================
+    if "seaside_events" in solution:
+        for event in solution["seaside_events"]:
+            if "landside_lift_time" in event and "landside_lift_slot" in event:
+                t_l = int(round(event["landside_lift_time"]))
+                s_l = event["landside_lift_slot"]
+                for tp in range(t_l, min(t_l + p + 1, T_max + 1)):
+                    if tp in x_l and abs(x_l[tp] - s_l) > tol:
+                        excess = abs(x_l[tp] - s_l)
+                        violated_constraint_set.add(12)
+                        violations.append(
+                            f"Constraint A.11 (landside pos during seaside-lift): container {event['container_id']} landside lifts at slot {s_l} starting t={t_l}, but x_l[{tp}]={x_l[tp]}"
+                        )
+                        violation_magnitudes.append({
+                            "constraint": 12, "lhs": float(x_l[tp]), "rhs": float(s_l),
+                            "raw_excess": float(excess),
+                            "normalizer": max(abs(s_l), eps),
+                            "ratio": float(excess / max(abs(s_l), eps)),
+                        })
+
+    # =========================================================================
+    # Constraint A.12: Landside crane at target slot during landside drop of
+    # seaside container, held for [t, t+p]
+    # =========================================================================
+    if "seaside_events" in solution:
+        for event in solution["seaside_events"]:
+            if "landside_drop_time" in event:
+                t_d = int(round(event["landside_drop_time"]))
+                s_t = s_target.get(event["container_id"])
+                if s_t is None:
+                    continue
+                for tp in range(t_d, min(t_d + p + 1, T_max + 1)):
+                    if tp in x_l and abs(x_l[tp] - s_t) > tol:
+                        excess = abs(x_l[tp] - s_t)
+                        violated_constraint_set.add(13)
+                        violations.append(
+                            f"Constraint A.12 (landside pos during seaside-drop): container {event['container_id']} dropped at target {s_t} starting t={t_d}, but x_l[{tp}]={x_l[tp]}"
+                        )
+                        violation_magnitudes.append({
+                            "constraint": 13, "lhs": float(x_l[tp]), "rhs": float(s_t),
+                            "raw_excess": float(excess),
+                            "normalizer": max(abs(s_t), eps),
+                            "ratio": float(excess / max(abs(s_t), eps)),
+                        })
+
+    # =========================================================================
+    # Constraint A.13: Landside crane at source slot during landside lift of
+    # landside container, held for [t, t+p]
+    # =========================================================================
+    if "landside_events" in solution and m > 0:
+        for event in solution["landside_events"]:
+            if "lift_time" in event:
+                t_l = int(round(event["lift_time"]))
+                info = land_info.get(event["container_id"])
+                if info is None:
+                    continue
+                a_j = info["source"]
+                for tp in range(t_l, min(t_l + p + 1, T_max + 1)):
+                    if tp in x_l and abs(x_l[tp] - a_j) > tol:
+                        excess = abs(x_l[tp] - a_j)
+                        violated_constraint_set.add(14)
+                        violations.append(
+                            f"Constraint A.13 (landside pos during landside-lift): container {event['container_id']} lifted at source {a_j} starting t={t_l}, but x_l[{tp}]={x_l[tp]}"
+                        )
+                        violation_magnitudes.append({
+                            "constraint": 14, "lhs": float(x_l[tp]), "rhs": float(a_j),
+                            "raw_excess": float(excess),
+                            "normalizer": max(abs(a_j), eps),
+                            "ratio": float(excess / max(abs(a_j), eps)),
+                        })
+
+    # =========================================================================
+    # Constraint A.14: Landside crane at S+1 during landside drop of
+    # landside container, held for [t, t+p]
+    # =========================================================================
+    if "landside_events" in solution and m > 0:
+        for event in solution["landside_events"]:
+            if "drop_time" in event:
+                t_d = int(round(event["drop_time"]))
+                for tp in range(t_d, min(t_d + p + 1, T_max + 1)):
+                    if tp in x_l and x_l[tp] < (S + 1) - tol:
+                        excess = (S + 1) - x_l[tp]
+                        violated_constraint_set.add(15)
+                        violations.append(
+                            f"Constraint A.14 (landside at S+1 during landside-drop): container {event['container_id']} dropping at t={t_d}, but x_l[{tp}]={x_l[tp]} < S+1={S+1}"
+                        )
+                        violation_magnitudes.append({
+                            "constraint": 15, "lhs": float(x_l[tp]), "rhs": float(S + 1),
+                            "raw_excess": float(excess),
+                            "normalizer": float(S + 1),
+                            "ratio": float(excess / (S + 1)),
+                        })
+
+    # =========================================================================
+    # Constraint A.15: Landside crane cannot start a lift during [t, t+p-1]
+    # while it is dropping a seaside container (landside drop occupies the crane).
+    # =========================================================================
+    if "seaside_events" in solution:
+        _busy = []
+        for event in solution["seaside_events"]:
+            if "landside_drop_time" in event:
+                t_d = int(round(event["landside_drop_time"]))
+                _busy.append((t_d, t_d + p - 1, event["container_id"]))
+        _landside_lift_starts = []
+        for ev in solution.get("seaside_events", []):
+            if "landside_lift_time" in ev:
+                _landside_lift_starts.append((int(round(ev["landside_lift_time"])), f"seaside-ctnr {ev['container_id']}"))
+        for ev in solution.get("landside_events", []):
+            if "lift_time" in ev:
+                _landside_lift_starts.append((int(round(ev["lift_time"])), f"landside-ctnr {ev['container_id']}"))
+        for (lb, ub, drop_cid) in _busy:
+            for (t_lift, src) in _landside_lift_starts:
+                if lb <= t_lift <= ub:
+                    violated_constraint_set.add(16)
+                    violations.append(
+                        f"Constraint A.15 (landside busy during drop): landside lift {src} starts at t={t_lift} while landside crane is dropping seaside container {drop_cid} in [{lb},{ub}]"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 16, "lhs": 1.0, "rhs": 0.0,
+                        "raw_excess": 1.0, "normalizer": 1.0, "ratio": 1.0,
+                    })
+
+    # =========================================================================
+    # Constraint A.17: Landside crane cumulative (lifts - drops) in [0, 1]
+    # =========================================================================
+    _events17 = []
+    for event in solution.get("seaside_events", []):
+        if "landside_lift_time" in event:
+            _events17.append((int(round(event["landside_lift_time"])), +1))
+        if "landside_drop_time" in event:
+            _events17.append((int(round(event["landside_drop_time"])), -1))
+    for event in solution.get("landside_events", []):
+        if "lift_time" in event:
+            _events17.append((int(round(event["lift_time"])), +1))
+        if "drop_time" in event:
+            _events17.append((int(round(event["drop_time"])), -1))
+    _events17.sort()
+    _cumul = 0
+    for (t_ev, delta) in _events17:
+        _cumul += delta
+        if _cumul < 0 or _cumul > 1:
+            excess = float(max(_cumul - 1, -_cumul))
+            violated_constraint_set.add(17)
+            violations.append(
+                f"Constraint A.17 (landside transit): cumul={_cumul} at t={t_ev} outside [0,1]"
+            )
+            violation_magnitudes.append({
+                "constraint": 17, "lhs": float(_cumul),
+                "rhs": 1.0 if _cumul > 1 else 0.0,
+                "raw_excess": excess, "normalizer": 1.0, "ratio": excess,
+            })
+            break
+
+    # =========================================================================
+    # Constraint A.18: Landside crane (seaside containers only) cumul(lift - drop) in [0,1]
+    # =========================================================================
+    _events18 = []
+    for event in solution.get("seaside_events", []):
+        if "landside_lift_time" in event:
+            _events18.append((int(round(event["landside_lift_time"])), +1))
+        if "landside_drop_time" in event:
+            _events18.append((int(round(event["landside_drop_time"])), -1))
+    _events18.sort()
+    _cumul = 0
+    for (t_ev, delta) in _events18:
+        _cumul += delta
+        if _cumul < 0 or _cumul > 1:
+            excess = float(max(_cumul - 1, -_cumul))
+            violated_constraint_set.add(18)
+            violations.append(
+                f"Constraint A.18 (landside seaside-ctnr balance): cumul={_cumul} at t={t_ev} outside [0,1]"
+            )
+            violation_magnitudes.append({
+                "constraint": 18, "lhs": float(_cumul),
+                "rhs": 1.0 if _cumul > 1 else 0.0,
+                "raw_excess": excess, "normalizer": 1.0, "ratio": excess,
+            })
+            break
+
+    # =========================================================================
+    # Constraint A.19: Landside crane (landside containers only) cumul(lift - drop) in [0,1]
+    # =========================================================================
+    if m > 0:
+        _events19 = []
+        for event in solution.get("landside_events", []):
+            if "lift_time" in event:
+                _events19.append((int(round(event["lift_time"])), +1))
+            if "drop_time" in event:
+                _events19.append((int(round(event["drop_time"])), -1))
+        _events19.sort()
+        _cumul = 0
+        for (t_ev, delta) in _events19:
+            _cumul += delta
+            if _cumul < 0 or _cumul > 1:
+                excess = float(max(_cumul - 1, -_cumul))
+                violated_constraint_set.add(19)
+                violations.append(
+                    f"Constraint A.19 (landside landside-ctnr balance): cumul={_cumul} at t={t_ev} outside [0,1]"
+                )
+                violation_magnitudes.append({
+                    "constraint": 19, "lhs": float(_cumul),
+                    "rhs": 1.0 if _cumul > 1 else 0.0,
+                    "raw_excess": excess, "normalizer": 1.0, "ratio": excess,
+                })
+                break
+
+    # =========================================================================
+    # Constraint A.22: Handover — landside lift slot == seaside drop slot
+    # =========================================================================
+    if "seaside_events" in solution:
+        for event in solution["seaside_events"]:
+            if "landside_lift_slot" in event and "seaside_drop_slot" in event:
+                if event["landside_lift_slot"] != event["seaside_drop_slot"]:
+                    excess = abs(event["landside_lift_slot"] - event["seaside_drop_slot"])
+                    violated_constraint_set.add(22)
+                    violations.append(
+                        f"Constraint A.22 (handover slot): container {event['container_id']} seaside_drop_slot={event['seaside_drop_slot']} != landside_lift_slot={event['landside_lift_slot']}"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 22,
+                        "lhs": float(event["landside_lift_slot"]),
+                        "rhs": float(event["seaside_drop_slot"]),
+                        "raw_excess": float(excess),
+                        "normalizer": max(abs(event["seaside_drop_slot"]), eps),
+                        "ratio": float(excess / max(abs(event["seaside_drop_slot"]), eps)),
+                    })
+
+    # =========================================================================
+    # Constraint A.23: Handover — landside lift time >= seaside drop time
+    # =========================================================================
+    if "seaside_events" in solution:
+        for event in solution["seaside_events"]:
+            if "landside_lift_time" in event and "seaside_drop_time" in event:
+                if event["landside_lift_time"] < event["seaside_drop_time"] - tol:
+                    excess = event["seaside_drop_time"] - event["landside_lift_time"]
+                    violated_constraint_set.add(23)
+                    violations.append(
+                        f"Constraint A.23 (handover time): container {event['container_id']} landside_lift_time={event['landside_lift_time']} < seaside_drop_time={event['seaside_drop_time']}"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 23,
+                        "lhs": float(event["landside_lift_time"]),
+                        "rhs": float(event["seaside_drop_time"]),
+                        "raw_excess": float(excess),
+                        "normalizer": max(abs(event["seaside_drop_time"]), eps),
+                        "ratio": float(excess / max(abs(event["seaside_drop_time"]), eps)),
+                    })
+
+    # =========================================================================
+    # Constraint A.24: landside drop >= landside lift (seaside containers)
+    # =========================================================================
+    if "seaside_events" in solution:
+        for event in solution["seaside_events"]:
+            if "landside_drop_time" in event and "landside_lift_time" in event:
+                if event["landside_drop_time"] < event["landside_lift_time"] - tol:
+                    excess = event["landside_lift_time"] - event["landside_drop_time"]
+                    violated_constraint_set.add(24)
+                    violations.append(
+                        f"Constraint A.24 (landside drop>=lift seaside): container {event['container_id']} landside_drop_time={event['landside_drop_time']} < landside_lift_time={event['landside_lift_time']}"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 24,
+                        "lhs": float(event["landside_drop_time"]),
+                        "rhs": float(event["landside_lift_time"]),
+                        "raw_excess": float(excess),
+                        "normalizer": max(abs(event["landside_lift_time"]), eps),
+                        "ratio": float(excess / max(abs(event["landside_lift_time"]), eps)),
+                    })
+
+    # =========================================================================
+    # Constraint A.25: landside drop >= landside lift (landside containers)
+    # =========================================================================
+    if "landside_events" in solution and m > 0:
+        for event in solution["landside_events"]:
+            if "drop_time" in event and "lift_time" in event:
+                if event["drop_time"] < event["lift_time"] - tol:
+                    excess = event["lift_time"] - event["drop_time"]
+                    violated_constraint_set.add(25)
+                    violations.append(
+                        f"Constraint A.25 (landside drop>=lift landside): container {event['container_id']} drop_time={event['drop_time']} < lift_time={event['lift_time']}"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 25,
+                        "lhs": float(event["drop_time"]),
+                        "rhs": float(event["lift_time"]),
+                        "raw_excess": float(excess),
+                        "normalizer": max(abs(event["lift_time"]), eps),
+                        "ratio": float(excess / max(abs(event["lift_time"]), eps)),
+                    })
+
+    # =========================================================================
+    # Constraint 6: Landside containers within time windows (from events)
+    # =========================================================================
+    if "landside_events" in solution and m > 0:
+        for event in solution["landside_events"]:
+            cid = event["container_id"]
+            info = land_info.get(cid)
+            if info is None:
+                continue
+            if "drop_time" in event:
+                drop_finish = event["drop_time"] + p
+                if drop_finish < info["r"] - tol:
+                    violated_constraint_set.add(6)
+                    violations.append(
+                        f"Constraint 6 (time window): landside container {cid} "
+                        f"dropped too early: finish={drop_finish}, r={info['r']}"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 6,
+                        "lhs": float(drop_finish),
+                        "rhs": float(info["r"]),
+                        "raw_excess": float(info["r"] - drop_finish),
+                        "normalizer": max(float(info["r"]), eps),
+                        "ratio": float((info["r"] - drop_finish) / max(info["r"], eps))
+                    })
+                if drop_finish > info["d"] + tol:
+                    violated_constraint_set.add(6)
+                    violations.append(
+                        f"Constraint 6 (time window): landside container {cid} "
+                        f"dropped too late: finish={drop_finish}, d={info['d']}"
+                    )
+                    violation_magnitudes.append({
+                        "constraint": 6,
+                        "lhs": float(drop_finish),
+                        "rhs": float(info["d"]),
+                        "raw_excess": float(drop_finish - info["d"]),
+                        "normalizer": max(float(info["d"]), eps),
+                        "ratio": float((drop_finish - info["d"]) / max(info["d"], eps))
+                    })
+
+    # =========================================================================
+    # Constraint 7: Makespan consistency
+    # =========================================================================
+    if C is not None and C <= 0:
+        violated_constraint_set.add(7)
+        violations.append(f"Constraint 7 (makespan): C={C} must be positive")
+        violation_magnitudes.append({
+            "constraint": 7,
+            "lhs": float(C),
+            "rhs": 0.0,
+            "raw_excess": float(abs(C)),
+            "normalizer": eps,
+            "ratio": float(abs(C) / eps)
+        })
+
+    # =========================================================================
+    # Constraint 26: Objective consistency — the reported objective_value must
+    # equal the makespan recomputed from the seaside-container completion times.
+    #
+    # The objective (A.1) is min C, where C is the makespan: the earliest time
+    # by which every seaside container has been placed at its target slot. Per
+    # (A.2)/(A.3), C >= t_drop + p for the final drop of each seaside container,
+    # and at the optimum C equals the latest such finish time. Every seaside
+    # container's placement-at-target finish time is fully determined by the
+    # seaside_events carried in the solution (cooperative -> landside_drop_time,
+    # direct -> seaside_drop_time), so the makespan can be recomputed exactly
+    # (full recompute) and compared to the reported objective_value. This
+    # rejects fabricated objective values (e.g. 0 or sys.float_info.max) that
+    # leave the schedule itself untouched.
+    # =========================================================================
+    seaside_events_obj = solution.get("seaside_events")
+    if seaside_events_obj:
+        try:
+            reported_obj = float(obj)
+        except (TypeError, ValueError):
+            reported_obj = None
+        completion_times = []
+        for event in seaside_events_obj:
+            comp = None
+            # Cooperative handling: the landside crane places the container at
+            # its target slot; placement finishes p units after the drop start.
+            if "landside_drop_time" in event:
+                try:
+                    comp = float(event["landside_drop_time"]) + p
+                except (TypeError, ValueError):
+                    comp = None
+            # Direct handling: the seaside crane drops the container itself.
+            elif "seaside_drop_time" in event:
+                try:
+                    comp = float(event["seaside_drop_time"]) + p
+                except (TypeError, ValueError):
+                    comp = None
+            if comp is not None:
+                completion_times.append(comp)
+        if reported_obj is not None and completion_times:
+            true_obj = max(completion_times)
+            abs_diff = abs(reported_obj - true_obj)
+            # Makespan is an integer time count: a 0.5 absolute floor fires on
+            # any integer mismatch, with a tiny relative term for float noise.
+            tol_obj = max(0.5, 1e-6 * abs(true_obj))
+            if abs_diff > tol_obj:
+                violated_constraint_set.add(26)
+                violations.append(
+                    f"Constraint 26 (objective consistency): reported "
+                    f"objective_value={reported_obj} differs from makespan "
+                    f"recomputed from seaside_events={true_obj} "
+                    f"(|diff|={abs_diff:.6g}, tol={tol_obj:.6g})"
+                )
+                violation_magnitudes.append({
+                    "constraint": 26,
+                    "lhs": float(reported_obj),
+                    "rhs": float(true_obj),
+                    "raw_excess": float(abs_diff),
+                    "normalizer": max(abs(true_obj), eps),
+                    "ratio": float(abs_diff / max(abs(true_obj), eps)),
+                })
+
+    return _build_result(violated_constraint_set, violations, violation_magnitudes)
+
+
+def _build_result(violated_constraint_set, violations, violation_magnitudes):
+    violated_list = sorted(violated_constraint_set)
+
+    # =====================================================================
+    # =====================================================================
+    # Constraint 8: Binary domain — variables must be 0 or 1
+    _domain_check_vars_binary = []
+    _domain_check_vars_integer = []
+    feasible = len(violated_list) == 0
+    return {
+        "feasible": feasible,
+        "violated_constraints": violated_list,
+        "violations": violations,
+        "violation_magnitudes": violation_magnitudes
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Feasibility checker for PCSP-SL solutions (Kress et al. 2019)"
+    )
+    parser.add_argument("--instance_path", type=str, required=True,
+                        help="Path to the JSON instance file")
+    parser.add_argument("--solution_path", type=str, required=True,
+                        help="Path to the JSON solution file")
+    parser.add_argument("--result_path", type=str, required=True,
+                        help="Path to write the JSON feasibility result")
+    args = parser.parse_args()
+
+    instance = load_json(args.instance_path)
+    solution = load_json(args.solution_path)
+
+    result = check_feasibility(instance, solution)
+
+    with open(args.result_path, 'w') as f:
+        json.dump(result, f, indent=2)
+
+    if result["feasible"] is None:
+        print("NO SOLUTION: Nothing to check.")
+        for v in result["violations"]:
+            print(f"  - {v}")
+    elif result["feasible"]:
+        print(f"FEASIBLE: Solution satisfies all constraints.")
+    else:
+        print(f"INFEASIBLE: Violated constraints: {result['violated_constraints']}")
+        for v in result["violations"]:
+            print(f"  - {v}")
+
+
+if __name__ == "__main__":
+    main()

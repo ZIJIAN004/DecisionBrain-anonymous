@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> One-half of the portfolio variance, measuring the overall risk of the chosen portfolio.",
+  "x": "<list[float], length n> Weight of each asset in the portfolio, where positive values indicate long positions and negative values indicate short positions."
+}

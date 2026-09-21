@@ -1,0 +1,22 @@
+{
+  "objective_value": "<float> Total number of time steps any attacker occupies the Defense Zone, plus the weighted cumulative control effort of all defenders.",
+  "defenders": [
+    {
+      "x": "<list[float], length N_u+1> X-coordinate of the defender's position at each control step.",
+      "y": "<list[float], length N_u+1> Y-coordinate of the defender's position at each control step.",
+      "xdot": "<list[float], length N_u+1> X-component of the defender's velocity at each control step.",
+      "ydot": "<list[float], length N_u+1> Y-component of the defender's velocity at each control step.",
+      "ux": "<list[float], length N_u> X-component of the defender's control input at each control step.",
+      "uy": "<list[float], length N_u> Y-component of the defender's control input at each control step."
+    }
+  ],
+  "attackers": [
+    {
+      "p": "<list[float], length N_a+1> X-coordinate of the attacker's position at each sample step.",
+      "q": "<list[float], length N_a+1> Y-coordinate of the attacker's position at each sample step.",
+      "a": "<list[float], length N_a+1> Whether the attacker is in attack mode at each sample step (1 = attacking, 0 = inactive).",
+      "gamma": "<list[float], length N_a+1> Whether the attacker is inside the Defense Zone at each sample step (1 = inside, 0 = outside).",
+      "delta": "<list[list[float]], shape [N_D][N_a+1]> Per-defender interception indicator at each sample step; delta[i][k] = 1 iff defender i intercepts this attacker at step k, else 0."
+    }
+  ]
+}

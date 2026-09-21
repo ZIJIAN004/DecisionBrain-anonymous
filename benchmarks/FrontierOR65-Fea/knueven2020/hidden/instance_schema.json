@@ -1,0 +1,38 @@
+{
+  "num_generators": "<int> Total number of thermal generators in the fleet.",
+  "num_time_periods": "<int> Number of consecutive hourly time periods in the planning horizon.",
+  "time_period_hours": "<int> Duration of each time period in hours.",
+  "generators": [
+    {
+      "id": "<str> Unique identifier for the generator.",
+      "type": "<str> Technology type of the generator (e.g., gas_ct, gas_cc, coal, steam, nuclear).",
+      "p_min": "<float> Minimum stable power output in MW when the generator is on.",
+      "p_max": "<float> Maximum power output in MW when the generator is on.",
+      "ramp_up_limit": "<float> Maximum increase in power output (MW) allowed from one period to the next while online.",
+      "ramp_down_limit": "<float> Maximum decrease in power output (MW) allowed from one period to the next while online.",
+      "startup_ramp_limit": "<float> Maximum power output (MW) the generator can produce in the first period it comes online.",
+      "shutdown_ramp_limit": "<float> Maximum power output (MW) the generator can produce in the last period before going offline.",
+      "min_up_time": "<int> Minimum number of consecutive periods the generator must remain on once started.",
+      "min_down_time": "<int> Minimum number of consecutive periods the generator must remain off once shut down.",
+      "no_load_cost": "<float> Fixed cost ($) incurred per period whenever the generator is on, independent of power output.",
+      "startup_costs": [
+        {
+          "label": "<str> Name of the startup cost tier (e.g., hot, warm, cold).",
+          "max_downtime_hours": "<int or null> Maximum prior downtime (hours) for this tier to apply; null for the final cold tier which has no upper bound.",
+          "cost": "<float> Cost ($) incurred when the generator starts up under this tier."
+        }
+      ],
+      "production_cost_segments": [
+        {
+          "output_mw_start": "<float> Lower power output breakpoint (MW) of this cost segment.",
+          "output_mw_end": "<float> Upper power output breakpoint (MW) of this cost segment.",
+          "marginal_cost_per_mwh": "<float> Marginal cost ($/MWh) for each MW produced within this segment."
+        }
+      ],
+      "initial_status": "<int> Initial state of the generator before the planning horizon: positive means it has been on for that many periods, negative means it has been off for that many periods.",
+      "initial_power": "<float> Power output (MW) of the generator immediately before the planning horizon; zero if the generator was off."
+    }
+  ],
+  "demand": "<list[float], length num_time_periods> Electricity demand (MW) that must be met in each time period.",
+  "reserve_requirement": "<list[float], length num_time_periods> Additional reserve capacity (MW) above demand that must be available from online generators in each time period."
+}

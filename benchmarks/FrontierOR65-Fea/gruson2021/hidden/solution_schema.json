@@ -1,0 +1,10 @@
+{
+  "objective_value": "<float> Total expected cost: setup costs across all facilities and periods plus probability-weighted inventory holding costs across all scenarios.",
+  "setup_variables": "<dict, key: 'y_{facility}_{period}'> Whether each facility is set up to produce or order in each period (1 = set up, 0 = not), where facility 0 is the plant, facilities 1..num_warehouses are the warehouses, and facilities num_warehouses+1..num_warehouses+num_retailers are the retailers.",
+  "production_plant": "<dict, key: '{period}_{scenario}'> Quantity produced at the plant in the given period under the given scenario.",
+  "delivery_warehouse": "<dict, key: '{warehouse}_{period}_{scenario}'> Quantity shipped from the plant to each warehouse in the given period under the given scenario.",
+  "delivery_retailer": "<dict, key: '{retailer}_{period}_{scenario}'> Quantity shipped from a warehouse to each retailer in the given period under the given scenario.",
+  "inventory_plant": "<dict, key: '{period}_{scenario}'> End-of-period inventory held at the plant in the given period under the given scenario.",
+  "inventory_warehouse": "<dict, key: '{warehouse}_{period}_{scenario}'> End-of-period inventory held at each warehouse in the given period under the given scenario.",
+  "inventory_retailer": "<dict, key: '{retailer}_{period}_{scenario}'> End-of-period inventory held at each retailer in the given period under the given scenario."
+}

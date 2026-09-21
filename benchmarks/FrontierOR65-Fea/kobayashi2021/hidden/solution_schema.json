@@ -1,0 +1,7 @@
+{
+  "objective_value": "<float> Total portfolio cost combining the regularization penalty, the value-at-risk threshold, and the conditional value-at-risk contribution.",
+  "x": "<list[float], length N> Fraction of total wealth allocated to each asset.",
+  "z": "<list[int], length N> Whether each asset is selected for inclusion in the portfolio (1 = included, 0 = excluded).",
+  "a": "<float> Value-at-risk threshold representing the loss level below which tail losses are measured.",
+  "v": "<float> Conditional value-at-risk contribution capturing the expected severity of losses beyond the value-at-risk threshold."
+}

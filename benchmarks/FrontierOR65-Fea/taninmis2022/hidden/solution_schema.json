@@ -1,0 +1,10 @@
+{
+  "objective_value": "<float> Total expected cost across the scenario tree, combining capital investment expenditures and expected operational costs.",
+  "investments": {
+    "<scenario_node_id>": {
+      "generators": "<dict, key: '{generator_id}'> Whether each candidate generator is built at this scenario tree node (1 = build, 0 = do not build).",
+      "lines": "<dict, key: '{line_id}'> Whether each candidate transmission line is built at this scenario tree node (1 = build, 0 = do not build).",
+      "storage": "<dict, key: '{storage_id}'> Whether each candidate storage unit is built at this scenario tree node (1 = build, 0 = do not build)."
+    }
+  }
+}

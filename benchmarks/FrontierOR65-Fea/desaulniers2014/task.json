@@ -1,0 +1,16 @@
+{
+    "paper_id":  "desaulniers2014",
+    "paper_title":  "A Branch-Price-and-Cut Algorithm for the Inventory-Routing Problem",
+    "publication":  "Les Cahiers du GERAD",
+    "year":  2014,
+    "direction":  "min",
+    "problem_class":  "Lot Sizing / Inventory",
+    "category":  "operational",
+    "formulation_type":  "MIP",
+    "application_field":  "Supply Chain \u0026 Inventory",
+    "avg_num_var":  15753.0,
+    "avg_num_int_var":  7800.0,
+    "avg_num_constr":  8709.0,
+    "source_link":  "https://doi.org/10.1287/trsc.2015.0635",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

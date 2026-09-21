@@ -1,0 +1,46 @@
+{
+  "parameters": {
+    "n_customers": "<int> Number of customers to be served.",
+    "item_type": "<int> Item category determining the number and dimension ranges of items per customer.",
+    "domain_size": "<int> Number of possible realizations for each stochastic item.",
+    "pct_stochastic_customers": "<int> Percentage of customers whose items have uncertain dimensions and weights.",
+    "num_stochastic_customers": "<int> Number of customers whose items have uncertain dimensions and weights.",
+    "recourse_cost_cf": "<int> Penalty cost incurred for each customer left unserved due to packing infeasibility."
+  },
+  "vehicle": {
+    "H": "<int> Height of the rectangular loading area of each vehicle.",
+    "W": "<int> Width of the rectangular loading area of each vehicle.",
+    "Q": "<int> Maximum total weight each vehicle can carry.",
+    "K": "<int> Number of identical vehicles available in the fleet."
+  },
+  "depot": {
+    "id": "<int> Identifier of the depot node in the distance matrix.",
+    "x": "<int> Horizontal coordinate of the depot.",
+    "y": "<int> Vertical coordinate of the depot."
+  },
+  "customers": [
+    {
+      "id": "<int> Unique identifier of the customer, used as a row/column index in the distance matrix.",
+      "is_stochastic": "<bool> Whether this customer's items have uncertain dimensions and weights.",
+      "num_items": "<int> Number of rectangular items to be delivered to this customer.",
+      "items": [
+        {
+          "item_id": "<int> Identifier of the item within this customer's order.",
+          "shape": "<str> Shape category of the item, one of 'vertical', 'horizontal', or 'homogeneous'.",
+          "is_stochastic": "<bool> Whether this item's dimensions and weight are uncertain.",
+          "num_realizations": "<int> Number of possible size and weight outcomes for this item.",
+          "realizations": [
+            {
+              "realization_id": "<int> Identifier of this possible outcome for the item.",
+              "height": "<int> Height of the item in this realization.",
+              "width": "<int> Width of the item in this realization.",
+              "weight": "<int> Weight of the item in this realization.",
+              "probability": "<float> Probability that this realization occurs."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "distance_matrix": "<list[list[int]], shape [n_customers+1][n_customers+1]> Travel cost between each pair of nodes, where row/column 0 is the depot and rows/columns 1 through n_customers are customers."
+}

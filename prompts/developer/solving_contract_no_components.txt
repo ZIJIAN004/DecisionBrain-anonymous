@@ -1,0 +1,92 @@
+【环境】workspace 是当前 cwd；shell 上限约 __TIME_BUDGET__ 秒，solver 内部总时限必须更短。
+
+【必须生成】
+- from_data_to_input.py：读取真实 `data/`，通过 JSON 解析和结构化映射确定性生成 input.json 的可重复执行转换程序；完成后必须保留。
+- input.json：符合 input_schema.json 的规范化输入，只能通过一次独立的 `python3 from_data_to_input.py` shell 调用生成。
+- solver.py：读取真实数据、调用选定算法、生成并自检结果，必须通过独立的 `run_solver` Runtime 调用运行；不得用 shell 直接执行 solver.py。
+- solution.json：符合 solution_schema.json 的完整业务语义解；只能由 Runtime 的 `run_solver` 执行 solver.py 生成；无候选和正式无解证明路径不生成该文件。
+- Review 开启时：用 `run_solver` 实际执行 solver.py；然后调用 submit_solving_outcome(result, message) 提交小型结构化求解结果。工具会要求 Runtime solver receipt，并验收 solver_result 和当前 solution_schema.json，再写入 solver_result.json 与 stage_outputs/solving.json；不要用 write_file 或 shell 直接写 solution.json 或这两个正式文件。
+- Review 关闭时：保持 branch 9 的原有 solver_result.json 和 stage_outputs/solving.json 写入行为。
+
+solver_result.json 严格结构：
+
+{
+  "status": "optimal | feasible | time_limit | unknown | no_solution_found | infeasible_or_unbounded | infeasible | failed",
+  "objective": 0,
+  "mip_gap": null,
+  "optimality": "proven_optimal | exact_or_incumbent | heuristic_or_incumbent | null",
+  "input_file": "input.json",
+  "solution_file": "solution.json | null",
+  "code_file": "solver.py",
+  "execution": {
+    "source": "package | generated",
+    "planned_package_id": "计划 package id 或 null",
+    "planned_solver_id": "计划 solver id 或 null",
+    "executed_package_id": "实际 package id 或 null",
+    "executed_solver_id": "实际 solver id 或 null",
+    "method": "方法枚举",
+    "method_class": "exact | constructive_heuristic | local_search | metaheuristic | other",
+    "version": "实际 package 版本或 null",
+    "guide_consulted": true,
+    "availability_check": {"ok": true, "detail": "版本、导入、许可证或不适用说明"},
+    "seed": 0,
+    "runtime_limit_seconds": 0
+  },
+  "solution_summary": {},
+  "constraint_check": [
+    {"name": "约束名", "ok": true, "detail": "简短摘要"}
+  ],
+  "validation": {
+    "schema_check": {"ok": true, "issues": []},
+    "business_semantic_check": {"ok": true, "issues": []},
+    "algorithm_mapping_check": {
+      "ok": true,
+      "issues": [],
+      "mapped_capabilities": ["业务规则 -> manifest capability"]
+    },
+    "implementation_check": {"ok": true, "issues": []}
+  },
+  "diagnosis": "",
+  "infeasibility_proof": null
+}
+
+无解证明规则：
+- status=infeasible 时 objective、mip_gap、optimality、solution_file、feasibility_result_file 必须为 null。
+- status=infeasible 时 infeasibility_proof 必须为：`{"proof_type":"exact_solver_status | solver_certificate","solver":"实际求解器","raw_status":"求解器原始状态","model_scope":"complete","hard_constraints_covered":["完整模型覆盖的硬约束"],"evidence":["日志、状态或证书来源"]}`，且不得生成占位 solution.json。
+- 有候选解时 solution_file 必须为 solution.json、optimality 必须非空，infeasibility_proof 必须为 null。
+- time_limit、unknown、no_solution_found、infeasible_or_unbounded 没有候选解时，objective、mip_gap、optimality、solution_file、feasibility_result_file 必须为 null，diagnosis 必须简要说明实际终态，infeasibility_proof 必须为 null。
+- 未覆盖全部硬约束的模型返回 infeasible、启发式未找到解、time limit、代码异常和资源不足都不构成 status=infeasible。
+- 独立运行 solver.py 的 `run_solver` 只要超时，Runtime 会发布既有 `runtime_solver_outcome.json` 外部超时终态；不得修改实现后在同一轮再次运行 solver.py。若本次执行已完整写出符合 solution_schema.json 的候选，Runtime 会携带该候选；否则按既有无候选超时路径处理。
+- unknown 只用于求解程序正常结束但原生求解状态无法安全映射为 feasible、optimal、infeasible 或 infeasible_or_unbounded；no_solution_found 只用于启发式或其他非证明性搜索正常结束但未得到完整候选；infeasible_or_unbounded 只用于求解器原生返回该混合状态。
+
+execution 规则：
+- source=package 必须填写计划和实际 package/solver、版本，guide_consulted=true 且 availability_check.ok=true。
+- source=generated 的所有 package/solver/version 字段必须为 null；guide_consulted=false。
+- 计划和实际 package/solver 必须完全一致；不得切换到其他算法。
+- method 和 method_class 必须与实际实现一致；不得用手写代码冒充 package 调用。
+- solver.py 不得使用分解策略、warm start 或 MIP start。
+
+stage_outputs/solving.json 三种格式：
+
+提交完整求解尝试：
+
+{"decision":"solved","message":"简短说明","result":{"solver_result_file":"solver_result.json"}}
+
+需要澄清：
+
+{"decision":"needs_clarification","message":"原因","questions":[{"id":"short_id","text":"问题","answer_type":"text","options":[],"context":"证据"}]}
+
+失败：
+
+{"decision":"failed","message":"失败原因和已尝试动作"}
+
+【solved 最低标准】
+- 不得使用 write_file、replace_in_file 或嵌入完整实例 JSON 的 shell 命令直接创建、重写或修补 input.json。from_data_to_input.py 不得硬编码或逐项复述实例数据；源结构已符合 schema 时必须原样序列化，确需转换时必须显式实现并验证必需字段、实体数量、ID 集合、数组/矩阵/时间序列维度和未声明转换字段逐值相等。转换失败必须非零退出且不得留下部分 input.json。
+- 已形成可供独立审查的完整求解尝试；候选路径要求 solution.json 存在且合法，无候选和无解证明路径不要求 solution.json。
+- `run_solver` 是 solution.json 的唯一产出途径；完成一次有候选或无候选的 solver 执行后，必须通过 submit_solving_outcome 提交上述结构。工具会校验对应 Runtime receipt，并在候选路径按当前 solution_schema.json 验收 solution.json。
+- Review 关闭时，保持 branch 9 的直接文件写入和自检语义。
+- 不得读取、运行或引用 feasibility_checker.py，不得生成或改写 feasibility_result.json；下游 Feasibility Reviewer 独立执行 checker 并决定是否拒绝及责任。
+- execution 必须与 algorithm_design 中的 algorithm 一致，package 调用不得静默偏离。
+- 写完所有文件后用 read_file 或 json.load 验收。
+
+Solving 不得因自己怀疑候选不可行而隐藏本次产物，也不得声称 checker 已通过。语法、类型、API、文件、依赖、序列化和数值异常必须先在 Solving 内修复；decision=failed 只用于这些基础执行错误在阶段预算内仍无法形成可审查产物。shell timeout 以及正常返回的 time_limit、unknown、no_solution_found、infeasible_or_unbounded 必须使用 decision=solved 交给 Reviewer；shell timeout 不属于允许留在本阶段修复重试的基础执行错误。

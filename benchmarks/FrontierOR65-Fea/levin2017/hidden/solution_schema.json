@@ -1,0 +1,10 @@
+{
+  "objective_value": "<float> Total system travel time, combining vehicle time spent traversing links and traveler time spent waiting at origins.",
+  "y": "<dict, key: '{from_node}|{via_node}|{to_node}|{destination_centroid}|{time_step}'> Number of vehicles destined for a given centroid that turn from an incoming link onto a successor link at a given time step.",
+  "y_centroid": "<dict, key: '{centroid}|{junction}|{destination_centroid}|{time_step}'> Number of vehicles departing a centroid via its outgoing connector toward a given destination at a given time step.",
+  "N_U": "<dict, key: '{from_node}|{to_node}|{destination_centroid}|{time_step}'> Cumulative count of vehicles destined for a given centroid that have entered the upstream end of a link by a given time step.",
+  "N_D": "<dict, key: '{from_node}|{to_node}|{destination_centroid}|{time_step}'> Cumulative count of vehicles destined for a given centroid that have exited the downstream end of a link by a given time step.",
+  "p": "<dict, key: '{centroid}|{time_step}'> Number of vehicles parked at a centroid at a given time step.",
+  "e": "<dict, key: '{origin_centroid}|{destination_centroid}|{time_step}'> Number of travelers picked up at an origin centroid heading to a given destination at a given time step.",
+  "omega": "<dict, key: '{origin_centroid}|{destination_centroid}|{time_step}'> Number of travelers waiting at an origin centroid for service to a given destination at a given time step."
+}

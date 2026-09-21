@@ -1,0 +1,5 @@
+{
+  "objective_value": "<int> Minimum number of colors needed to properly color the graph (the chromatic number).",
+  "selected_sets": "<list[list[int]], length objective_value> Chosen color classes, where each inner list contains the vertices assigned to that color, sorted in ascending order.",
+  "coloring": "<dict, key: '{vertex}'> Color assigned to each vertex, identified by its index."
+}

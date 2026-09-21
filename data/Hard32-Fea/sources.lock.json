@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "dataset": "Hard32-Fea",
+  "distribution": "download-and-reconstruct-locally",
+  "selection": "../../benchmarks/Hard32-Fea/selection.json",
+  "sources": {
+    "jssp_deadline": {
+      "benchmark": "Taillard job-shop scheduling instances",
+      "instances": ["ta41", "ta51", "ta61"],
+      "retrieval": {
+        "repository": "https://github.com/Pabloo22/job_shop_lib",
+        "commit": "460510f197744eed1cbcbbdfd6ec3252252f412c",
+        "path": "job_shop_lib/benchmarking/benchmark_instances.json"
+      },
+      "upstream_reference": "https://doi.org/10.1016/0377-2217(93)90182-M",
+      "decisionbrain_transformation": "Create two cases per source instance and set deadline to round(theta * upper_bound), with theta and upper_bound taken from selection.json."
+    },
+    "vrptw_minfleet": {
+      "benchmark": "Gehring and Homberger VRPTW instances",
+      "instances": ["RC2_4_6", "RC2_6_6", "RC2_6_7", "RC2_8_3", "RC2_8_6", "RC2_8_7"],
+      "retrieval": {
+        "repository": "https://github.com/PyVRP/Instances",
+        "commit": "7474b068a8effa7f39448b241314b615c9271525",
+        "paths": ["VRPTW/GH400", "VRPTW/GH600", "VRPTW/GH800"]
+      },
+      "source_notice": "https://github.com/PyVRP/Instances/blob/7474b068a8effa7f39448b241314b615c9271525/VRPTW/README.md",
+      "decisionbrain_transformation": "Convert the selected PyVRP VRPLIB files to the task JSON schema, use floor(10 * Euclidean distance), and apply the max_vehicles value from selection.json."
+    },
+    "pdptw_minfleet": {
+      "benchmark": "Li and Lim PDPTW instances",
+      "instances_from": "benchmarks/Hard32-Fea/selection.json",
+      "retrieval": {
+        "repository": "https://github.com/PyVRP/Instances",
+        "commit": "7474b068a8effa7f39448b241314b615c9271525",
+        "paths": ["PDPTW/Li100", "PDPTW/Li200"]
+      },
+      "source_notice": "https://github.com/PyVRP/Instances/blob/7474b068a8effa7f39448b241314b615c9271525/PDPTW/README.md",
+      "decisionbrain_transformation": "Convert the selected PyVRP VRPLIB files to the task JSON schema, use rounded Euclidean distance int(sqrt(value) + 0.5), and apply the max_vehicles value from selection.json."
+    }
+  }
+}

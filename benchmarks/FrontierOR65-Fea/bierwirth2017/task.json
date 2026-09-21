@@ -1,0 +1,16 @@
+{
+  "paper_id": "bierwirth2017",
+  "paper_title": "Extended GRASP for the Job Shop Scheduling Problem with Total Weighted Tardiness Objective",
+  "publication": "European Journal of Operational Research",
+  "year": 2017,
+  "direction": "min",
+  "problem_class": "Scheduling (Machine / Crew / Workforce)",
+  "category": "operational",
+  "formulation_type": "CP",
+  "application_field": "Manufacturing & Production",
+  "avg_num_var": 4710.0,
+  "avg_num_int_var": 4350.0,
+  "avg_num_constr": 9060.0,
+  "source_link": "https://doi.org/10.1016/j.ejor.2017.03.030",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

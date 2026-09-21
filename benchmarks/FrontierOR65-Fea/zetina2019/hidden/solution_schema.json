@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total network cost combining fixed charges for opened arcs and variable transportation costs for routing all commodities.",
+  "open_arcs": "<dict, key: '{from_node}_{to_node}'> Indicates that the arc from the origin node to the destination node is opened for use (1 = opened).",
+  "routings": "<dict, key: '{commodity_index}' -> dict with key '{from_node}_{to_node}'> Fraction of each commodity's demand routed along each arc on the path from its origin to its destination."
+}

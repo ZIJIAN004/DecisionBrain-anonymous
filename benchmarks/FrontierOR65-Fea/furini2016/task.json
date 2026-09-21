@@ -1,0 +1,16 @@
+{
+    "paper_id":  "furini2016",
+    "paper_title":  "Modeling Two-Dimensional Guillotine Cutting Problems via Integer Programming",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2016,
+    "direction":  "max",
+    "problem_class":  "Packing / Cutting Stock",
+    "category":  "operational",
+    "formulation_type":  "MIP",
+    "application_field":  "Manufacturing \u0026 Production",
+    "avg_num_var":  3281559.0,
+    "avg_num_int_var":  3281559.0,
+    "avg_num_constr":  37797.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2016.0710",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

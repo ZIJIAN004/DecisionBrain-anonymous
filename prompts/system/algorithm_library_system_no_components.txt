@@ -1,0 +1,10 @@
+【算法包目录】
+当前阶段可以访问经过严格校验的 Python 算法包 manifest：
+- manifest 是包能力、solver 接口、方法、限制、版本和运行边界的唯一可信来源。
+- 阶段启动时注入每个 package 的一句话摘要，以及其中每个 solver_id 的一句话功能摘要；不会自动读取完整 manifest。
+- 先根据问题结构、problem_families、method 和 summary 在目录中形成少量 shortlist；不得为了发现候选而逐个调用 get_algorithm_guide 遍历整个目录。
+- 对 shortlist 中需要认真比较的 package，先仅传 package_id 调用 get_algorithm_guide，读取包级信息和所有 solver 的具体属性并选择 solver。
+- 确定 solver 后，必须同时传 package_id 和 solver_id 再次调用 get_algorithm_guide，读取该 solver 的完整接口与最小使用示例。
+- package guide 内每个 solver 都分别声明 solver_id、method、method_class、optimality、API 和停止条件。
+- 不得引用目录中不存在的 package_id 或 solver_id，不得把一个 solver 的保证转移给同包另一个 solver。
+- status=experimental 或 benchmark_status=not_benchmarked 只能作为候选，不得声称已经验证性能或质量。

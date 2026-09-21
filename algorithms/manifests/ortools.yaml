@@ -1,0 +1,332 @@
+schema_version: "1.3"
+
+id: ortools
+display_name: Google OR-Tools
+status: experimental
+kind: python_library
+summary: >-
+  OR-Tools 9.12.4544 package integration covering CP-SAT, linear solving,
+  min-cost flow, and the routing solver. Each solver has a distinct method,
+  guarantee boundary, API, and result mapping.
+
+algorithm:
+  problem_families:
+    - resource_scheduling
+    - routing
+    - assignment
+    - packing
+    - network_flow
+    - inventory
+    - production_planning
+    - cutting_stock
+    - mixed_combinatorial
+  method: optimization_toolkit
+  method_class: mixed
+  optimality: mixed
+  supports_warm_start: true
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - cp_sat_integer_modeling
+    - boolean_constraints
+    - interval_scheduling
+    - no_overlap
+    - cumulative_resources
+    - linear_programming
+    - mixed_integer_linear_programming
+    - minimum_cost_flow
+    - vehicle_routing
+    - routing_dimensions
+    - time_windows
+    - pickup_and_delivery
+    - solution_hints
+    - objective_bound
+    - proof_aware_statuses
+  limitations:
+    - Solver APIs and guarantees differ across CP-SAT, linear, flow, and routing modules.
+    - CP-SAT requires integer variables and integer coefficients.
+    - Routing search usually returns a heuristic incumbent rather than an optimality proof.
+    - The package does not infer a business formulation or output mapping.
+    - It does not emit DecisionBrain's problem-specific solution schema directly.
+
+selection:
+  required_features:
+    - selected_solver_matches_the_problem_structure
+    - business_constraints_map_to_the_selected_solver_api
+    - numeric_representation_matches_solver_requirements
+  good_fit_when:
+    - CP-SAT models discrete scheduling, assignment, or logical decisions with integer data.
+    - A standard min-cost-flow or routing structure maps directly to a dedicated module.
+    - An open-source Python modeling backend is required.
+  reject_when:
+    - The selected module cannot represent a hard business constraint.
+    - CP-SAT integer scaling cannot preserve the required semantics.
+    - A routing incumbent is being used where a proof is mandatory.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: Limits depend on selected module, formulation, machine, and runtime budget.
+
+distribution:
+  package: ortools
+  verified_version: 9.12.4544
+  compatible_version_spec: ">=9.12.4544,<9.13.0"
+  import_name: ortools
+  requires_python: ">=3.8"
+  license_spdx: Apache-2.0
+  homepage: https://developers.google.com/optimization
+  documentation: https://developers.google.com/optimization/reference/python
+  source_repository: https://github.com/google/or-tools
+  native_extensions: true
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: cp312-cp312-win_amd64
+    self_compiled: false
+    modules:
+      - ortools
+  verified_environment:
+    conda_environment: DecisionBrain/venv
+    python_version: "3.12"
+    platform: windows-amd64
+
+interface:
+  profile: ortools
+  preferred_api: solver_suite
+  imports:
+    - from ortools.sat.python import cp_model
+    - from ortools.linear_solver import pywraplp
+    - from ortools.graph.python import min_cost_flow
+    - from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+  model_builder:
+    constructor: Select the constructor declared by the chosen solver entry.
+    methods:
+      - cp_model.CpModel
+      - pywraplp.Solver.CreateSolver
+      - min_cost_flow.SimpleMinCostFlow
+      - pywrapcp.RoutingModel
+    alternative_inputs:
+      - solver-specific Python data structures
+  solvers:
+    - id: cp_sat
+      method: constraint_programming_sat
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from ortools.sat.python import cp_model
+      constructor: cp_model.CpModel()
+      call: cp_model.CpSolver().Solve(model)
+      supports_warm_start: true
+      supports_random_seed: true
+      supports_time_limit: true
+      stopping_criteria:
+        - name: max_time_in_seconds
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_exact_search
+            - incumbent_and_bound_search
+          caveat: FEASIBLE after a time limit is not an optimality proof.
+      important_parameters:
+        max_time_in_seconds: Wall-clock solve limit.
+        random_seed: Integer solver random seed.
+        num_search_workers: Parallel worker count; use one for stronger reproducibility.
+        add_hint: Model-level solution hint for selected variables.
+      result:
+        type: ortools.sat.python.cp_model.CpSolver
+        fields:
+          status: solver.StatusName(status)
+          objective: solver.ObjectiveValue()
+          best_bound: solver.BestObjectiveBound()
+          variable_value: solver.Value(variable)
+          runtime_seconds: solver.WallTime()
+        warning: Only OPTIMAL proves optimality; INFEASIBLE applies only to the encoded model.
+    - id: linear_solver
+      method: mixed_integer_linear_programming
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from ortools.linear_solver import pywraplp
+      constructor: pywraplp.Solver.CreateSolver(backend_name)
+      call: solver.Solve()
+      supports_warm_start: true
+      supports_random_seed: false
+      supports_time_limit: true
+      stopping_criteria:
+        - name: SetTimeLimit
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_linear_or_integer_search
+          caveat: Backend status and bound support vary by selected linear-solver backend.
+      important_parameters:
+        backend_name: Explicit backend such as SCIP or GLOP; verify availability before use.
+        SetTimeLimit: Millisecond solve limit.
+        SetHint: Optional variable/value incumbent hint where supported.
+      result:
+        type: ortools.linear_solver.pywraplp.Solver
+        fields:
+          status: solver.Solve() return code
+          objective: solver.Objective().Value()
+          best_bound: solver.Objective().BestBound()
+          variable_value: variable.solution_value()
+          runtime_milliseconds: solver.wall_time()
+        warning: Interpret status and bound according to the explicitly selected backend.
+    - id: min_cost_flow
+      method: network_flow
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from ortools.graph.python import min_cost_flow
+      constructor: min_cost_flow.SimpleMinCostFlow()
+      call: solver.solve()
+      supports_warm_start: false
+      supports_random_seed: false
+      supports_time_limit: false
+      stopping_criteria: []
+      important_parameters:
+        add_arc_with_capacity_and_unit_cost: Add directed capacitated cost arcs.
+        set_node_supply: Set integer node supply or demand.
+      result:
+        type: ortools.graph.python.min_cost_flow.SimpleMinCostFlow
+        fields:
+          status: solver.solve()
+          optimal_cost: solver.optimal_cost()
+          arc_flow: solver.flow(arc)
+        warning: OPTIMAL applies only when all business rules fit the min-cost-flow structure.
+    - id: routing
+      method: vehicle_routing_search
+      method_class: metaheuristic
+      optimality: heuristic_or_incumbent
+      imports:
+        - from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+      constructor: pywrapcp.RoutingModel(manager)
+      call: routing.SolveWithParameters(search_parameters)
+      supports_warm_start: true
+      supports_random_seed: false
+      supports_time_limit: true
+      stopping_criteria:
+        - name: search_parameters.time_limit
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_routing_search
+          caveat: Search termination does not provide a general optimality proof.
+      important_parameters:
+        first_solution_strategy: Constructive routing strategy.
+        local_search_metaheuristic: Routing improvement strategy.
+        time_limit: Protobuf duration for routing search.
+        ReadAssignmentFromRoutes: Optional route warm start.
+      result:
+        type: ortools.constraint_solver.pywrapcp.Assignment
+        fields:
+          objective: assignment.ObjectiveValue()
+          next_index: assignment.Value(routing.NextVar(index))
+        warning: A returned assignment is a routing incumbent, not a proof of global optimality.
+  facts:
+    cp_sat_integer_only: true
+    proof_boundary: >-
+      CP-SAT and exact module statuses apply only to faithfully encoded models;
+      routing search should be treated as heuristic_or_incumbent.
+    formulation_guidance: >-
+      Choose one solver entry first, then define indexed decisions, objective, every
+      hard constraint, integer scaling, and business-ID result mapping in formulation.
+
+solver_documentation:
+  - id: cp_sat
+    summary: Solve integer constraint models with CP-SAT and proof-aware feasible, optimal, or infeasible statuses.
+    minimal_call_example: |
+      from ortools.sat.python import cp_model
+      model = cp_model.CpModel()
+      x = model.new_bool_var("x")
+      model.maximize(x)
+      solver = cp_model.CpSolver()
+      status = solver.solve(model)
+      if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+          value = solver.value(x)
+          objective = solver.objective_value
+          bound = solver.best_objective_bound
+          runtime = solver.wall_time
+    common_errors:
+      - error: IntVar and LinearExpr objects are symbolic expressions, not stable Python dictionary keys.
+        wrong: |
+          coefficients[x] = 1
+        correct: |
+          coefficients["x"] = 1
+          expression = coefficients["x"] * x
+      - error: AddExactlyOne expects Boolean literals, not one BoundedLinearExpression.
+        wrong: |
+          model.add_exactly_one(x + y == 1)
+        correct: |
+          model.add_exactly_one([x, y])
+  - id: linear_solver
+    summary: Solve continuous or mixed-integer linear models through the OR-Tools linear solver API.
+    minimal_call_example: |
+      from ortools.linear_solver import pywraplp
+      solver = pywraplp.Solver.CreateSolver("SCIP")
+      x = solver.BoolVar("x")
+      solver.Maximize(x)
+      status = solver.Solve()
+      if status == pywraplp.Solver.OPTIMAL:
+          value = x.solution_value()
+  - id: min_cost_flow
+    summary: Solve capacitated minimum-cost network-flow models with integer supplies, capacities, and costs.
+    minimal_call_example: |
+      from ortools.graph.python import min_cost_flow
+      flow = min_cost_flow.SimpleMinCostFlow()
+      flow.add_arc_with_capacity_and_unit_cost(0, 1, 1, 2)
+      flow.set_node_supply(0, 1)
+      flow.set_node_supply(1, -1)
+      status = flow.solve()
+      if status == flow.OPTIMAL:
+          cost = flow.optimal_cost()
+  - id: routing
+    summary: Build and search vehicle-routing models with routing dimensions, local search, and time limits.
+    minimal_call_example: |
+      from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+      manager = pywrapcp.RoutingIndexManager(2, 1, 0)
+      routing = pywrapcp.RoutingModel(manager)
+      transit = routing.RegisterTransitCallback(lambda i, j: 1)
+      routing.SetArcCostEvaluatorOfAllVehicles(transit)
+      params = pywrapcp.DefaultRoutingSearchParameters()
+      params.first_solution_strategy = routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+      solution = routing.SolveWithParameters(params)
+
+agent_guidance:
+  algorithm_design:
+    - Select exactly one solver_id for each OR-Tools component and use its method semantics.
+    - Provide formulation for CP-SAT, linear_solver, and min_cost_flow components.
+    - Treat routing as heuristic_or_incumbent and map every hard rule to routing capabilities.
+  solving:
+    - Verify the exact package version and selected module import.
+    - Use explicit integer scaling for CP-SAT and flow costs or capacities.
+    - Interpret only the selected module's statuses and result fields.
+    - Convert indices to business IDs and run feasibility_checker.py.
+  minimal_call_example: |
+    from ortools.sat.python import cp_model
+
+    model = cp_model.CpModel()
+    x = model.new_bool_var("x")
+    model.maximize(x)
+    solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = 10
+    solver.parameters.num_search_workers = 1
+    status = solver.solve(model)
+    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        raise RuntimeError(f"CP-SAT returned {solver.status_name(status)}")
+    value = solver.value(x)
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; import ortools;
+      assert version('ortools') == '9.12.4544'; print(version('ortools'))"
+    expected_version: 9.12.4544
+  acceptance_requirements:
+    - The selected solver module imports and its minimal call succeeds.
+    - The generated solution conforms to solution_schema.json.
+    - feasibility_checker.py reports schema_valid=true and feasible=true.
+    - solver_result.json records package id, solver id, version, method, status, and runtime.
+  benchmark_status: not_benchmarked

@@ -1,0 +1,28 @@
+{
+  "num_customers": "<int> Number of customers to be served by the supplier.",
+  "num_periods": "<int> Number of discrete time periods in the planning horizon.",
+  "num_vehicles": "<int> Number of homogeneous vehicles available for deliveries each period.",
+  "vehicle_capacity": "<int> Maximum total quantity that can be loaded onto a single vehicle for one route.",
+  "depot": {
+    "id": "<int> Identifier for the supplier location (always 0).",
+    "x": "<int> Horizontal coordinate of the supplier.",
+    "y": "<int> Vertical coordinate of the supplier.",
+    "initial_inventory": "<int> Quantity of commodity on hand at the supplier at the start of the planning horizon.",
+    "max_inventory": "<int> Maximum quantity of commodity the supplier can store at any time.",
+    "production_per_period": "<int> Quantity of commodity produced at the supplier in each period.",
+    "holding_cost": "<float> Per-unit cost charged on the supplier's end-of-period inventory."
+  },
+  "customers": [
+    {
+      "id": "<int> Unique identifier for the customer (1-indexed).",
+      "x": "<int> Horizontal coordinate of the customer.",
+      "y": "<int> Vertical coordinate of the customer.",
+      "initial_inventory": "<int> Quantity of commodity on hand at the customer at the start of the planning horizon.",
+      "max_inventory": "<int> Maximum quantity of commodity the customer can store at any time.",
+      "min_inventory": "<int> Minimum quantity of commodity the customer must hold at the end of any period.",
+      "demand_per_period": "<int> Quantity of commodity consumed by the customer in each period.",
+      "holding_cost": "<float> Per-unit cost charged on the customer's end-of-period inventory."
+    }
+  ],
+  "distance_matrix": "<list[list[int]], shape [num_customers+1][num_customers+1]> Symmetric travel cost between each pair of locations, where row and column 0 is the supplier and rows/columns 1 through num_customers are customers."
+}

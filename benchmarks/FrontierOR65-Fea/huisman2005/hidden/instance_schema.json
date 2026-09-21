@@ -1,0 +1,80 @@
+{
+  "num_trips": "<int> Total number of timed bus trips to be covered across all lines and directions.",
+  "num_depots": "<int> Number of vehicle depots available in the transit network.",
+  "num_lines": "<int> Number of bus lines operated in the network.",
+  "trips_per_line_per_direction": "<int> Number of trips scheduled per line per direction over the planning horizon.",
+  "speed_type": "<str> Speed profile category that determines which set of time-of-day operational speeds applies.",
+  "coordinate_area_km": "<list[int], length 2> Width and height in kilometers of the rectangular area in which all locations are placed.",
+  "locations": {
+    "{location_name}": "<list[int], length 2> X and Y coordinates in kilometers of the named location (depot or line endpoint)."
+  },
+  "depots": [
+    {
+      "depot_id": "<int> Zero-based index identifying this depot.",
+      "name": "<str> Name of this depot matching its key in the locations dictionary.",
+      "coordinates": "<list[int], length 2> X and Y coordinates in kilometers of this depot."
+    }
+  ],
+  "relief_locations": "<list[str], length num_lines+1 or num_lines> Names of locations where driver changeovers may take place.",
+  "lines": [
+    {
+      "from": "<str> Name of the origin endpoint of this bus line.",
+      "to": "<str> Name of the destination endpoint of this bus line."
+    }
+  ],
+  "trips": [
+    {
+      "trip_id": "<int> Zero-based index identifying this trip, ordered by departure time.",
+      "start_time": "<int> Departure time of this trip in minutes from midnight.",
+      "end_time": "<int> Arrival time of this trip in minutes from midnight.",
+      "start_location": "<str> Name of the origin location where this trip departs.",
+      "end_location": "<str> Name of the destination location where this trip arrives."
+    }
+  ],
+  "travel_times": {
+    "{origin}": {
+      "{destination}": "<int> Deadhead travel time in minutes from origin to destination."
+    }
+  },
+  "distances_km": {
+    "{origin}": {
+      "{destination}": "<float> Euclidean distance in kilometers from origin to destination."
+    }
+  },
+  "deadhead_speed_km_per_hour": "<int> Speed in kilometers per hour at which vehicles travel empty between assignments.",
+  "operational_speeds_km_per_hour": {
+    "{time_interval}": "<int> In-service vehicle speed in kilometers per hour during this time-of-day interval."
+  },
+  "frequency_table_minutes": {
+    "{time_interval}": "<int> Minutes between consecutive departures on the same line and direction during this time-of-day interval."
+  },
+  "duty_types": {
+    "{duty_type_name}": {
+      "type_id": "<int> Numeric identifier for this duty type.",
+      "num_pieces": "<int> Number of consecutive work segments that compose a duty of this type.",
+      "piece_length_min": "<int> Minimum allowed duration in minutes of each work segment.",
+      "piece_length_max": "<int> Maximum allowed duration in minutes of each work segment.",
+      "break_length_min": "<int or null> Minimum required break duration in minutes between work segments, or null if no break applies.",
+      "duty_length_max": "<int or null> Maximum total span in minutes from sign-on to sign-off, or null if unconstrained.",
+      "work_time_max": "<int or null> Maximum cumulative working time in minutes within the duty, or null if unconstrained.",
+      "start_time_min": "<int or null> Earliest allowed duty start time in minutes from midnight, or null if unconstrained.",
+      "start_time_max": "<int or null> Latest allowed duty start time in minutes from midnight, or null if unconstrained.",
+      "end_time_max": "<int or null> Latest allowed duty end time in minutes from midnight, or null if unconstrained."
+    }
+  },
+  "crew_parameters": {
+    "sign_on_time_depot_minutes": "<int> Time in minutes added to duty duration when a driver signs on at a depot.",
+    "sign_off_time_depot_minutes": "<int> Time in minutes added to duty duration when a driver signs off at a depot.",
+    "extra_time_non_depot_relief_minutes": "<int> Extra time in minutes added when a driver starts or ends at a non-depot relief location.",
+    "extra_time_includes_deadhead_to_depot": "<bool> Whether the extra time for non-depot relief includes the deadhead travel time to the depot.",
+    "max_pieces_per_duty": "<int> Maximum number of consecutive work segments allowed in any single duty.",
+    "continuous_attendance": "<bool> Whether a driver must remain on the vehicle whenever it is outside the depot.",
+    "changeovers_allowed": "<bool> Whether a driver may transfer to a different vehicle during a break between work segments."
+  },
+  "vehicle_parameters": {
+    "each_vehicle_has_own_depot": "<bool> Whether each vehicle operates from and returns to a single home depot.",
+    "unlimited_vehicles_per_depot": "<bool> Whether the fleet size at each depot is unlimited.",
+    "all_depots_can_serve_all_trips": "<bool> Whether every depot may serve every trip regardless of line.",
+    "fictitious_cost_per_minute_empty_outside_depot": "<int> Cost rate per minute charged when a vehicle sits idle outside its home depot."
+  }
+}

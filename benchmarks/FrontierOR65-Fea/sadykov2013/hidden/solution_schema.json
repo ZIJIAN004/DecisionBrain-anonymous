@@ -1,0 +1,9 @@
+{
+  "objective_value": "<int> Total number of bins used to pack all items.",
+  "bins": {
+    "<bin_id>": {
+      "items": "<list[int]> Identifiers of the items packed into this bin.",
+      "total_weight": "<int> Sum of the weights of the items packed into this bin."
+    }
+  }
+}

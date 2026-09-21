@@ -1,0 +1,16 @@
+{
+    "paper_id":  "pinnoi1997",
+    "paper_title":  "A Branch and Cut Approach for Workload Smoothing on Assembly Lines",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  1997,
+    "direction":  "min",
+    "problem_class":  "Other (Assembly Line Balancing)",
+    "category":  "planning",
+    "formulation_type":  "MIP",
+    "application_field":  "Manufacturing \u0026 Production",
+    "avg_num_var":  896.0,
+    "avg_num_int_var":  895.0,
+    "avg_num_constr":  192.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.9.4.335",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

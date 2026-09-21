@@ -1,0 +1,16 @@
+{
+  "paper_id": "elci2022",
+  "paper_title": "Stochastic Planning and Scheduling with Logic-Based Benders Decomposition",
+  "publication": "INFORMS Journal on Computing",
+  "year": 2022,
+  "direction": "min",
+  "problem_class": "Scheduling (Machine / Crew / Workforce)",
+  "category": "strategic",
+  "formulation_type": "Stochastic/Robust/DRO",
+  "application_field": "Manufacturing & Production",
+  "avg_num_var": 1525989.0,
+  "avg_num_int_var": 1525864.0,
+  "avg_num_constr": 1617160.0,
+  "source_link": "https://doi.org/10.1287/ijoc.2022.1184",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

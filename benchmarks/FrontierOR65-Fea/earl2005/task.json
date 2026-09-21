@@ -1,0 +1,16 @@
+{
+    "paper_id":  "earl2005",
+    "paper_title":  "Multi-vehicle Cooperative Control Using Mixed Integer Linear Programming",
+    "publication":  "arXiv preprint",
+    "year":  2005,
+    "direction":  "min",
+    "problem_class":  "Other (Cooperative Control)",
+    "category":  "operational",
+    "formulation_type":  "MIP",
+    "application_field":  "Aerospace \u0026 Aviation",
+    "avg_num_var":  44170.0,
+    "avg_num_int_var":  41174.0,
+    "avg_num_constr":  122024.0,
+    "source_link":  "https://arxiv.org/abs/cs/0501092",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

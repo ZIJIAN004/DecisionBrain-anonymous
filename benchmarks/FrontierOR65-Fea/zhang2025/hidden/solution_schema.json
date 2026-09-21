@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total operating cost of all selected driver duties.",
+  "selected_duties": "<list[int], length variable> Zero-based indices into the duties list identifying which candidate duties are chosen to cover all trips."
+}

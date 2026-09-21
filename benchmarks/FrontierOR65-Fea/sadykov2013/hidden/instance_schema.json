@@ -1,0 +1,11 @@
+{
+  "num_items": "<int> Total number of items to be packed into bins.",
+  "bin_capacity": "<int> Maximum total weight that each bin can hold.",
+  "items": [
+    {
+      "id": "<int> Unique identifier for the item.",
+      "weight": "<int> Weight of the item."
+    }
+  ],
+  "conflict_edges": "<list[list[int]], shape [num_conflict_edges][2]> Pairs of items that must not be placed in the same bin."
+}

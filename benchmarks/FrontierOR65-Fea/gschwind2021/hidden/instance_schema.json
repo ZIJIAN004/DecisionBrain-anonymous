@@ -1,0 +1,14 @@
+{
+  "graph": {
+    "num_vertices": "<int> Total number of vertices in the graph.",
+    "num_edges": "<int> Total number of edges in the graph.",
+    "vertices": "<list[int], length num_vertices> Identifiers of all vertices in the graph.",
+    "edges": "<list[list[int]], shape [num_edges][2]> Pairs of vertices connected by an edge in the graph."
+  },
+  "problem_settings": {
+    "relaxed_clique_type": "<str> Type of relaxed clique used for the decomposition (e.g., 's-plex').",
+    "parameter_s": "<int> The s parameter controlling how many non-adjacencies each vertex in a group may have relative to the other members.",
+    "decomposition_type": "<str> Whether the decomposition is a 'partitioning' (each vertex in exactly one group) or 'covering' (each vertex in at least one group).",
+    "connectivity_required": "<bool> Whether each selected group must have a connected induced subgraph."
+  }
+}

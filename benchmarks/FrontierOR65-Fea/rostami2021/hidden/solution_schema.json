@@ -1,0 +1,7 @@
+{
+  "objective_value": "<float> Total expected cost combining fixed hub setup costs and the probability-weighted sum of collection, distribution, and inter-hub transfer costs across all demand scenarios.",
+  "hubs": "<list[int]> Indices of nodes chosen to operate as hubs.",
+  "allocations": "<dict, key: '{scenario}'> For each scenario, a mapping from every node to the hub it is served by under that scenario; a hub node is mapped to itself. Inner dict has key: '{node}' with integer value giving the index of the assigned hub.",
+  "z_values": "<list[float], length n> For each node, an indicator of whether that node is opened as a hub (1 = opened, 0 = not opened).",
+  "x_values": "<dict, key: '{scenario}'> For each scenario, the spoke-to-hub assignment pattern. Inner dict has key: '{origin_node}' mapping to a dict with key: '{candidate_hub}' (excluding the origin itself) and float value indicating whether the origin node is assigned to that candidate hub in that scenario (1 = assigned, 0 = not assigned)."
+}

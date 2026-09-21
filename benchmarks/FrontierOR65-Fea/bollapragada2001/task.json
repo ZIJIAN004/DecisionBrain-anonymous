@@ -1,0 +1,16 @@
+{
+    "paper_id":  "bollapragada2001",
+    "paper_title":  "Optimal Design of Truss Structures by Logic-Based Branch and Cut",
+    "publication":  "Operations Research",
+    "year":  2001,
+    "direction":  "min",
+    "problem_class":  "Other (Structural Design)",
+    "category":  "planning",
+    "formulation_type":  "MIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  6840.0,
+    "avg_num_int_var":  2160.0,
+    "avg_num_constr":  11004.0,
+    "source_link":  "https://doi.org/10.1287/opre.49.1.42.11196",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

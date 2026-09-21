@@ -1,0 +1,12 @@
+{
+  "num_tasks": "<int> Total number of tasks to be assigned across the assembly line.",
+  "cycle_time": "<int> Maximum allowable total processing time at any single station.",
+  "num_stations": "<int> Number of workstations arranged in series on the assembly line.",
+  "total_processing_time": "<int> Sum of processing times across all tasks.",
+  "station_lower_bound": "<int> Minimum number of stations required to accommodate the total processing time within the cycle time.",
+  "task_processing_times": "<dict, key: '{task}'> Time required to complete each task.",
+  "precedence_arcs": "<list[list[int]], shape [num_precedence_arcs][2]> Pairs of tasks where the first task must be assigned to a station no later than the second task.",
+  "num_precedence_arcs": "<int> Number of immediate precedence relationships between tasks.",
+  "earliest_station": "<dict, key: '{task}'> Earliest station to which each task may feasibly be assigned, based on cumulative predecessor processing times.",
+  "latest_station": "<dict, key: '{task}'> Latest station to which each task may feasibly be assigned, based on cumulative successor processing times."
+}

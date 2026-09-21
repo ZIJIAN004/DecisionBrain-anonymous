@@ -1,0 +1,10 @@
+{
+  "num_slabs": "<int> Number of surplus slabs available in inventory.",
+  "num_orders": "<int> Number of customer orders in the order book.",
+  "num_colors": "<int> Number of distinct finishing-line route codes across all orders.",
+  "max_colors_per_knapsack": "<int> Maximum number of distinct colors permitted among orders assigned to any single slab.",
+  "slab_weights": "<list[float], length num_slabs> Weight capacity of each slab.",
+  "order_weights": "<list[float], length num_orders> Weight of each customer order.",
+  "order_colors": "<list[int], length num_orders> Finishing-line route code (color) assigned to each order.",
+  "eligible_slabs_per_order": "<list[list[int]], length num_orders> Indices of slabs eligible to supply each order, based on quality grade and dimension compatibility."
+}

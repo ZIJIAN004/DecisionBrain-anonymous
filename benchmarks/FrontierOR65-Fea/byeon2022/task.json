@@ -1,0 +1,16 @@
+{
+    "paper_id":  "byeon2022",
+    "paper_title":  "Benders Subproblem Decomposition for Bilevel Problems with Convex Follower",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2022,
+    "direction":  "min",
+    "problem_class":  "Stochastic / Robust / Bilevel Optimization",
+    "category":  "planning",
+    "formulation_type":  "Bilevel/Multi-level",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  6828.0,
+    "avg_num_int_var":  774.0,
+    "avg_num_constr":  10693.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2021.1128",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

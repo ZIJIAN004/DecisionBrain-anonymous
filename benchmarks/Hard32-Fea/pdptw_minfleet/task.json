@@ -1,0 +1,13 @@
+{
+  "paper_id": "pdptw_minfleet",
+  "paper_title": "Capped-fleet pickup and delivery with time windows on the Li & Lim benchmark",
+  "publication": "Li & Lim, A metaheuristic for the pickup and delivery problem with time windows, ICTAI 2001",
+  "year": 2001,
+  "direction": "min",
+  "problem_class": "Vehicle Routing & TSP",
+  "category": "operational",
+  "formulation_type": "MIP",
+  "application_field": "Logistics & Distribution",
+  "source_link": "https://www.sintef.no/projectweb/top/pdptw/li-lim-benchmark/",
+  "origin": "Li & Lim instances via PyVRP/Instances; the fleet cap is the free-fleet route count of the reference solver and is not part of the original benchmark"
+}

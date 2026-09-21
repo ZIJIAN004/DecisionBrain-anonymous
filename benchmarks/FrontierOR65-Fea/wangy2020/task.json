@@ -1,0 +1,16 @@
+{
+    "paper_id":  "wangy2020",
+    "paper_title":  "The Rank-One Quadratic Assignment Problem",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2020,
+    "direction":  "min",
+    "problem_class":  "Other (Quadratic Assignment)",
+    "category":  "planning",
+    "formulation_type":  "QP/MIQP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  4000035.0,
+    "avg_num_int_var":  4000017.0,
+    "avg_num_constr":  4070.0,
+    "source_link":  "https://pubsonline.informs.org/doi/10.1287/ijoc.2020.1003",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

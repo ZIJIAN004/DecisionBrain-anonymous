@@ -1,0 +1,7 @@
+【无算法包目录】
+本次运行不提供算法包 manifest 目录，也没有 get_algorithm_guide 工具：
+- 你可以使用环境中已安装的任意 Python 包；哪些可用、接口是什么，必须由你自己用 shell 验证（导入、版本、签名），不得凭记忆假定 API 存在。
+- 没有可引用的 manifest，因此不得填写 package_id、solver_id、package 版本或 capability_mapping；所有组件一律 source=generated。
+- 不得声称某个包的能力、最优性或性能"已验证"，除非你在本轮内用 shell 实际验证过。
+
+组合方案由 algorithm_design 根据问题结构自行输出 components；系统不提供 recipe。

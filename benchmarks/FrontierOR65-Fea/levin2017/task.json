@@ -1,0 +1,16 @@
+{
+  "paper_id": "levin2017",
+  "paper_title": "Congestion-aware system optimal route choice for shared autonomous vehicles",
+  "publication": "Transportation Research Part C",
+  "year": 2017,
+  "direction": "min",
+  "problem_class": "Vehicle Routing & TSP",
+  "category": "operational",
+  "formulation_type": "NLP/MINLP",
+  "application_field": "Transportation & Logistics",
+  "avg_num_var": 9451376.0,
+  "avg_num_int_var": 0.0,
+  "avg_num_constr": 3920817.0,
+  "source_link": "https://doi.org/10.1016/j.trc.2017.06.020",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

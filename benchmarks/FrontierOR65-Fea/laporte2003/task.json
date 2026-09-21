@@ -1,0 +1,16 @@
+{
+  "paper_id": "laporte2003",
+  "paper_title": "A Branch-and-Cut Algorithm for the Undirected Traveling Purchaser Problem",
+  "publication": "Operations Research",
+  "year": 2003,
+  "direction": "min",
+  "problem_class": "Vehicle Routing & TSP",
+  "category": "operational",
+  "formulation_type": "IP",
+  "application_field": "Transportation & Logistics",
+  "avg_num_var": 10091.0,
+  "avg_num_int_var": 5050.0,
+  "avg_num_constr": 5440.0,
+  "source_link": "https://doi.org/10.1287/opre.51.6.940.24921",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

@@ -1,0 +1,16 @@
+{
+  "paper_id": "ropke2009",
+  "paper_title": "Branch and Cut and Price for the Pickup and Delivery Problem with Time Windows",
+  "publication": "Transportation Science",
+  "year": 2009,
+  "direction": "min",
+  "problem_class": "Vehicle Routing & TSP",
+  "category": "operational",
+  "formulation_type": "BIP",
+  "application_field": "Transportation & Logistics",
+  "avg_num_var": 216161.0,
+  "avg_num_int_var": 208593.0,
+  "avg_num_constr": 424753.0,
+  "source_link": "https://doi.org/10.1287/trsc.1090.0272",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total cost of shipping, including both per-unit transportation costs and fixed route-opening costs across all used routes.",
+  "flow": "<list[list[float]], shape [num_sources][num_sinks]> Quantity of goods shipped from each source to each sink.",
+  "arcs_used": "<list[list[int]], shape [num_sources][num_sinks]> Whether each route from a source to a sink is used for shipping (1 = used, 0 = not used)."
+}

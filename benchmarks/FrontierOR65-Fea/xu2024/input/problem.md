@@ -1,0 +1,7 @@
+# Problem Description
+
+An investor faces a pool of risky assets and must allocate wealth among them by choosing a portfolio weight for each asset. Each asset has a known expected return, and the joint risk structure of all assets is captured by a symmetric positive definite covariance matrix whose row and column count equals the total number of assets, where each entry describes the covariance between the returns of two assets. A minimum acceptable portfolio return level and a maximum number of assets that may be held in the portfolio are also given as inputs.
+
+The investor must determine the weight assigned to each asset in the portfolio. These weights may take any real value, whether positive, zero, or negative, meaning that short-selling is permitted. The weights must sum to exactly one, reflecting the requirement that the entire budget is fully invested. The weighted sum of the individual expected returns, using the chosen portfolio weights, must be at least the minimum acceptable return level. Among all assets in the pool, at most the specified maximum number may receive a nonzero weight; all remaining assets must have a weight of exactly zero.
+
+The goal is to minimize one-half of the portfolio variance, which equals one-half of the quadratic form obtained by multiplying the transpose of the weight vector by the covariance matrix and then by the weight vector itself. This quantity measures the risk of the portfolio: the weighted combination of all pairwise asset return covariances, scaled by the respective portfolio weights.

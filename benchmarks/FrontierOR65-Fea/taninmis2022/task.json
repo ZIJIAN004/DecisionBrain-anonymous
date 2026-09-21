@@ -1,0 +1,16 @@
+{
+    "paper_id":  "taninmis2022",
+    "paper_title":  "A Nested Cross Decomposition Algorithm for Power System Capacity Expansion with Multiscale Uncertainties",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2022,
+    "direction":  "min",
+    "problem_class":  "Energy \u0026 Unit Commitment",
+    "category":  "planning",
+    "formulation_type":  "Stochastic/Robust/DRO",
+    "application_field":  "Energy \u0026 Power Systems",
+    "avg_num_var":  3747938.0,
+    "avg_num_int_var":  1113649.0,
+    "avg_num_constr":  6714930.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2022.1177",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

@@ -1,0 +1,11 @@
+{
+  "objective_value": "<float> Total cost combining weighted tardiness penalties and nonregular capacity costs.",
+  "orders_solution": [
+    {
+      "order_id": "<int> Unique identifier of the order this entry refers to.",
+      "chosen_interval": "<list[int], length 2> Start and finish periods of the contiguous execution window assigned to the order.",
+      "intensities": "<dict, key: '{period}'> Fraction of the order's total work content performed in each period during its execution window."
+    }
+  ],
+  "nonregular_capacity_by_period": "<dict, key: '{period}'> Amount of nonregular (overtime) capacity used in each period where it is positive."
+}

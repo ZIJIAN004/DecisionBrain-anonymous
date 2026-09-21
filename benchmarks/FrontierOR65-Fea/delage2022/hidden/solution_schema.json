@@ -1,0 +1,12 @@
+{
+  "objective_value": "<float> Total time required, equal to setup times of all used patterns plus cutting times of all pattern repetitions.",
+  "patterns": {
+    "<key: '{pattern_index}'>": {
+      "used": "<bool> Whether this pattern is selected for use on the cutting machine.",
+      "repetitions": "<int> Number of times this pattern is repeated on the cutting machine.",
+      "pieces": "<dict, key: '{product_id}'> Number of pieces of each product cut in a single pass of this pattern."
+    }
+  },
+  "extra_pieces": "<dict, key: '{product_id}'> Number of extra pieces of each product produced via the open end of the machine across all pattern repetitions.",
+  "production_quantities": "<dict, key: 'product_{product_id}_pattern_{pattern_index}'> Total number of pieces of each product produced by each pattern, equal to the pieces per pass multiplied by the number of repetitions."
+}

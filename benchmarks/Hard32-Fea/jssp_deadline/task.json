@@ -1,0 +1,13 @@
+{
+  "paper_id": "jssp_deadline",
+  "paper_title": "Job-shop scheduling under a common deadline on Taillard instances",
+  "publication": "Taillard, Benchmarks for basic scheduling problems, EJOR 64(2)",
+  "year": 1993,
+  "direction": "min",
+  "problem_class": "Scheduling",
+  "category": "operational",
+  "formulation_type": "MIP",
+  "application_field": "Manufacturing & Production",
+  "source_link": "https://doi.org/10.1016/0377-2217(93)90182-M",
+  "origin": "Taillard instances via job_shop_lib; the common deadline is synthesised as round(theta * upper_bound) and is not part of the original benchmark"
+}

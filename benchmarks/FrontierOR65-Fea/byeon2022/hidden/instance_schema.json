@@ -1,0 +1,115 @@
+{
+  "instance_id": "<str> Unique identifier for this problem instance.",
+  "scale": "<str> Size category of the instance (small, medium, or large).",
+  "problem_type": "<str> Type of optimization problem formulation.",
+  "stress_parameters": {
+    "eta_p": "<float> Multiplier applied to base electricity demand across all buses.",
+    "eta_g": "<float> Multiplier applied to base gas demand across all junctions."
+  },
+  "time_periods": "<int> Number of time periods in the planning horizon.",
+  "electricity_network": {
+    "num_buses": "<int> Number of buses in the electricity transmission grid.",
+    "num_lines": "<int> Number of transmission lines connecting buses.",
+    "buses": [
+      {
+        "id": "<int> Unique identifier for this bus.",
+        "demand_profile": "<list[float], length time_periods> Electricity demand at this bus in each time period (MW).",
+        "voltage_angle_lb": "<float> Lower bound on the voltage phase angle at this bus (radians).",
+        "voltage_angle_ub": "<float> Upper bound on the voltage phase angle at this bus (radians)."
+      }
+    ],
+    "lines": [
+      {
+        "id": "<int> Unique identifier for this transmission line.",
+        "from_bus": "<int> Bus at one endpoint of the line.",
+        "to_bus": "<int> Bus at the other endpoint of the line.",
+        "susceptance": "<float> Electrical susceptance of the line relating power flow to voltage angle difference (MW/rad).",
+        "thermal_limit": "<float> Maximum allowable power flow on the line (MW).",
+        "angle_diff_limit": "<float> Maximum allowable voltage angle difference between the two endpoint buses (radians)."
+      }
+    ]
+  },
+  "generators": {
+    "num_generators": "<int> Total number of generators in the system.",
+    "num_gfpp": "<int> Number of gas-fired power plants among the generators.",
+    "generators": [
+      {
+        "id": "<int> Unique identifier for this generator.",
+        "bus": "<int> Bus where this generator is located.",
+        "is_gfpp": "<bool> Whether this generator is a gas-fired power plant that consumes natural gas.",
+        "gas_junction": "<int or null> Gas network junction from which this GFPP draws fuel, or null for non-GFPP generators.",
+        "min_power": "<float> Minimum real power output when the generator is on (MW).",
+        "max_power": "<float> Maximum real power output (MW).",
+        "ramp_down": "<float> Maximum decrease in power output between consecutive time periods (MW).",
+        "ramp_up": "<float> Maximum increase in power output between consecutive time periods (MW).",
+        "no_load_cost": "<float> Fixed operating cost incurred each period the generator is on ($).",
+        "min_up_time": "<int> Minimum number of consecutive periods the generator must remain on after starting up.",
+        "min_down_time": "<int> Minimum number of consecutive periods the generator must remain off after shutting down.",
+        "initial_status": "<int> On/off status of the generator at the start of the horizon (1 = on, 0 = off).",
+        "initial_gen": "<float> Power output of the generator in the pre-horizon period (MW).",
+        "initial_active_periods": "<int> Number of consecutive periods the generator has been on at the start of the horizon.",
+        "initial_inactive_periods": "<int> Number of consecutive periods the generator has been off at the start of the horizon.",
+        "startup_cost_params": "<list[list[float]], length min_up_time> Startup cost tiers, each a pair of lookback window length (periods) and associated startup cost ($).",
+        "num_bids": "<int> Number of supply bid segments for this generator.",
+        "bids": [
+          {
+            "id": "<int> Unique identifier for this bid segment.",
+            "price": "<float> Marginal price of electricity offered in this bid segment ($/MWh).",
+            "max_amount": "<float> Maximum generation quantity available in this bid segment (MW)."
+          }
+        ],
+        "heat_rate_coefficients": {
+          "H_u2": "<float or null> Quadratic coefficient of the heat rate curve relating power output to gas consumption (mmBtu/MW^2h).",
+          "H_u1": "<float or null> Linear coefficient of the heat rate curve (mmBtu/MWh).",
+          "H_u0": "<float or null> Constant coefficient of the heat rate curve (mmBtu/h)."
+        },
+        "max_gas_price_fraction": "<float or null> Maximum fraction of the global gas price upper bound at which this GFPP's bids remain profitable, or null for non-GFPP generators."
+      }
+    ]
+  },
+  "gas_network": {
+    "num_junctions": "<int> Number of junctions in the gas transmission network.",
+    "num_connections": "<int> Total number of connections (pipelines and compressors) in the gas network.",
+    "num_compressors": "<int> Number of compressor connections in the gas network.",
+    "num_pricing_zones": "<int> Number of gas pricing zones partitioning the junctions.",
+    "max_gas_price_mmBtu": "<float> Global upper bound on the gas price ($/mmBtu).",
+    "min_gas_price_mmBtu": "<float> Global lower bound on the gas price ($/mmBtu).",
+    "pricing_zones": [
+      {
+        "id": "<int> Unique identifier for this pricing zone.",
+        "junctions": "<list[int]> Gas junctions belonging to this pricing zone."
+      }
+    ],
+    "junctions": [
+      {
+        "id": "<int> Unique identifier for this gas junction.",
+        "is_source": "<bool> Whether this junction is a gas supply source.",
+        "pressure_lb_squared": "<float> Lower bound on the squared pressure at this junction.",
+        "pressure_ub_squared": "<float> Upper bound on the squared pressure at this junction.",
+        "demand_shedding_cost": "<float> Penalty cost per unit of unmet gas demand at this junction ($/unit).",
+        "gas_demand_profile": "<list[float], length time_periods> Exogenous gas demand at this junction in each time period.",
+        "supply_intervals": [
+          {
+            "id": "<int> Unique identifier for this supply interval.",
+            "interval_lb": "<float> Lower bound on gas production in this interval.",
+            "interval_ub": "<float> Upper bound on gas production in this interval.",
+            "slope": "<float> Marginal cost of gas supply within this interval ($/unit)."
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "id": "<int> Unique identifier for this gas network connection.",
+        "from_junction": "<int> Junction at the upstream end of the connection.",
+        "to_junction": "<int> Junction at the downstream end of the connection.",
+        "type": "<str> Type of connection (pipeline or compressor).",
+        "weymouth_factor": "<float or null> Resistance factor relating pressure drop to squared gas flow for pipelines, or null for compressors.",
+        "compression_ratio_lb": "<float or null> Lower bound on the pressure compression ratio for compressors, or null for pipelines.",
+        "compression_ratio_ub": "<float or null> Upper bound on the pressure compression ratio for compressors, or null for pipelines.",
+        "control_ratio_lb": "<float or null> Lower bound on the control valve ratio, or null if not applicable.",
+        "control_ratio_ub": "<float or null> Upper bound on the control valve ratio, or null if not applicable."
+      }
+    ]
+  }
+}

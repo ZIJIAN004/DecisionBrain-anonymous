@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total profit earned from all agent-job assignments.",
+  "assignment": "<dict, key: '{job}'> Agent assigned to each job."
+}

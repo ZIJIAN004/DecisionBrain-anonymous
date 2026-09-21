@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total number of re-assignments across all trades and periods of the project.",
+  "assignments": "<dict, key: '{trade_id}', value: dict with key: '{period}' and value: list[int]> Containers assigned to each trade in each period of that trade's active interval."
+}

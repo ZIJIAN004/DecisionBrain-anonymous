@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total routing cost summed over all routes performed across all days of the planning horizon.",
+  "routes": "<dict, key: '{day}'> For each day in the planning horizon, the ordered list of vehicle routes performed on that day, where each route entry has 'customers' (the sequence of customer ids visited between depot departure and return), 'cost' (the Euclidean travel cost of the route), 'demand' (the total quantity delivered on the route), and 'parts' (a dict keyed by '{customer}' giving the visit's 'visit_day', 'days_covered', and 'demand_per_visit' delivered to that customer on this route).",
+  "schedules": "<dict, key: '{customer}'> For each customer, the chosen visiting pattern, giving the index of the selected schedule ('schedule_index'), the days on which that customer is visited ('days'), and the number of visits performed in the horizon ('visit_frequency')."
+}

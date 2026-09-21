@@ -1,0 +1,17 @@
+{
+  "problem_type": "<str> Scheduling variant, either 'weighted_completion_time' or 'weighted_tardy_jobs'.",
+  "machine_type": "<str> Machine environment: 'identical' (same speed), 'uniform' (speed factors), or 'unrelated' (independent times).",
+  "objective": "<str> Objective function: 'minimize_total_weighted_completion_time' or 'minimize_weighted_number_of_tardy_jobs'.",
+  "num_jobs": "<int> Total number of jobs to be scheduled.",
+  "num_machines": "<int> Total number of parallel machines available.",
+  "congestion_parameter_q": "<int or null> Controls the tightness of due dates for the tardy-jobs variant; null for the completion-time variant.",
+  "machines": {
+    "speeds": "<list[int], length num_machines, or null> Speed factor of each machine for uniform machines; null for identical or unrelated machines."
+  },
+  "jobs": {
+    "weights": "<list[int], length num_jobs> Priority weight of each job, used in the objective function.",
+    "processing_times": "<list[list[int]], shape [num_jobs][num_machines]> Time required to process each job on each machine.",
+    "base_processing_times": "<list[int], length num_jobs, or null> Inherent processing time of each job before applying machine speed factors; null for unrelated machines.",
+    "due_dates": "<list[int], length num_jobs, or null> Deadline by which each job should be completed for the tardy-jobs variant; null for the completion-time variant."
+  }
+}

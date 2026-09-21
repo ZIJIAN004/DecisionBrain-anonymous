@@ -1,0 +1,23 @@
+{
+  "num_facilities": "<int> Number of potential facility locations that may be opened.",
+  "num_customers": "<int> Number of customers whose demands must be served.",
+  "num_scenarios": "<int> Number of demand scenarios representing uncertainty.",
+  "total_capacity": "<int> Combined service capacity across all potential facilities.",
+  "max_total_demand": "<int> Highest aggregate customer demand among all scenarios.",
+  "facilities": {
+    "x_coordinates": "<list[float], length num_facilities> Horizontal coordinate of each potential facility on the service region grid.",
+    "y_coordinates": "<list[float], length num_facilities> Vertical coordinate of each potential facility on the service region grid.",
+    "fixed_costs": "<list[int], length num_facilities> One-time cost incurred for opening each facility.",
+    "capacities": "<list[int], length num_facilities> Maximum total flow each facility can ship to customers if opened."
+  },
+  "customers": {
+    "x_coordinates": "<list[float], length num_customers> Horizontal coordinate of each customer on the service region grid.",
+    "y_coordinates": "<list[float], length num_customers> Vertical coordinate of each customer on the service region grid."
+  },
+  "routing_costs": "<list[list[float]], shape [num_facilities][num_customers]> Per-unit cost of shipping goods from each facility to each customer.",
+  "scenarios": {
+    "num_scenarios": "<int> Number of demand scenarios representing uncertainty.",
+    "probabilities": "<list[float], length num_scenarios> Likelihood of each demand scenario occurring.",
+    "demands": "<list[list[int]], shape [num_scenarios][num_customers]> Quantity of goods each customer requires under each scenario."
+  }
+}

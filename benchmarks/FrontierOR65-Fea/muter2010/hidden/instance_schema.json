@@ -1,0 +1,25 @@
+{
+  "num_customers": "<int> Total number of customers to be served.",
+  "depot": {
+    "id": "<int> Identifier for the depot location.",
+    "x": "<int> Horizontal coordinate of the depot in the service area.",
+    "y": "<int> Vertical coordinate of the depot in the service area.",
+    "demand": "<int> Demand at the depot, always zero.",
+    "ready_time": "<int> Earliest time at which vehicles may depart from the depot.",
+    "due_date": "<int> Latest time by which all vehicles must return to the depot.",
+    "service_time": "<int> Service duration at the depot, always zero."
+  },
+  "vehicle_capacity": "<int> Maximum total demand that a single vehicle can carry on one route.",
+  "num_vehicles": "<int> Number of identical vehicles available in the fleet.",
+  "customers": [
+    {
+      "id": "<int> Unique identifier for the customer.",
+      "x": "<int> Horizontal coordinate of the customer in the service area.",
+      "y": "<int> Vertical coordinate of the customer in the service area.",
+      "demand": "<int> Quantity of goods that must be delivered to the customer.",
+      "ready_time": "<int> Earliest time at which a vehicle may begin serving the customer.",
+      "due_date": "<int> Latest time by which a vehicle must arrive at the customer.",
+      "service_time": "<int> Duration a vehicle must spend at the customer location to complete the delivery."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "S": "<int> Number of interior storage slots in the block, with slot zero as the seaside handover point and slot S+1 as the landside handover point.",
+  "n": "<int> Number of seaside containers arriving at the seaside handover point.",
+  "m": "<int> Number of landside containers already stored in the block that must be delivered to the landside handover point.",
+  "p": "<int> Number of consecutive time units required to complete each lift or drop operation for both cranes.",
+  "sigma_w": "<int> Initial slot position of the seaside crane at time zero.",
+  "sigma_l": "<int> Initial slot position of the landside crane at time zero.",
+  "seaside_containers": [
+    {
+      "id": "<int> Sequence number of this seaside container, defining its required pickup order at the seaside handover point.",
+      "target_slot": "<int> Storage slot where this seaside container must ultimately be placed."
+    }
+  ],
+  "landside_containers": [
+    {
+      "id": "<int> Identifier of this landside container, ordered by non-decreasing deadline.",
+      "source_slot": "<int> Interior storage slot where this landside container is initially located.",
+      "earliest_finish_time": "<int> Earliest time at which this landside container may be dropped at the landside handover point.",
+      "deadline": "<int> Latest time by which this landside container must be dropped at the landside handover point."
+    }
+  ]
+}

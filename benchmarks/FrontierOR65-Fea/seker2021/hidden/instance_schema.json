@@ -1,0 +1,11 @@
+{
+  "graph": {
+    "num_vertices": "<int> Total number of vertices in the perfect graph.",
+    "num_edges": "<int> Total number of edges in the perfect graph.",
+    "edges": "<list[list[int]], shape [num_edges][2]> Each edge defined by its two endpoint vertices, with the smaller vertex index listed first."
+  },
+  "partition": {
+    "num_clusters": "<int> Number of disjoint clusters into which the vertices are partitioned.",
+    "clusters": "<list[list[int]], length num_clusters> Vertex indices belonging to each cluster, where every vertex appears in exactly one cluster."
+  }
+}

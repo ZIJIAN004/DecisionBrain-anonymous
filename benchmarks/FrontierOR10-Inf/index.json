@@ -1,0 +1,108 @@
+{
+  "benchmark": "FrontierOR",
+  "suite": "FrontierOR10-Inf",
+  "case_count": 10,
+  "cases": {
+    "desaulniers2010_type1_data": {
+      "task": "desaulniers2010_type1_data",
+      "source_task": "desaulniers2010",
+      "instance_index": 5,
+      "instance_bytes": 151763,
+      "reference_feasible": false,
+      "problem_class": "Vehicle Routing & TSP",
+      "formulation_type": "MIP",
+      "infeasibility_type": "data"
+    },
+    "desaulniers2010_type2_constraint": {
+      "task": "desaulniers2010_type2_constraint",
+      "source_task": "desaulniers2010",
+      "instance_index": 5,
+      "instance_bytes": 140230,
+      "reference_feasible": false,
+      "problem_class": "Vehicle Routing & TSP",
+      "formulation_type": "MIP",
+      "infeasibility_type": "constraint"
+    },
+    "freling2003_type1_data": {
+      "task": "freling2003_type1_data",
+      "source_task": "freling2003",
+      "instance_index": 2,
+      "instance_bytes": 280154,
+      "reference_feasible": false,
+      "problem_class": "Facility Location",
+      "formulation_type": "MIP",
+      "infeasibility_type": "data"
+    },
+    "freling2003_type2_constraint": {
+      "task": "freling2003_type2_constraint",
+      "source_task": "freling2003",
+      "instance_index": 2,
+      "instance_bytes": 264128,
+      "reference_feasible": false,
+      "problem_class": "Facility Location",
+      "formulation_type": "MIP",
+      "infeasibility_type": "constraint"
+    },
+    "knueven2020_type1_data": {
+      "task": "knueven2020_type1_data",
+      "source_task": "knueven2020",
+      "instance_index": 5,
+      "instance_bytes": 1021599,
+      "reference_feasible": false,
+      "problem_class": "Energy & Unit Commitment",
+      "formulation_type": "MIP",
+      "infeasibility_type": "data"
+    },
+    "knueven2020_type2_constraint": {
+      "task": "knueven2020_type2_constraint",
+      "source_task": "knueven2020",
+      "instance_index": 5,
+      "instance_bytes": 647202,
+      "reference_feasible": false,
+      "problem_class": "Energy & Unit Commitment",
+      "formulation_type": "MIP",
+      "infeasibility_type": "constraint"
+    },
+    "rahimian2017_type1_data": {
+      "task": "rahimian2017_type1_data",
+      "source_task": "rahimian2017",
+      "instance_index": 5,
+      "instance_bytes": 271104,
+      "reference_feasible": false,
+      "problem_class": "Other (Nurse Rostering)",
+      "formulation_type": "MIP",
+      "infeasibility_type": "data"
+    },
+    "rahimian2017_type2_constraint": {
+      "task": "rahimian2017_type2_constraint",
+      "source_task": "rahimian2017",
+      "instance_index": 5,
+      "instance_bytes": 256697,
+      "reference_feasible": false,
+      "problem_class": "Other (Nurse Rostering)",
+      "formulation_type": "MIP",
+      "infeasibility_type": "constraint"
+    },
+    "ropke2009_type1_data": {
+      "task": "ropke2009_type1_data",
+      "source_task": "ropke2009",
+      "instance_index": 1,
+      "instance_bytes": 39757,
+      "reference_feasible": false,
+      "problem_class": "Vehicle Routing & TSP",
+      "formulation_type": "BIP",
+      "infeasibility_type": "data"
+    },
+    "ropke2009_type2_constraint": {
+      "task": "ropke2009_type2_constraint",
+      "source_task": "ropke2009",
+      "instance_index": 1,
+      "instance_bytes": 37598,
+      "reference_feasible": false,
+      "problem_class": "Vehicle Routing & TSP",
+      "formulation_type": "BIP",
+      "infeasibility_type": "constraint"
+    }
+  },
+  "selection_rule": "FrontierOR-all structures x data/constraint perturbations; external large-root directories match case IDs."
+}

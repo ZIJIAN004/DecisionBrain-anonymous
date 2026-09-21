@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "dataset": "FrontierOR65-Fea",
+  "distribution": "fetch-licensed-payload-locally",
+  "selection": "../../benchmarks/FrontierOR65-Fea/index.json",
+  "source": {
+    "dataset": "SmartOR/FrontierOR",
+    "url": "https://huggingface.co/datasets/SmartOR/FrontierOR",
+    "license": "CC-BY-4.0",
+    "revision": "37ccd8b6dca3bf7f4e0c58941a6ed156832a6d9e",
+    "revision_date_utc": "2026-06-14T11:13:13Z"
+  },
+  "local_root": "dataset"
+}

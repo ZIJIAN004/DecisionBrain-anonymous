@@ -1,0 +1,8 @@
+{
+  "objective_value": "<float> Total penalty from unmet shift requests and staffing coverage deviations.",
+  "solution": {
+    "schedule": "<dict, key: '{nurse_id}', value: dict with key '{day}'> Shift type assigned to each nurse on each day, or null if the nurse is not working that day.",
+    "coverage_under": "<dict, key: '{day}_{shift_type}'> Number of nurses below the preferred staffing level for each day and shift type with under-coverage.",
+    "coverage_over": "<dict, key: '{day}_{shift_type}'> Number of nurses above the preferred staffing level for each day and shift type with over-coverage."
+  }
+}

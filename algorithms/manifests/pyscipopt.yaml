@@ -1,0 +1,288 @@
+schema_version: "1.3"
+
+id: pyscipopt
+display_name: PySCIPOpt
+status: experimental
+kind: python_library
+summary: >-
+  PySCIPOpt 6.2.1 exposes SCIP modeling for MILP and nonlinear constraints plus explicit Pricer, Heur, and Conshdlr plugin APIs for generated custom algorithms.
+
+algorithm:
+  problem_families:
+    - linear_programming
+    - nonlinear_programming
+    - assignment
+    - resource_scheduling
+    - routing
+    - packing
+    - cutting_stock
+    - inventory
+    - production_planning
+    - mixed_combinatorial
+  method: mathematical_programming
+  method_class: exact
+  optimality: exact_or_incumbent
+  supports_warm_start: true
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - continuous_integer_and_binary_variables
+    - linear_constraints
+    - nonlinear_constraints
+    - mixed_integer_nonlinear_programming
+    - primal_solution_injection
+    - incumbent_objective
+    - dual_bound
+    - optimality_gap
+    - pricer_plugins
+    - primal_heuristic_plugins
+    - constraint_handler_plugins
+    - branch_and_price_building_blocks
+  limitations:
+    - PySCIPOpt does not infer variables, constraints, objectives, decompositions, columns, or plugin callbacks.
+    - A nonlinear objective must be reformulated, for example with an auxiliary variable and nonlinear constraint, because setObjective expects a linear expression.
+    - Including a Pricer does not automatically create a correct restricted master, pricing problem, or branch-and-price algorithm.
+    - A time-limited incumbent is not proof of optimality and no incumbent fields may be read when no solution exists.
+    - PySCIPOpt does not emit DecisionBrain's problem-specific solution schema directly.
+
+selection:
+  required_features:
+    - a_complete_scip_formulation_is_available
+    - variable_domains_bounds_and_numeric_scaling_are_explicit
+    - status_bound_gap_and_solution_existence_are_checked_before_result_access
+  good_fit_when:
+    - The problem needs open-source MILP or supported nonlinear-constraint modeling through SCIP.
+    - A custom pricing, primal heuristic, or constraint-handler plugin will be implemented explicitly.
+    - Incumbent, bound, gap, and proof-aware SCIP statuses are required.
+  reject_when:
+    - Important business rules cannot be faithfully encoded in SCIP.
+    - A branch-and-price claim lacks a complete master, pricing, branching, and callback design.
+    - Nonlinear objective reformulation or numeric bounds cannot be justified.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: Limits depend on formulation strength, nonlinear structure, plugins, machine, and runtime budget.
+
+distribution:
+  package: PySCIPOpt
+  verified_version: 6.2.1
+  compatible_version_spec: ">=6.2.1,<6.3.0"
+  import_name: pyscipopt
+  requires_python: ">=3.8"
+  license_spdx: MIT
+  homepage: https://github.com/scipopt/PySCIPOpt
+  documentation: https://pyscipopt.readthedocs.io/en/latest/
+  source_repository: https://github.com/scipopt/PySCIPOpt
+  native_extensions: true
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: cp312-cp312-win_amd64
+    self_compiled: false
+    modules:
+      - pyscipopt
+  verified_environment:
+    conda_environment: DecisionBrain/venv
+    python_version: "3.12"
+    platform: windows-amd64
+
+interface:
+  profile: pyscipopt
+  preferred_api: solver_suite
+  imports:
+    - from pyscipopt import Model, Pricer, Heur, Conshdlr, quicksum
+  model_builder:
+    constructor: Model(problemName="model")
+    methods:
+      - model.addVar
+      - model.addCons
+      - model.setObjective
+      - model.createSol
+      - model.addSol
+      - model.setParam
+      - model.optimize
+    alternative_inputs:
+      - model.readProblem(filename)
+  solvers:
+    - id: milp
+      method: mixed_integer_linear_programming
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from pyscipopt import Model, quicksum
+      constructor: pyscipopt.Model(problemName='model')
+      call: model.optimize()
+      supports_warm_start: true
+      supports_random_seed: true
+      supports_time_limit: true
+      stopping_criteria:
+        - name: limits/time
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_exact_search
+            - incumbent_and_bound_search
+          caveat: A timelimit status may have no incumbent or an incumbent without an optimality proof.
+      important_parameters:
+        limits/time: Wall-clock solve limit in seconds.
+        randomization/randomseedshift: Shift applied to SCIP random seeds.
+        limits/gap: Relative primal-dual gap termination target.
+        parallel/maxnthreads: Maximum thread count.
+        createSol_and_addSol: Build and inject a candidate primal solution as a warm start.
+      result:
+        type: pyscipopt.Model
+        fields:
+          status: model.getStatus()
+          solution_count: model.getNSols()
+          objective: model.getObjVal()
+          dual_bound: model.getDualbound()
+          gap: model.getGap()
+          best_solution: model.getBestSol()
+          variable_value: model.getVal(variable)
+          runtime_seconds: model.getSolvingTime()
+        warning: Read objective and variable values only when model.getNSols() is positive; only SCIP's optimal status proves optimality.
+    - id: minlp
+      method: mixed_integer_nonlinear_programming
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from pyscipopt import Model, exp, log, sqrt
+      constructor: pyscipopt.Model(problemName='model')
+      call: model.optimize()
+      supports_warm_start: true
+      supports_random_seed: true
+      supports_time_limit: true
+      stopping_criteria:
+        - name: limits/time
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_nonlinear_search
+          caveat: Nonconvex search can terminate with an incumbent, a remaining gap, or no solution.
+      important_parameters:
+        limits/time: Wall-clock solve limit in seconds.
+        limits/gap: Relative primal-dual gap termination target.
+        addCons: Accepts supported nonlinear expressions.
+        nonlinear_objective: Introduce an auxiliary objective variable and constrain it to the nonlinear expression.
+      result:
+        type: pyscipopt.Model
+        fields:
+          status: model.getStatus()
+          solution_count: model.getNSols()
+          objective: model.getObjVal()
+          dual_bound: model.getDualbound()
+          gap: model.getGap()
+          best_solution: model.getBestSol()
+          variable_value: model.getVal(variable)
+          runtime_seconds: model.getSolvingTime()
+        warning: Proof and gap interpretation depend on the faithfully encoded nonlinear model and SCIP status.
+  facts:
+    plugins:
+      base_classes:
+        - Pricer
+        - Heur
+        - Conshdlr
+      include_calls:
+        - Model.includePricer
+        - Model.includeHeur
+        - Model.includeConshdlr
+      implementation_boundary: >-
+        The generated solver must subclass the selected plugin base, implement required SCIP callbacks and return dictionaries with the expected SCIP result codes.
+      branch_and_price_boundary: >-
+        A custom Pricer is only one building block; exact branch-and-price also requires a valid restricted master, pricing problem, variable creation, branching compatibility, and proof-complete termination.
+    nonlinear_objective_boundary: >-
+      setObjective accepts a linear expression; represent a nonlinear objective with a justified auxiliary variable and nonlinear linking constraint.
+    proof_boundary: >-
+      optimal and infeasible statuses apply only to the faithfully encoded SCIP model; timelimit, gap, or an incumbent alone is not a proof.
+    solution_access_boundary: >-
+      Check model.getNSols() before calling incumbent-dependent accessors such as getObjVal and getVal.
+
+solver_documentation:
+  - id: milp
+    summary: Solve mixed-integer linear models with SCIP incumbents, bounds, gaps, and proof statuses.
+    minimal_call_example: |
+      from pyscipopt import Model
+      model = Model("milp")
+      model.setParam("limits/time", 10)
+      x = model.addVar("x", vtype="B")
+      model.setObjective(x, "maximize")
+      model.optimize()
+      if model.getNSols() > 0:
+          status = model.getStatus()
+          value = model.getVal(x)
+          bound = model.getDualbound()
+          gap = model.getGap()
+    common_errors:
+      - error: Solution has no setVal method; warm-start values are assigned through Model.
+        wrong: |
+          solution.setVal(variable, value)
+        correct: |
+          model.setSolVal(solution, variable, value)
+      - error: Integer SCIP parameters reject setRealParam.
+        wrong: |
+          model.setRealParam("randomization/randomseedshift", 7)
+        correct: |
+          model.setIntParam("randomization/randomseedshift", 7)
+      - error: Constraint mutation and LP dual access are Model methods, not Constraint methods.
+        wrong: |
+          constraint.chgRhs(rhs)
+          dual = constraint.getDualsolLinear()
+        correct: |
+          model.chgRhs(constraint, rhs)
+          dual = model.getDualsolLinear(constraint)
+  - id: minlp
+    summary: Solve mixed-integer nonlinear models expressed through supported SCIP nonlinear constraints.
+    minimal_call_example: |
+      from pyscipopt import Model
+      model = Model("minlp")
+      x = model.addVar("x", lb=0.0)
+      y = model.addVar("y", vtype="B")
+      model.addCons(x * x <= 4 * y)
+      model.setObjective(x, "maximize")
+      model.optimize()
+      if model.getNSols() > 0:
+          value = model.getVal(x)
+    common_errors:
+      - error: Nonlinear expressions cannot be appended with an Expr.addTerms method.
+        wrong: |
+          expression.addTerms(coefficient, variable)
+        correct: |
+          expression += coefficient * variable
+
+agent_guidance:
+  algorithm_design:
+    - Select milp or minlp explicitly and provide a complete formulation for the selected mode.
+    - If using plugins, describe each callback contract, maintained state, result code, and proof boundary; never label includePricer alone as branch-and-price.
+    - Derive all bounds, Big-M constants, nonlinear reformulations, and business-ID mappings.
+  solving:
+    - Set limits/time inside the total SOLVER_TIMEOUT budget and check getStatus plus getNSols before reading an incumbent.
+    - Record status, solution count, objective, dual bound, gap, and solving time.
+    - Map SCIP variables to business IDs and run feasibility_checker.py before writing solution.json.
+  minimal_call_example: |
+    from pyscipopt import Model
+
+    model = Model("binary-choice")
+    model.hideOutput()
+    x = model.addVar("x", vtype="B")
+    model.setObjective(x, "maximize")
+    model.addCons(x <= 1)
+    model.setRealParam("limits/time", 10)
+    model.optimize()
+    if model.getNSols() == 0:
+        raise RuntimeError(f"SCIP returned {model.getStatus()} without an incumbent")
+    value = model.getVal(x)
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; from pyscipopt import Model, Pricer, Heur, Conshdlr;
+      assert version('pyscipopt') == '6.2.1'; print(version('pyscipopt'))"
+    expected_version: 6.2.1
+  acceptance_requirements:
+    - The binary wheel imports with its bundled SCIP runtime in Python 3.12.
+    - A minimal binary model returns optimal status, objective, bound, gap, and variable value.
+    - Any selected plugin has focused callback tests before production use.
+    - The generated solution conforms to solution_schema.json and passes feasibility_checker.py.
+    - solver_result.json records package id, solver id, version, status, solution count, bound, gap, and runtime.
+  benchmark_status: not_benchmarked

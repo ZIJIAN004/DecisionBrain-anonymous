@@ -1,0 +1,16 @@
+{
+    "paper_id":  "armbruster2012",
+    "paper_title":  "LP and SDP branch-and-cut algorithms for the minimum graph bisection problem: a computational comparison",
+    "publication":  "Mathematical Programming Computation",
+    "year":  2012,
+    "direction":  "min",
+    "problem_class":  "Graph Optimization",
+    "category":  "planning",
+    "formulation_type":  "SDP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  129581.0,
+    "avg_num_int_var":  129581.0,
+    "avg_num_constr":  451734.0,
+    "source_link":  "https://link.springer.com/article/10.1007/s12532-012-0040-5",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

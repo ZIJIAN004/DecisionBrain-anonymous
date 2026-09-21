@@ -1,0 +1,16 @@
+{
+    "paper_id":  "zetina2019",
+    "paper_title":  "Exact Algorithms based on Benders Decomposition for Multicommmodity Uncapacitated Fixed-charge Network Design",
+    "publication":  "Computers \u0026 Operations Research",
+    "year":  2019,
+    "direction":  "min",
+    "problem_class":  "Network Design \u0026 Flow",
+    "category":  "planning",
+    "formulation_type":  "MIP",
+    "application_field":  "Telecommunications \u0026 Networking",
+    "avg_num_var":  1121400.0,
+    "avg_num_int_var":  1400.0,
+    "avg_num_constr":  1160000.0,
+    "source_link":  "https://doi.org/10.1016/j.cor.2019.07.007",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

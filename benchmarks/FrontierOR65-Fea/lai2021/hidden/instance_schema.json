@@ -1,0 +1,14 @@
+{
+  "N": "<int> Total number of elements to be partitioned into groups.",
+  "m": "<int> Number of groups into which the elements must be partitioned.",
+  "group_capacities": "<list[dict], length m> Capacity bounds for each group, where each entry contains:",
+  "group_capacities[*]": {
+    "L_g": "<int> Minimum number of elements that must be assigned to this group.",
+    "U_g": "<int> Maximum number of elements that may be assigned to this group."
+  },
+  "distance_type": "<str> Whether pairwise distances are real-valued ('real') or integer-valued ('int').",
+  "distance_range": "<list[int], length 2> The lower and upper bounds of the range from which pairwise distances are drawn.",
+  "distances_upper_triangular": "<list[float], length N*(N-1)/2> Pairwise distances between all distinct element pairs, stored as the upper triangle of the symmetric distance matrix in row-major order: d(0,1), d(0,2), ..., d(0,N-1), d(1,2), ..., d(N-2,N-1).",
+  "distance_format": "<str> Description of how the upper-triangular distance entries are ordered.",
+  "num_distance_entries": "<int> Total number of pairwise distance values stored, equal to N*(N-1)/2."
+}

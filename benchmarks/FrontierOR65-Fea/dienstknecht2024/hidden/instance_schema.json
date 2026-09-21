@@ -1,0 +1,33 @@
+{
+  "problem_parameters": {
+    "num_periods": "<int> Total number of periods in the construction project planning horizon.",
+    "num_containers": "<int> Total number of containers in the container unit on the construction site.",
+    "num_trades": "<int> Total number of trades requiring container accommodation during the project.",
+    "cu_width": "<int> Width of the container unit in number of containers per layer.",
+    "cu_depth": "<int> Depth of the container unit in number of containers per layer.",
+    "cu_height": "<int> Number of stacked layers in the container unit.",
+    "d_max": "<int> Maximum number of separate container clusters any trade will tolerate."
+  },
+  "containers": [
+    {
+      "id": "<int> Unique identifier for this container.",
+      "position": {
+        "x": "<int> Position of this container along the width axis of the container unit.",
+        "y": "<int> Position of this container along the depth axis of the container unit.",
+        "z": "<int> Layer index of this container in the container unit."
+      },
+      "availability_start": "<int> First period in which this container is available on-site for assignment.",
+      "availability_end": "<int> Last period in which this container is available on-site for assignment.",
+      "adjacent_containers": "<list[int]> Identifiers of all containers physically adjacent to this one within the container unit."
+    }
+  ],
+  "trades": [
+    {
+      "id": "<int> Unique identifier for this trade.",
+      "start_period": "<int> First period in which this trade is active and requires containers.",
+      "end_period": "<int> Last period in which this trade is active and requires containers.",
+      "container_demand": "<int> Number of containers this trade needs in each period it is active.",
+      "max_dispersion": "<int> Maximum number of separate container clusters allowed for this trade in any period."
+    }
+  ]
+}

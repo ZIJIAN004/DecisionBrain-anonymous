@@ -1,0 +1,16 @@
+{
+    "paper_id":  "sadykov2013",
+    "paper_title":  "Bin Packing with Conflicts: a Generic Branch-and-Price Algorithm",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2013,
+    "direction":  "min",
+    "problem_class":  "Packing / Cutting Stock",
+    "category":  "planning",
+    "formulation_type":  "BIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  12210.0,
+    "avg_num_int_var":  12210.0,
+    "avg_num_constr":  461889.0,
+    "source_link":  "https://pubsonline.informs.org/doi/10.1287/ijoc.1120.0499",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

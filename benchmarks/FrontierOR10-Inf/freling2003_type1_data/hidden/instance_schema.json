@@ -1,0 +1,14 @@
+{
+  "parameters": {
+    "num_facilities": "<int> Number of facilities (combined production plants and warehouses) in the distribution network.",
+    "num_customers": "<int> Number of customers to be served in the distribution network.",
+    "num_periods": "<int> Number of time periods in the planning horizon."
+  },
+  "seasonal_factors": "<list[float], length num_periods> Seasonal demand proportions shared by all customers, determining how each customer's total demand is distributed across periods.",
+  "facility_locations": "<list[list[float]], shape [num_facilities][2]> Two-dimensional coordinates of each facility in the service region.",
+  "customer_locations": "<list[list[float]], shape [num_customers][2]> Two-dimensional coordinates of each customer in the service region.",
+  "demands": "<list[float], length num_customers> Total demand of each customer over the entire planning horizon.",
+  "holding_costs": "<list[list[float]], shape [num_facilities][num_periods]> Per-unit cost of storing inventory at each facility at the end of each period.",
+  "capacities": "<list[list[float]], shape [num_facilities][num_periods]> Maximum production capacity available at each facility in each period.",
+  "transportation_costs": "<list[list[list[float]]], shape [num_facilities][num_customers][num_periods]> Cost of supplying each customer from each facility in each period."
+}

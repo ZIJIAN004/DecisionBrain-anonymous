@@ -1,0 +1,16 @@
+{
+    "paper_id":  "amaldi2013",
+    "paper_title":  "Column Generation for the Minimum Hyperplanes Clustering Problem",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2013,
+    "direction":  "min",
+    "problem_class":  "Other (Clustering)",
+    "category":  "planning",
+    "formulation_type":  "MIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  10300.0,
+    "avg_num_int_var":  10050.0,
+    "avg_num_constr":  30249.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.1120.0513",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

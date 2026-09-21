@@ -1,0 +1,11 @@
+{
+  "objective_value": "<float> Total number of hyperplanes used to cover all points.",
+  "hyperplanes": [
+    {
+      "w": "<list[float], length d> Unit-norm normal vector defining the orientation of this hyperplane.",
+      "w0": "<float> Scalar offset defining the position of this hyperplane.",
+      "assigned_points": "<list[int]> Indices of points assigned to this hyperplane."
+    }
+  ],
+  "point_assignments": "<list[list[int]], length n> For each point, the list of hyperplane indices (into the hyperplanes array) to which it is assigned."
+}

@@ -1,0 +1,24 @@
+{
+  "num_real_activities": "<int> Number of real activities in the project, excluding the dummy start and end activities.",
+  "num_nodes": "<int> Total number of activities including the dummy start (node 0) and dummy end (node num_real_activities+1).",
+  "num_partially_renewable_resources": "<int> Number of partially renewable resources constraining the project.",
+  "deadline": "<int> Latest allowable time period by which the project end activity must be completed.",
+  "processing_times": "<list[int], length num_nodes> Duration of each activity in whole time periods, where the dummy start and end activities have zero duration.",
+  "temporal_constraints": [
+    {
+      "from": "<int> Activity from which this temporal constraint originates.",
+      "to": "<int> Activity to which this temporal constraint applies.",
+      "delta": "<int> Required minimum difference between the start time of the destination activity and the start time of the origin activity.",
+      "type": "<str> Whether this constraint enforces a minimum lag ('min_lag') or a maximum lag ('max_lag') between two activities."
+    }
+  ],
+  "num_temporal_constraints": "<int> Total number of temporal constraints linking pairs of activities.",
+  "resources": [
+    {
+      "resource_id": "<int> Identifier for this partially renewable resource.",
+      "time_periods": "<list[int]> Designated subset of time periods from the planning horizon over which this resource's consumption is counted.",
+      "capacity": "<int> Maximum total resource consumption allowed across all activities for this resource.",
+      "demands": "<list[int], length num_nodes> Per-activity demand for this resource, indicating how much of the resource each activity consumes per designated time period it spans."
+    }
+  ]
+}

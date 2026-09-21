@@ -1,0 +1,130 @@
+【输出】`stage_outputs/algorithm_design.json`
+
+只写一个 JSON 对象：
+
+{
+  "schema_version": "1.1",
+  "problem_family": "linear_programming | resource_scheduling | routing | assignment | packing | network_flow | inventory | production_planning | facility_location | cutting_stock | robust_optimization | distributionally_robust_optimization | nonlinear_programming | mixed_combinatorial | other",
+  "diagnosis": {
+    "summary": "问题结构摘要",
+    "decision_type": "assign | select | sequence | schedule | route | allocate | batch | partition | activate | quantity | mixed",
+    "key_difficulty": "最关键求解难点"
+  },
+  "scale": {
+    "primary_items": 0,
+    "resources": 0,
+    "estimated_variables": 0,
+    "estimated_constraints": 0,
+    "risk": "low | medium | high",
+    "confidence": "low | medium | high",
+    "reason": "由真实数据复算的依据"
+  },
+  "candidates": [
+    {
+      "method": "方法枚举",
+      "method_class": "exact | constructive_heuristic | local_search | metaheuristic | other",
+      "source": "package | generated",
+      "package_id": "package manifest id 或 null",
+      "solver_id": "manifest solver id 或 null",
+      "fit_reason": "适用理由",
+      "main_risk": "主要风险",
+      "recommendation": "primary | backup | reject"
+    }
+  ],
+  "selection": {
+    "kind": "single | hybrid",
+    "reason": "整体选择理由和组件协作逻辑",
+    "components": []
+  },
+  "strategy": {
+    "representation": "全局解表示",
+    "feasibility": "最终可行性责任",
+    "objective": "全局目标和多目标次序",
+    "construction": "初始化及组件顺序",
+    "improvement": "改进、接受和回滚",
+    "stopping": "总预算与停止条件",
+    "output": "业务输出及诊断"
+  },
+  "fallback": {
+    "trigger": "触发条件",
+    "description": "降级动作和保证边界",
+    "components": []
+  },
+  "risks": ["仍需 solving 关注的风险"]
+}
+
+方法枚举：
+`mixed_integer_linear_programming | mixed_integer_nonlinear_programming | linear_programming | robust_optimization | distributionally_robust_optimization | constraint_programming | constraint_programming_sat | network_flow | dynamic_programming | iterated_local_search | large_neighborhood_search | simulated_annealing | dispatching_rule | vehicle_routing_search | greedy | custom_search | other`。
+
+每个 component 必须使用以下结构：
+
+{
+  "component_id": "稳定且唯一的小写 ID",
+  "role": "该组件在方案中的职责",
+  "source": "package | generated",
+  "package": {"id": "manifest id", "version": "verified version"},
+  "solver_id": "manifest 中的 solver id",
+  "method": "方法枚举",
+  "method_class": "exact | constructive_heuristic | local_search | metaheuristic | other",
+  "optimality": "proven_optimal | exact_or_incumbent | heuristic_or_incumbent",
+  "reason": "组件选择理由",
+  "capability_mapping": [
+    {
+      "business_requirement": "硬约束或关键需求",
+      "manifest_capability": "manifest 中真实 capability",
+      "evidence": "guide 中的明确证据"
+    }
+  ],
+  "integration": {
+    "primary_api": "所选 solver 的精确 API",
+    "input_mapping": "业务 ID、单位和输入映射",
+    "result_mapping": "solver 结果到业务 solution 的映射",
+    "runtime_control": "组件预算和停止条件",
+    "random_seed": 0,
+    "availability_check": "版本、导入及许可证检查"
+  },
+  "formulation": null
+}
+
+source 规则：
+- package：package、solver_id、capability_mapping、integration 都必须存在。method、method_class、optimality 必须与 guide 中所选 solver 完全一致。
+- generated：package、solver_id、integration 必须为 null，capability_mapping 为空数组，不得伪造 manifest 证据。
+
+formulation 规则：
+- 下列方法必须提供 formulation：mixed_integer_linear_programming、mixed_integer_nonlinear_programming、linear_programming、robust_optimization、distributionally_robust_optimization、constraint_programming、constraint_programming_sat、network_flow、dynamic_programming。
+- 其他方法的 formulation 必须为 null。
+- formulation.method 必须与 component.method 完全一致。
+
+formulation 结构：
+
+{
+  "method": "形式化方法枚举",
+  "scope": "full_problem | subproblem | relaxation | repair_model",
+  "summary": "当前业务模型摘要",
+  "variables": ["变量、下标、定义域和业务含义"],
+  "objective": "目标函数、单位和方向",
+  "constraints": ["每条硬约束的表达及业务含义"],
+  "big_m_notes": "Big-M 推导；不使用时为空字符串"
+}
+
+组合规则：
+- selection.kind=single 时 components 恰好一个。
+- selection.kind=hybrid 时 components 至少两个，component_id 不得重复。
+- hybrid 必须说明组件顺序、数据传递、warm start、预算、失败状态、接受与回滚。
+- fallback.components 使用同一 component 结构；不启用 package fallback 时可为空数组。
+
+验收规则：
+- 多轮 pilot 或建模验证必须优先复用 Runtime 已预置的 `scratch/` 中的数据准备、索引映射、候选集合和模型骨架；不得自行创建其他临时根目录。每个阶段结束后 Runtime 清空 `scratch/` 内容并保留目录，因此脚本只保证在当前阶段内可复用。后续调用不得在无必要时重新解析全部数据、重建全部变量和约束。只有输入映射、变量定义或约束语义发生实质变化时，才重建受影响部分。
+- 可复用脚本应将数据准备、模型构建、求解和结果检查分层，并使用独立参数/输出文件；不得依赖上一次进程的内存状态或 `/tmp` 中不可保证持续存在的脚本；临时产物不得冒充最终阶段输出。
+- 如果设计本身已经包含多个彼此独立的方案、solver 或 pilot 验证，可以并行执行；不得因为并行而额外增加候选或改变选择范围。存在数据依赖、共享可变状态或 warm start 时必须串行。
+- 主机有 16 个逻辑运算单元，单次 shell 调用的并发子进程/任务数不得超过 8；不得通过嵌套脚本或多层线程/进程池突破上限。
+- 并行任务必须隔离输入、`scratch/<task-id>/` 子目录和输出，保留任务 ID、退出码、耗时、超时和关键指标；失败任务不得污染或阻断其他任务。不得重复运行同一个失败命令，也不得改变 solver_timeout_seconds 总预算。
+- 若采用并行验证，最终方案必须记录既定验证任务集合、并发上限和汇总依据。
+- 关键规模数字必须来自工具计算，无法可靠估算时填 null。
+- package 发现必须先使用系统注入的一句话目录摘要完成初筛，不得通过逐个调用 get_algorithm_guide 遍历全部 package。
+- 只有 shortlist 中需要认真比较、最终采用或作为 fallback 的 package 才读取完整 guide；写入 candidates、selection.components 或 fallback.components 的 package 必须已经读取 guide。
+- status=experimental 或 not_benchmarked 不得描述为已验证高效。
+- 启发式失败只能标记 unknown，不得证明原问题 infeasible。
+- package API、能力、版本和保证只能引用完整 guide。
+- formulation 必须覆盖当前范围内全部硬约束，Big-M 和整数缩放必须可解释。
+- 提交 solver 内的所有组件预算、转换、checker 和输出必须闭合于 SOLVER_TIMEOUT；算法设计阶段的 API/数据结构探针和方案比较不计入该 solver 预算。

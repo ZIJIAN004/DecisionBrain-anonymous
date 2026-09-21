@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total shipping cost across all supplier-to-customer arcs in the bipartite network.",
+  "flows": "<dict, key: 'x_{supplier}_{customer}'> Quantity of flow shipped from each supplier to each customer."
+}

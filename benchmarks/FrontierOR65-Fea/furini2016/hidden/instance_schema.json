@@ -1,0 +1,18 @@
+{
+  "panel": {
+    "length": "<int> Horizontal dimension of the rectangular panel to be cut.",
+    "width": "<int> Vertical dimension of the rectangular panel to be cut."
+  },
+  "n": "<int> Number of distinct item types that may be cut from the panel.",
+  "n_tilde": "<int> Total number of item copies across all item types.",
+  "rho": "<float> Ratio of the largest panel dimension to the largest item dimension.",
+  "items": [
+    {
+      "id": "<int> Unique identifier for this item type.",
+      "length": "<int> Horizontal dimension of this item type.",
+      "width": "<int> Vertical dimension of this item type.",
+      "profit": "<int> Profit earned for each copy of this item type that is cut from the panel.",
+      "copies": "<int> Maximum number of copies of this item type that may be cut."
+    }
+  ]
+}

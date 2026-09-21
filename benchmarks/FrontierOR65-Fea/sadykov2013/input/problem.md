@@ -1,0 +1,5 @@
+# Problem Description
+
+A collection of items must be packed into identical bins. Each item has a known non-negative integer weight, and every bin has the same integer capacity. In addition to the items and bins, a conflict graph is given: certain pairs of items are declared to be in conflict, meaning they must never be placed in the same bin. The input specifies the number of items, the capacity shared by all bins, the weight of each item (which does not exceed the bin capacity), and the list of conflicting item pairs.
+
+The task is to assign every item to at least one bin so that two rules are respected simultaneously. First, the total weight of all items assigned to any single bin must not exceed that bin's capacity. Second, no two items that form a conflicting pair may be assigned to the same bin. A bin is considered used if at least one item is assigned to it, and the number of available bins may be assumed large enough that a feasible packing always exists. The goal is to minimize the total number of bins used.

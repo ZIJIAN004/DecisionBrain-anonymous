@@ -1,0 +1,16 @@
+{
+    "paper_id":  "buchheim2018",
+    "paper_title":  "Quadratic Combinatorial Optimization Using Separable Underestimators",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2018,
+    "direction":  "min",
+    "problem_class":  "Other (Quadratic Optimization)",
+    "category":  "planning",
+    "formulation_type":  "QP/MIQP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  420.0,
+    "avg_num_int_var":  420.0,
+    "avg_num_constr":  225.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2017.0789",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

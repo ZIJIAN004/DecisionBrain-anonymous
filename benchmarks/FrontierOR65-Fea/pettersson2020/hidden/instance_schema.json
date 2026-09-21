@@ -1,0 +1,7 @@
+{
+  "num_items": "<int> Number of items available for selection.",
+  "num_objectives": "<int> Number of objectives to be simultaneously minimized.",
+  "weights": "<list[int], length num_items> Weight of each item.",
+  "capacity": "<int> Maximum total weight the knapsack can hold.",
+  "objective_coefficients": "<list[list[int]], shape [num_objectives][num_items]> Contribution of each item to each objective when selected."
+}

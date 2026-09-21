@@ -1,0 +1,13 @@
+{
+  "num_vertices": "<int> Total number of vertices including the depot and all markets.",
+  "num_markets": "<int> Number of markets the purchaser may visit (excludes the depot).",
+  "num_products": "<int> Number of distinct products that must be purchased.",
+  "depot": "<int> Index of the depot vertex where the purchaser's round trip starts and ends.",
+  "coordinates": "<list[list[int]], shape [num_vertices][2], optional> X-Y coordinates of each vertex used to derive Euclidean travel costs, or null when travel costs are generated randomly.",
+  "tau": "<int, optional> Upper bound of the range from which random symmetric travel costs are drawn, or null for Euclidean instances.",
+  "travel_costs": "<dict, key: '{vertex_i},{vertex_j}' where vertex_i < vertex_j> Symmetric travel cost for the edge connecting each pair of vertices.",
+  "product_demands": "<list[int], length num_products> Number of units of each product that must be purchased in total.",
+  "product_markets": "<dict, key: '{product}'> List of market indices where each product is available for purchase.",
+  "purchase_costs": "<dict, key: '{market},{product}'> Per-unit cost of buying a product at a specific market.",
+  "supplies": "<dict, key: '{product},{market}'> Maximum number of units of a product available for purchase at a specific market."
+}

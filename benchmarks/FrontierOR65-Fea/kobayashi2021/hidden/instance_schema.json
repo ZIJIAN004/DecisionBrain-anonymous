@@ -1,0 +1,11 @@
+{
+  "N": "<int> Number of assets available for investment.",
+  "S": "<int> Number of return scenarios used to estimate portfolio risk.",
+  "k": "<int> Maximum number of assets that may be held in the portfolio.",
+  "beta": "<float> Probability level for the conditional value-at-risk measure.",
+  "gamma": "<float> Regularization strength controlling the penalty on concentrated portfolio weights.",
+  "mu_bar": "<float> Minimum required expected return that the portfolio must achieve.",
+  "mu": "<list[float], length N> Expected return for each asset.",
+  "p_s": "<float> Probability assigned to each return scenario (uniform across all scenarios).",
+  "scenarios": "<list[list[float]], shape [S][N]> Simulated return of each asset under each scenario."
+}

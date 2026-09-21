@@ -1,0 +1,16 @@
+{
+    "paper_id":  "gualandi2012",
+    "paper_title":  "Exact Solution of Graph Coloring Problems via Constraint Programming and Column Generation",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2012,
+    "direction":  "min",
+    "problem_class":  "Graph Optimization",
+    "category":  "planning",
+    "formulation_type":  "CP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  10251.0,
+    "avg_num_int_var":  10251.0,
+    "avg_num_constr":  634540.0,
+    "source_link":  "https://pubsonline.informs.org/doi/10.1287/ijoc.1100.0436",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

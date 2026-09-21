@@ -1,0 +1,282 @@
+schema_version: "1.3"
+
+id: gurobipy
+display_name: Gurobi Python API
+status: experimental
+kind: python_library
+summary: >-
+  Gurobi 13.0.2 Python modeling package for LP and MILP. The guide defines the
+  verified modeling, solve, status, bound, gap, time-limit, and license boundaries;
+  each business problem still requires its own formulation component.
+
+algorithm:
+  problem_families:
+    - linear_programming
+    - mixed_combinatorial
+    - assignment
+    - packing
+    - network_flow
+    - inventory
+    - production_planning
+    - facility_location
+    - routing
+  method: mathematical_programming
+  method_class: exact
+  optimality: exact_or_incumbent
+  supports_warm_start: true
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - continuous_variables
+    - integer_variables
+    - binary_variables
+    - linear_constraints
+    - linear_objectives
+    - indicator_constraints
+    - special_ordered_sets
+    - solution_warm_start
+    - incumbent_objective
+    - objective_bound
+    - mip_gap
+    - infeasibility_status
+  limitations:
+    - >-
+      A usable Gurobi license is required in addition to importing gurobipy. The
+      size-limited license bundled with pip or conda is restricted to 2,000 variables
+      and 2,000 linear constraints, or 200 variables when quadratic terms are present.
+      Import success and a small-model probe do not establish full-scale availability.
+    - The package does not infer variables, constraints, objectives, units, or Big-M values.
+    - A time-limited MILP incumbent is not a proof of optimality.
+    - Solver infeasibility applies only to the faithfully encoded formulation.
+    - It does not emit DecisionBrain's problem-specific solution schema directly.
+
+selection:
+  required_features:
+    - business_rules_have_a_valid_linear_formulation
+    - variable_domains_and_numeric_bounds_are_explicit
+    - a_gurobi_license_is_available
+    - a_full_size_license_is_available_when_the_model_exceeds_restricted_limits
+  good_fit_when:
+    - The problem is naturally represented as LP or MILP.
+    - Bounds, gaps, incumbents, and proof-aware statuses are required.
+    - All Big-M constants can be derived from finite business bounds.
+  reject_when:
+    - Important hard constraints cannot be represented faithfully.
+    - The available license cannot solve the instance size.
+    - >-
+      The active license is size-limited and the model exceeds 2,000 variables,
+      2,000 linear constraints, or 200 variables when quadratic terms are present.
+    - Numerical scaling or Big-M values cannot be justified.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: Instance limits depend on formulation strength, license, machine, and time budget.
+
+distribution:
+  package: gurobipy
+  verified_version: 13.0.2
+  compatible_version_spec: ">=13.0.0,<14.0.0"
+  import_name: gurobipy
+  requires_python: ">=3.10"
+  license_spdx: LicenseRef-Gurobi-EULA
+  homepage: https://www.gurobi.com/
+  documentation: https://docs.gurobi.com/projects/optimizer/en/current/reference/python.html
+  source_repository: https://pypi.org/project/gurobipy/
+  native_extensions: true
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: cp312-cp312-win_amd64
+    self_compiled: false
+    modules:
+      - gurobipy
+  verified_environment:
+    conda_environment: DecisionBrain/venv
+    python_version: "3.12"
+    platform: windows-amd64
+
+interface:
+  profile: gurobipy
+  preferred_api: solver_suite
+  imports:
+    - import gurobipy as gp
+    - from gurobipy import GRB
+  model_builder:
+    constructor: gp.Model(name)
+    methods:
+      - addVar
+      - addVars
+      - addConstr
+      - addConstrs
+      - setObjective
+      - setParam
+      - optimize
+    alternative_inputs:
+      - gp.read(model_file)
+  solvers:
+    - id: milp
+      method: mixed_integer_linear_programming
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - import gurobipy as gp
+        - from gurobipy import GRB
+      constructor: gp.Model(name)
+      call: model.optimize()
+      supports_warm_start: true
+      supports_random_seed: true
+      supports_time_limit: true
+      stopping_criteria:
+        - name: TimeLimit
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_exact_search
+            - incumbent_and_bound_search
+          caveat: TIME_LIMIT may return an incumbent without proving optimality.
+      important_parameters:
+        TimeLimit: Wall-clock solve limit in seconds.
+        Seed: Integer random seed; parallel search can still vary across environments.
+        MIPGap: Relative optimality-gap termination tolerance.
+        Threads: Worker count; use one when deterministic behavior is required.
+        Start: Per-variable warm-start value.
+      result:
+        type: gurobipy.Model
+        fields:
+          status: model.Status
+          solution_count: model.SolCount
+          objective: model.ObjVal
+          objective_bound: model.ObjBound
+          mip_gap: model.MIPGap
+          variable_value: variable.X
+          runtime_seconds: model.Runtime
+        warning: Read incumbent fields only when SolCount is positive; OPTIMAL is the proof status.
+    - id: lp
+      method: linear_programming
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - import gurobipy as gp
+        - from gurobipy import GRB
+      constructor: gp.Model(name)
+      call: model.optimize()
+      supports_warm_start: true
+      supports_random_seed: false
+      supports_time_limit: true
+      stopping_criteria:
+        - name: TimeLimit
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_linear_optimization
+            - relaxation_solve
+          caveat: A time limit can stop before an optimal LP solution is established.
+      important_parameters:
+        TimeLimit: Wall-clock solve limit in seconds.
+        Method: Algorithm selection for continuous optimization.
+        Threads: Worker count.
+        PStart: Optional variable primal start.
+      result:
+        type: gurobipy.Model
+        fields:
+          status: model.Status
+          objective: model.ObjVal
+          variable_value: variable.X
+          runtime_seconds: model.Runtime
+        warning: Distinguish OPTIMAL, INFEASIBLE, UNBOUNDED, and INF_OR_UNBD statuses.
+  facts:
+    license_required: true
+    proof_boundary: >-
+      OPTIMAL or INFEASIBLE is meaningful only for the exact encoded model and after
+      checking the corresponding Gurobi status; an incumbent alone is not a proof.
+    formulation_guidance: >-
+      Define indexed variables, domains, objective, every hard constraint, numeric
+      scaling, and derived Big-M bounds in the component formulation before coding.
+
+solver_documentation:
+  - id: milp
+    summary: Solve linear models containing integer or binary decisions with incumbent, bound, and gap reporting.
+    minimal_call_example: |
+      import gurobipy as gp
+      from gurobipy import GRB
+      model = gp.Model("milp")
+      model.Params.OutputFlag = 0
+      model.Params.TimeLimit = 10
+      x = model.addVar(vtype=GRB.BINARY, name="x")
+      model.setObjective(x, GRB.MAXIMIZE)
+      model.optimize()
+      if model.SolCount:
+          value = x.X
+          objective = model.ObjVal
+          bound = model.ObjBound
+          gap = model.MIPGap
+    common_errors:
+      - error: addVar uses lb and ub for variable bounds; vmin is not a valid keyword.
+        wrong: |
+          x = model.addVar(vmin=0, vtype=GRB.BINARY)
+        correct: |
+          x = model.addVar(lb=0, ub=1, vtype=GRB.BINARY)
+      - error: quicksum requires an iterable of expressions, not one Var object.
+        wrong: |
+          expression = gp.quicksum(x)
+        correct: |
+          expression = gp.quicksum(x[i] for i in indices)
+      - error: MIP starts are assigned through each variable's Start attribute; Model has no MIPStarts attribute.
+        wrong: |
+          model.MIPStarts = start_values
+        correct: |
+          for variable, value in start_values.items():
+              variable.Start = value
+  - id: lp
+    summary: Solve continuous linear models and distinguish optimal, infeasible, and unbounded outcomes.
+    minimal_call_example: |
+      import gurobipy as gp
+      from gurobipy import GRB
+      model = gp.Model("lp")
+      model.Params.OutputFlag = 0
+      x = model.addVar(lb=0.0, name="x")
+      model.addConstr(x <= 1.0)
+      model.setObjective(x, GRB.MAXIMIZE)
+      model.optimize()
+      if model.Status == GRB.OPTIMAL:
+          value = x.X
+          objective = model.ObjVal
+
+agent_guidance:
+  algorithm_design:
+    - Select solver_id milp or lp and provide a matching component formulation.
+    - Derive every Big-M from finite business bounds and record numerical risks.
+    - Reserve solve time for output conversion and independent feasibility checking.
+  solving:
+    - Verify both gurobipy version and license usability before building the full model.
+    - Preserve business-ID mappings outside Gurobi variable indices.
+    - Check Status and SolCount before reading incumbent values.
+    - Run feasibility_checker.py on the converted business solution.
+  minimal_call_example: |
+    import gurobipy as gp
+    from gurobipy import GRB
+
+    model = gp.Model("binary-choice")
+    model.Params.OutputFlag = 0
+    model.Params.TimeLimit = 10
+    x = model.addVar(vtype=GRB.BINARY, name="x")
+    model.setObjective(x, GRB.MAXIMIZE)
+    model.addConstr(x <= 1, name="capacity")
+    model.optimize()
+    if model.SolCount == 0:
+        raise RuntimeError(f"Gurobi returned status {model.Status}")
+    value = int(round(x.X))
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; import gurobipy;
+      assert version('gurobipy') == '13.0.2'; print(version('gurobipy'))"
+    expected_version: 13.0.2
+  acceptance_requirements:
+    - A license probe succeeds before the full solve.
+    - The generated solution conforms to solution_schema.json.
+    - feasibility_checker.py reports schema_valid=true and feasible=true.
+    - solver_result.json records package id, solver id, version, status, bound, gap, and runtime.
+  benchmark_status: not_benchmarked

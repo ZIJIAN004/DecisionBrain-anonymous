@@ -1,0 +1,8 @@
+{
+  "n": "<int> Number of points to be clustered.",
+  "d": "<int> Number of coordinate dimensions for each point.",
+  "epsilon": "<float> Maximum allowed Euclidean distance from any point to its assigned hyperplane.",
+  "big_M": "<float> Largest pairwise Euclidean distance among all points, used to deactivate distance constraints for unassigned point-hyperplane pairs.",
+  "upper_bound_K": "<int> Maximum number of candidate hyperplanes available for covering the points.",
+  "points": "<list[list[float]], shape [n][d]> Coordinates of each point in d-dimensional space."
+}

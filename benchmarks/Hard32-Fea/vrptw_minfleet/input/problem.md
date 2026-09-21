@@ -1,0 +1,11 @@
+# Problem Description
+
+A distribution centre must deliver goods to a set of customers using a fleet of identical vehicles based at a single depot. Every customer has a known location, a demand that must be delivered in a single visit, and a time window during which the delivery must begin. The depot also has a time window, which bounds the whole working day. Each vehicle leaves the depot, serves a sequence of customers, and returns to the depot.
+
+Locations are given as two-dimensional coordinates. The distance and the travel time from one location to another are equal, and both are obtained by taking the Euclidean distance between the two coordinate pairs, multiplying it by ten, and discarding the fractional part. Every time appearing in the instance -- the time windows and the service duration -- is already expressed in these same units, so all quantities are integers and no rounding is left to the solver. A vehicle that arrives at a customer before the start of that customer's time window waits until the window opens; arriving after the end of the window is not allowed. Serving a customer takes a fixed service duration, identical for every customer, after which the vehicle may depart. Time starts at zero when a vehicle leaves the depot.
+
+The fleet is limited. At most a given number of vehicles may be used, and this limit is a hard requirement rather than a cost term: a plan that serves every customer on time but needs one vehicle more than allowed is not a valid plan. The limit is tight, in the sense that the total demand of all customers divided by the vehicle capacity already requires that many vehicles, so almost no spare capacity is available anywhere in the fleet.
+
+The planner must decide how many vehicles to dispatch, which customers each vehicle serves, and in what order. Every customer must be served exactly once, by exactly one vehicle. The total demand carried by any vehicle must not exceed the vehicle capacity. Service at every customer must begin within that customer's time window. Every vehicle must return to the depot no later than the end of the depot's time window. The number of vehicles used must not exceed the fleet limit.
+
+The goal is to minimise the total distance travelled by all vehicles.

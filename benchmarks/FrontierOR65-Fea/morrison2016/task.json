@@ -1,0 +1,16 @@
+{
+    "paper_id":  "morrison2016",
+    "paper_title":  "Solving the Pricing Problem in a Branch-and-Price Algorithm for Graph Coloring Using Zero-Suppressed Binary Decision Diagrams",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2016,
+    "direction":  "min",
+    "problem_class":  "Graph Optimization",
+    "category":  "planning",
+    "formulation_type":  "IP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  4497833.0,
+    "avg_num_int_var":  4497833.0,
+    "avg_num_constr":  300.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2015.0667",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

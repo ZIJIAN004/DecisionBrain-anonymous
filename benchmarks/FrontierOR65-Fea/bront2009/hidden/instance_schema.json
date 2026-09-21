@@ -1,0 +1,39 @@
+{
+  "network": {
+    "num_cities": "<int> Number of cities in the airline network.",
+    "city_names": "<list[str], length num_cities> Name of each city in the network.",
+    "num_legs": "<int> Number of flight legs in the network.",
+    "legs": [
+      {
+        "leg_id": "<int> Unique identifier for this flight leg.",
+        "origin": "<str> City where this flight leg departs.",
+        "destination": "<str> City where this flight leg arrives.",
+        "capacity": "<int> Number of available seats on this flight leg."
+      }
+    ]
+  },
+  "products": [
+    {
+      "product_id": "<int> Unique identifier for this product.",
+      "origin_destination": "<str> Route of the itinerary, with intermediate stops separated by arrows.",
+      "class": "<str> Fare class of this product.",
+      "fare": "<float> Revenue earned per unit sold of this product.",
+      "legs_used": "<list[int]> Leg IDs of the flight legs consumed by one unit of this product."
+    }
+  ],
+  "segments": [
+    {
+      "segment_id": "<int> Unique identifier for this customer segment.",
+      "lambda_l": "<float> Arrival rate of customers in this segment per period.",
+      "consideration_set": "<list[int]> Product IDs that customers in this segment would consider purchasing.",
+      "preference_vector": "<list[float], length len(consideration_set)> Preference weight of each product in the consideration set, in the same order.",
+      "no_purchase_preference": "<float> Preference weight for the no-purchase option for customers in this segment.",
+      "description": "<str> Brief label describing the segment's market and price sensitivity."
+    }
+  ],
+  "booking_horizon": {
+    "T": "<int> Number of discrete time periods in the booking horizon."
+  },
+  "alpha": "<float> Capacity scarcity factor used to scale leg capacities.",
+  "lambda": "<float> Overall probability that a customer arrives in any single period."
+}

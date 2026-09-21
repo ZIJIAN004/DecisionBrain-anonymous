@@ -1,0 +1,16 @@
+{
+    "paper_id":  "bertsimas2022",
+    "paper_title":  "A Scalable Algorithm for Sparse Portfolio Selection",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2022,
+    "direction":  "min",
+    "problem_class":  "Portfolio Optimization",
+    "category":  "strategic",
+    "formulation_type":  "MIP",
+    "application_field":  "Finance \u0026 Investment",
+    "avg_num_var":  3000.0,
+    "avg_num_int_var":  1000.0,
+    "avg_num_constr":  2.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2021.1127",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

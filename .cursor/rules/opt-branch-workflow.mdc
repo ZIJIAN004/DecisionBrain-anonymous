@@ -1,0 +1,40 @@
+---
+description: DecisionBrain opt 开发分支与 clone 分工，禁止直接在 main 上改功能
+alwaysApply: true
+---
+
+# Opt 开发：分支与 Clone 分工
+
+## 动手前必查
+
+```bash
+pwd                         # 功能开发应在 DecisionBrain-cici
+git branch --show-current   # 功能开发应在 4-multiround 或 feature/*，不是 main
+```
+
+若当前在 `DecisionBrain` 且分支为 `main`，**不要**直接改 opt 功能代码；先切到 cici clone 或新建 feature 分支。
+
+## 分工
+
+| 用途 | 目录 | 分支 | 端口 |
+|------|------|------|------|
+| 你开发新功能 | `DecisionBrain-cici` | `4-multiround` 或 `feature/*` | 8009 |
+| 稳定 / 同事 / 部署 | `DecisionBrain` | `main` | 8008 |
+
+## 禁止
+
+- 在 `DecisionBrain` 的 `main` 上直接 commit opt 相关改动（`src/opt_*.py`、`chat_interface.html`、`prompts/` 等）
+- 未 commit / 未 push 就在另一 clone 或 `main` 上重复改同一功能
+- 用 `pkill -f elderly_care_server` 杀进程（会误杀他人服务）；按端口 PID 重启
+
+## 正确流程
+
+1. 在 `DecisionBrain-cici` 的 feature 分支开发
+2. `git add` → `git commit` → `git push origin <branch>`
+3. 开 PR 合进 `main`
+4. 在 `DecisionBrain` 上 `git pull origin main`，重启 8008
+
+## 合并时注意
+
+- **MC intake**（`intake/start`、选择题 UI）与 **三层验收**（`result_validation_issues` / `route_validation_failure`）都要保留，不要只合一边。
+- 改 `opt_solver.py` 后两个 clone 都要重启对应端口的服务才生效。

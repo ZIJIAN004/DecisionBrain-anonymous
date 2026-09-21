@@ -1,0 +1,16 @@
+{
+  "objective_value": "<float> Total weighted tardiness across all jobs in the chosen schedule.",
+  "schedule": [
+    {
+      "job_id": "<int> Identifier of the job whose schedule is being described.",
+      "completion_time": "<float> Time at which the job finishes its last operation.",
+      "tardiness": "<float> Amount by which the job's completion time exceeds its due date, or zero if on time.",
+      "operations": [
+        {
+          "machine": "<int> Machine on which this operation of the job is processed.",
+          "start_time": "<float> Time at which this operation begins processing on its machine."
+        }
+      ]
+    }
+  ]
+}

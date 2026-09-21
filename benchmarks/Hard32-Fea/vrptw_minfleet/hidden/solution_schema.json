@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total distance travelled by all vehicles, computed as the sum of floor(10 * euclidean distance) over every arc traversed, divided by 10.",
+  "routes": "<dict, key: '{vehicle}'> Ordered sequence of customer indices served by each vehicle. The depot is implicit: every route starts and ends at node 0 and must not list it. Every customer index in 1..n must appear in exactly one route, and the number of non-empty routes must not exceed max_vehicles."
+}

@@ -1,0 +1,12 @@
+{
+  "graph": {
+    "num_vertices": "<int> Total number of vertices in the graph.",
+    "num_edges": "<int> Total number of edges in the graph.",
+    "edge_density": "<float> Fraction of all possible edges that are present in the graph.",
+    "edges": "<list[list[int]], length num_edges> Pairs of vertices connected by an edge, where each pair contains two distinct vertex indices."
+  },
+  "bounds": {
+    "clique_lower_bound": "<int> Largest clique size found in the graph, serving as a lower bound on the number of colors needed.",
+    "greedy_upper_bound": "<int> Number of colors used by a greedy heuristic coloring, serving as an upper bound on the number of colors needed."
+  }
+}

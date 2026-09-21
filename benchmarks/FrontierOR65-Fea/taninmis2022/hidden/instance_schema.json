@@ -1,0 +1,116 @@
+{
+  "system": {
+    "system_name": "<str> Name identifying the power system network.",
+    "num_buses": "<int> Total number of buses (nodes) in the power network.",
+    "buses": "<list[int], length num_buses> Identifiers for each bus in the network.",
+    "generators": [
+      {
+        "id": "<str> Unique identifier for this generator.",
+        "bus": "<int> Bus where this generator is located.",
+        "existing": "<bool> Whether this generator is already built (true) or is a candidate for investment (false).",
+        "type": "<str> Fuel or technology type of the generator (e.g., fossil, wind, solar).",
+        "a_cost": "<float> Constant term of the quadratic generation cost function ($/h).",
+        "b_cost": "<float> Linear term of the quadratic generation cost function ($/MWh).",
+        "c_cost": "<float> Quadratic term of the quadratic generation cost function ($/MW^2h).",
+        "startup_cost": "<float> Cost incurred each time the generator is started up ($).",
+        "Pmin_MW": "<float> Minimum power output when the generator is committed (MW).",
+        "Pmax_MW": "<float> Maximum power output capacity of the generator (MW).",
+        "min_on_h": "<int> Minimum number of consecutive hours the generator must remain on once started.",
+        "min_off_h": "<int> Minimum number of consecutive hours the generator must remain off once shut down.",
+        "ramp_MW_per_h": "<float> Maximum change in power output between consecutive hours (MW/h).",
+        "capital_cost_per_kW": "<float> Investment cost to build this candidate generator ($/kW), zero for existing units."
+      }
+    ],
+    "transmission_lines": [
+      {
+        "id": "<str> Unique identifier for this transmission line.",
+        "from_bus": "<int> Bus at one end of the transmission line.",
+        "to_bus": "<int> Bus at the other end of the transmission line.",
+        "existing": "<bool> Whether this line is already built (true) or is a candidate for investment (false).",
+        "flow_limit_MW": "<float> Maximum power that can flow through this line in either direction (MW).",
+        "loss_factor": "<float> Fraction of power lost during transmission on this line.",
+        "capital_cost_per_kW": "<float> Investment cost to build this candidate line ($/kW), zero for existing lines."
+      }
+    ],
+    "storage": [
+      {
+        "id": "<str> Unique identifier for this energy storage unit.",
+        "bus": "<int> Bus where this storage unit is located.",
+        "existing": "<bool> Whether this storage unit is already built (true) or is a candidate for investment (false).",
+        "capacity_MW": "<float> Maximum energy that can be stored or discharged per hour (MW).",
+        "efficiency": "<float> Round-trip efficiency of charging and discharging (fraction between 0 and 1).",
+        "capital_cost_per_kW": "<float> Investment cost to build this candidate storage unit ($/kW)."
+      }
+    ],
+    "loads": [
+      {
+        "bus": "<int> Bus where this demand is located.",
+        "annual_peak_load_MW": "<float> Peak electricity demand at this bus in the base year (MW)."
+      }
+    ]
+  },
+  "scenario_parameters": {
+    "num_stages": "<int> Number of investment decision stages in the planning horizon.",
+    "num_upper_level_scenarios": "<int> Total number of leaf scenarios in the upper-level scenario tree.",
+    "num_lower_level_scenarios_per_day": "<int> Number of operational uncertainty samples drawn per representative day.",
+    "num_representative_days": "<int> Number of typical days used to represent annual operations.",
+    "hours_per_day": "<int> Number of hourly time periods within each representative day.",
+    "investment_period_years": "<int> Length of each investment stage in years.",
+    "upper_level_branching_factor": "<int> Number of child nodes per parent in the scenario tree.",
+    "cost_variation_percent": "<float> Fractional change in investment costs between high and low branches of the scenario tree.",
+    "demand_growth_high_percent": "<float> Fractional demand growth per stage in the high-growth branch of the scenario tree.",
+    "demand_growth_low_percent": "<float> Fractional demand growth per stage in the low-growth branch of the scenario tree."
+  },
+  "scenario_tree": [
+    {
+      "id": "<int> Unique identifier for this scenario tree node.",
+      "stage": "<int> Investment stage to which this node belongs.",
+      "parent_id": "<int or null> Identifier of this node's parent node, null for the root.",
+      "probability": "<float> Unconditional probability of reaching this node from the root.",
+      "children": "<list[int]> Identifiers of this node's child nodes, empty for leaf nodes."
+    }
+  ],
+  "representative_days": [
+    {
+      "id": "<int> Unique identifier for this representative day.",
+      "season": "<str> Season of the year this day represents (spring, summer, fall, winter).",
+      "day_type": "<str> Whether this is a weekday or weekend day.",
+      "load_profile": "<list[float], length hours_per_day> Hourly fraction of peak load for this representative day.",
+      "solar_profile": "<list[float], length hours_per_day> Hourly solar capacity factor for this representative day.",
+      "wind_weibull_params": {
+        "k": "<float> Shape parameter of the Weibull distribution used to generate wind speeds for this day.",
+        "c": "<float> Scale parameter of the Weibull distribution used to generate wind speeds for this day (m/s)."
+      }
+    }
+  ],
+  "lower_level_scenarios": {
+    "{representative_day_id}": [
+      {
+        "scenario_id": "<int> Identifier for this operational scenario within a representative day.",
+        "demand_multipliers": "<list[float], length hours_per_day> Hourly random multiplier applied to the base load profile to produce realized demand.",
+        "solar_multipliers": "<list[float], length hours_per_day> Hourly random multiplier applied to the base solar profile to produce realized solar output.",
+        "wind_power_factors": "<list[float], length hours_per_day> Hourly realized wind power capacity factor derived from sampled wind speeds."
+      }
+    ]
+  },
+  "global_parameters": {
+    "reserve_margin_requirement": "<float> Required fraction of excess installed capacity above peak demand for system reliability.",
+    "storage_efficiency": "<float> Round-trip efficiency applied to all storage units.",
+    "spinning_reserve_percent": "<float> Fraction of hourly load that must be covered by online spinning reserve.",
+    "capital_costs_per_kW": {
+      "coal": "<float> Reference investment cost for coal-fired generation ($/kW).",
+      "natural_gas": "<float> Reference investment cost for natural gas generation ($/kW).",
+      "solar": "<float> Reference investment cost for solar generation ($/kW).",
+      "wind": "<float> Reference investment cost for wind generation ($/kW).",
+      "transmission_line": "<float> Reference investment cost for transmission lines ($/kW).",
+      "energy_storage": "<float> Reference investment cost for energy storage ($/kW)."
+    },
+    "derating_factors": {
+      "fossil": "<float> Capacity credit fraction for fossil generators toward the reserve margin.",
+      "wind": "<float> Capacity credit fraction for wind generators toward the reserve margin.",
+      "solar": "<float> Capacity credit fraction for solar generators toward the reserve margin."
+    },
+    "wind_cutin_speed_m_per_s": "<float> Minimum wind speed at which wind turbines begin producing power (m/s).",
+    "wind_rated_speed_m_per_s": "<float> Wind speed at which wind turbines reach full rated output (m/s)."
+  }
+}

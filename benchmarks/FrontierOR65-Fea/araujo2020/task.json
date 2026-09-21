@@ -1,0 +1,16 @@
+{
+  "paper_id": "araujo2020",
+  "paper_title": "Strong Bounds for Resource Constrained Project Scheduling: Preprocessing and Cutting Planes",
+  "publication": "Computers & Operations Research",
+  "year": 2020,
+  "direction": "min",
+  "problem_class": "Other (Project Scheduling)",
+  "category": "strategic",
+  "formulation_type": "MIP",
+  "application_field": "Manufacturing & Production",
+  "avg_num_var": 290244.0,
+  "avg_num_int_var": 290244.0,
+  "avg_num_constr": 146754.0,
+  "source_link": "https://doi.org/10.1016/j.cor.2019.104782",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

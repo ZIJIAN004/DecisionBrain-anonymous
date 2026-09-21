@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total cost of the solution, equal to the sum of routing cost and expected recourse cost.",
+  "routes": "<list[list[int]], length K> Ordered sequence of customer identifiers visited by each vehicle, excluding the depot."
+}

@@ -1,0 +1,11 @@
+{
+  "objective_value": "<int> Total number of vehicles plus crew duties used to cover all trips.",
+  "vehicle_schedule": "<dict, key: '{depot_name}'> Mapping from each depot name to a list of vehicle trip chains, where each chain is the ordered sequence of trip IDs covered by one vehicle that starts and returns to that depot.",
+  "crew_schedule": [
+    {
+      "depot": "<str> Name of the home depot from which this crew duty operates.",
+      "type": "<str> Duty type name governing the work rules applied to this duty.",
+      "trips": "<list[int]> Ordered sequence of trip IDs covered by this crew duty."
+    }
+  ]
+}

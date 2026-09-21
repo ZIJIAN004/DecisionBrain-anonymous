@@ -1,0 +1,12 @@
+{
+    "objective_value": "<float or null> Total weighted deviation cost summing berth-position and start-time penalties across all vessels.",
+    "vessels": [
+        {
+            "id": "<int> Zero-based index identifying the vessel.",
+            "berth": "<int> Index of the berth assigned to the vessel.",
+            "start_time": "<int> Time step at which the vessel begins service.",
+            "end_time": "<int> Time step at which the vessel completes service.",
+            "profile": "<int> Index of the QC assignment profile assigned to the vessel."
+        }
+    ]
+}

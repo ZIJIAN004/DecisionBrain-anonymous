@@ -1,0 +1,9 @@
+{
+  "objective_value": "<float> Total expected revenue generated over the booking horizon.",
+  "active_columns": [
+    {
+      "offer_set": "<list[int]> Subset of product identifiers that is shown to arriving customers during this allocation.",
+      "time_allocated": "<float> Number of booking periods during which this offer set is made available."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "<str> Identifier of the underlying Gehring & Homberger instance.",
+  "num_customers": "<int> Number of customers to be served, excluding the depot.",
+  "capacity": "<int> Maximum total demand that a single vehicle may carry.",
+  "max_vehicles": "<int> Hard upper bound on the number of vehicles that may be used. A plan using more vehicles is infeasible.",
+  "service_time": "<int> Time spent serving each customer, on the scaled integer time axis shared with the time windows and travel times.",
+  "coordinates": "<list of [<int> x, <int> y]> Location of each node, indexed from 0. Index 0 is the depot; indices 1..num_customers are customers. Travel time and distance between two nodes equal floor(10 * euclidean distance between their coordinates).",
+  "demand": "<list of <int>> Demand of each node, indexed as in coordinates. The depot has demand 0.",
+  "time_window": "<list of [<int> earliest, <int> latest]> Interval during which service may begin at each node, indexed as in coordinates. Arriving earlier is allowed and the vehicle waits; arriving later is infeasible. Entry 0 bounds the working day at the depot.",
+  "fleet_lower_bound": "<int> ceil(sum of demands / capacity), the bin-packing lower bound on the fleet. Equal to max_vehicles here."
+}

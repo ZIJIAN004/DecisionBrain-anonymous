@@ -1,0 +1,7 @@
+{
+  "num_agents": "<int> Number of agents available to perform jobs.",
+  "num_jobs": "<int> Number of jobs that must be assigned to agents.",
+  "profits": "<list[list[int]], shape [num_agents][num_jobs]> Profit earned when a given agent performs a given job.",
+  "weights": "<list[list[int]], shape [num_agents][num_jobs]> Amount of resource capacity consumed when a given agent performs a given job.",
+  "capacities": "<list[int], length num_agents> Maximum total weight of jobs that each agent can handle."
+}

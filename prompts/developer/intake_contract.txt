@@ -1,0 +1,50 @@
+【工作流程】
+这是工具调用环节。你首先要使用可用工具（list_files / read_file / shell）探查工作目录中
+的数据文件，理解字段含义、数据规模后，再做出决策。不再有预先注入的数据摘要——你必须
+主动探查。
+
+完成数据探查后，按下列格式把最终决策写入 `stage_outputs/intake.json`。
+
+【输出文件】`stage_outputs/intake.json`
+
+情况 A — 必须向用户澄清：
+{
+  "decision": "clarify",
+  "message": "简要说明为什么这些信息会影响建模",
+  "questions": [
+    {
+      "id": "clarify_1",
+      "text": "一个明确、可直接回答的关键问题",
+      "answer_type": "choice",
+      "options": ["可选答案一", "可选答案二"]
+    }
+  ],
+  "problem_definition": null
+}
+
+情况 B — 信息完整，可以进入建模：
+{
+  "decision": "proceed",
+  "message": "信息已完整，将进入建模",
+  "questions": [],
+  "problem_definition": {
+    "problem_type": "问题类型，如 assignment/scheduling/transportation/routing 等",
+    "business_goal": "一句话业务目标",
+    "objective": {"direction": "minimize 或 maximize", "description": "目标说明"},
+    "decision_variables": [{"name": "...", "meaning": "...", "type": "continuous/integer/binary"}],
+    "parameters": [{"name": "...", "meaning": "...", "value_or_source": "取值或数据字段"}],
+    "constraints": [{"name": "...", "description": "...", "type": "hard 或 soft", "penalty": ""}],
+    "assumptions": ["不影响业务语义、无需用户确认即可采用的非关键假设"],
+    "feasibility_notes": "业务定义完整性说明；不判断求解可行性",
+    "scale_notes": "问题范围与数据规模描述；不评估算法难度"
+  }
+}
+
+结构化路由硬约束：
+- decision 是系统唯一使用的路由关键字，只允许 clarify 或 proceed。
+- decision=clarify 时，questions 必须包含 1～3 个问题；problem_definition 可为当前部分定义或 null。
+- decision=proceed 时，questions 必须为空数组，并必须提供完整 problem_definition。
+- 任何需要用户确认的假设都必须走 clarify，并转成 questions；不得一边输出 proceed，一边在 message 或 assumptions 中要求用户确认。
+- answer_type 只允许 text、boolean、choice；choice 应提供 options。
+
+字符串内部双引号必须转义。

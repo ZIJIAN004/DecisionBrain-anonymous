@@ -1,0 +1,16 @@
+{
+  "paper_id": "ribeiro1994",
+  "paper_title": "A Column Generation Approach to the Multiple-Depot Vehicle Scheduling Problem",
+  "publication": "Operations Research",
+  "year": 1994,
+  "direction": "min",
+  "problem_class": "Vehicle Scheduling",
+  "category": "strategic",
+  "formulation_type": "BIP",
+  "application_field": "Public Transit & Mobility",
+  "avg_num_var": 537318.0,
+  "avg_num_int_var": 537318.0,
+  "avg_num_constr": 4518.0,
+  "source_link": "https://doi.org/10.1287/opre.42.1.41",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

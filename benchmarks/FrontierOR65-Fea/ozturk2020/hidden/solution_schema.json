@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total flow time, equal to the sum of completion times across all jobs.",
+  "batches": "<list[dict]> One entry per non-empty batch that is actually used, where 'batch_id' is the batch's sequential position on its machine, 'machine' is the machine on which the batch runs, 'start_time' is the time at which the batch begins processing, 'processing_time' is the batch's processing duration (the longest processing time among its jobs), and 'jobs' is the list of job ids assigned to the batch.",
+  "job_assignments": "<dict, key: '{job_id}'> For each job, 'batch' is the sequential batch index on its machine, 'machine' is the machine that processes the job, and 'completion_time' is the time at which the job finishes processing."
+}

@@ -1,0 +1,7 @@
+# Problem Description
+
+A company must assign a set of jobs to a set of agents. There are n jobs and m agents. Each job must be assigned to exactly one agent, and every job must be assigned. Each possible pairing of a job with an agent has an associated profit, which is a nonnegative integer representing the value earned when that particular agent performs that particular job. Each possible pairing also has an associated weight, which is a nonnegative integer representing the amount of the agent's resource capacity consumed if that agent performs that job. Every agent has a fixed positive integer capacity limiting the total weight of all jobs assigned to it.
+
+The input data specifies the number of agents, the number of jobs, a profit value for every agent-job pair, a weight value for every agent-job pair, and a capacity for each agent. Profits and weights are provided as two-dimensional arrays indexed by agent and job, and capacities are provided as a one-dimensional array indexed by agent.
+
+The company must decide which single agent each job is assigned to. Every job must be assigned to exactly one agent, meaning no job may be left unassigned and no job may be split across multiple agents. For each agent, the total weight of all jobs assigned to that agent must not exceed that agent's capacity. The goal is to maximize the total profit, computed as the sum of the profits corresponding to the chosen agent-job assignments across all jobs.

@@ -1,0 +1,18 @@
+{
+  "n": "<int> Number of securities in the investment universe.",
+  "k": "<int> Maximum number of securities that may receive a positive allocation in the portfolio.",
+  "r": "<int> Number of factors used in the factor model for the covariance structure.",
+  "gamma": "<float> Ridge regularization parameter that penalizes concentrated portfolio positions.",
+  "gamma_formula": "<str> Formula used to compute gamma from n.",
+  "kappa": "<int> Multiplier controlling whether expected returns appear in the objective (1) or are handled via a separate minimum-return constraint (0).",
+  "mu": "<list[float], length n> Expected monthly return for each security.",
+  "factor_loadings": "<list[list[float]], shape [n][r]> Factor loading matrix whose outer product contributes the systematic component of the covariance matrix.",
+  "idiosyncratic_variance": "<list[float], length n> Per-security idiosyncratic variance forming the diagonal component of the covariance matrix.",
+  "constraints": {
+    "has_min_return_constraint": "<bool> Whether the portfolio must achieve a minimum expected return.",
+    "r_bar": "<float or null> Minimum required expected portfolio return, or null if no such constraint applies.",
+    "has_min_investment_constraint": "<bool> Whether each selected security must receive at least a minimum allocation.",
+    "l_min_investment": "<list[float] or null, length n> Minimum allocation required for each security if it is included in the portfolio, or null if no minimum investment constraint applies.",
+    "u_max_investment": "<list[float] or null, length n> Maximum allocation allowed for each security if it is included in the portfolio, or null if no maximum investment constraint applies."
+  }
+}

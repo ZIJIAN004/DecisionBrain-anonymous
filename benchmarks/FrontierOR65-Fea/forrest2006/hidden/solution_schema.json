@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Twice the total weight of assigned orders minus the total weight of slabs placed into service.",
+  "assignments": "<list[dict]> Each entry records one order being fulfilled from one slab, with keys 'order' (<int> the order index) and 'slab' (<int> the slab index it is assigned to).",
+  "slabs_used": "<list[int]> Indices of slabs that are placed into service."
+}

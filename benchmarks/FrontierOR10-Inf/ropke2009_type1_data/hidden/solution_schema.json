@@ -1,0 +1,9 @@
+{
+  "objective_value": "<float> Total routing distance traveled by all vehicles serving the requests.",
+  "routes": [
+    {
+      "vehicle": "<int> Identifier of the vehicle assigned to this route.",
+      "nodes": "<list[int]> Ordered sequence of node identifiers visited by the vehicle, starting at the origin depot, alternating pickups and deliveries while respecting pairing and precedence, and ending at the destination depot."
+    }
+  ]
+}

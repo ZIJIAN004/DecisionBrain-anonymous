@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total expected cost, combining facility opening costs and expected routing costs across scenarios.",
+  "y": "<list[int], length num_facilities> Whether each facility is opened (1 = opened, 0 = not opened)."
+}

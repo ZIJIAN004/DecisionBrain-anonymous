@@ -1,0 +1,18 @@
+{
+  "problem_type": "<str> Fixed tag identifying the problem family; always 'JSSP_DEADLINE'.",
+  "num_jobs": "<int> Number of jobs J. Jobs are indexed 0 .. num_jobs-1.",
+  "num_machines": "<int> Number of machines M. Machines are indexed 0 .. num_machines-1.",
+  "num_operations": "<int> Total number of operations across all jobs (= sum of the length of every job's operation sequence).",
+  "deadline": "<int> Common hard deadline D: every job's completion time must be <= D; equivalently the schedule makespan must be <= D.",
+  "jobs": [
+    {
+      "job_id": "<int> Identifier of this job, unique and ranging over 0 .. num_jobs-1.",
+      "operations": [
+        {
+          "machine": "<int> Index of the machine (0 .. num_machines-1) that must process this operation.",
+          "processing_time": "<int> Number of consecutive time units this operation occupies on its machine (>= 1)."
+        }
+      ]
+    }
+  ]
+}

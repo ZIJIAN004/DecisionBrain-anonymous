@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total number of groups used in the decomposition.",
+  "solution": "<list[list[int]]> Groups of vertices forming the decomposition, where each group is a connected s-plex and every vertex appears according to the decomposition type."
+}

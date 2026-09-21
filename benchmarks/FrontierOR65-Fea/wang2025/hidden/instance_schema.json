@@ -1,0 +1,11 @@
+{
+  "instance_type": "<str> Type of set function instance, one of LOC (Facility Location), COV (Weighted Coverage), or INF (Bipartite Influence).",
+  "n": "<int> Number of candidate elements (facility sites, sensors, or influence sources) in the ground set.",
+  "m": "<int> Number of auxiliary entities (clients, items, or targets) used to evaluate the set function.",
+  "k": "<int> Maximum number of elements that may be selected.",
+  "gamma": "<float> Upper bound on the submodular ratio of the set function, used to scale marginal gains in the selection constraints.",
+  "type_specific_param": "<float> Generation parameter specific to the instance type (coverage probability for COV, edge probability for INF, unused for LOC).",
+  "data_matrix": "<list[list[float]], shape [m][n]> Benefit, coverage indicator, or edge indicator between each auxiliary entity and each candidate element, depending on instance type.",
+  "node_weights": "<list[float], length m> Weight of each auxiliary entity (used for item importance in COV instances, zero otherwise).",
+  "element_weights": "<list[float], length n> Activation probability of each candidate element (used for influence computation in INF instances, zero otherwise)."
+}

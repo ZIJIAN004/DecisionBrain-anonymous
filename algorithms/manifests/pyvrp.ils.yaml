@@ -1,0 +1,275 @@
+schema_version: "1.3"
+
+id: pyvrp.ils
+display_name: PyVRP Iterated Local Search
+status: experimental
+kind: python_library
+summary: >-
+  Open-source metaheuristic solver for vehicle routing problems. PyVRP 0.13.4
+  builds an iterated local search with adaptive penalties and neighbourhood search.
+
+algorithm:
+  problem_families:
+    - routing
+  method: iterated_local_search
+  method_class: metaheuristic
+  optimality: heuristic_or_incumbent
+  supports_warm_start: true
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - capacitated_vehicle_routing
+    - multiple_capacity_dimensions
+    - time_windows
+    - multiple_depots
+    - heterogeneous_fleet
+    - distinct_start_and_end_depots
+    - pickup_and_delivery_quantities
+    - optional_clients_with_prizes
+    - client_groups
+    - vehicle_fixed_costs
+    - distance_and_duration_costs
+    - vehicle_shift_duration
+    - maximum_route_distance
+    - vehicle_overtime
+    - reload_depots_and_multiple_trips
+    - asymmetric_distance_and_duration_matrices
+    - multiple_routing_profiles
+  limitations:
+    - Does not prove optimality or report a mathematical optimality gap.
+    - Does not accept arbitrary linear constraints or arbitrary business side constraints.
+    - Is not a generic scheduling, assignment, packing, or network-flow solver.
+    - Does not emit DecisionBrain's problem-specific solution schema directly.
+    - >-
+      A pickup quantity and a delivery quantity can be attached to a client, but this
+      manifest does not claim support for general paired pickup-delivery precedence.
+
+selection:
+  required_features:
+    - problem_family_is_routing
+    - objective_can_be_represented_by_supported_route_costs_and_optional_client_prizes
+    - all_hard_constraints_map_to_declared_pyvrp_capabilities
+  good_fit_when:
+    - A high-quality feasible routing solution is more important than an optimality proof.
+    - The instance contains capacity, time-window, fleet, depot, or route-duration structure.
+    - The problem can be represented without adding arbitrary side constraints.
+  reject_when:
+    - The user requires a proven-optimal solution, lower bound, or MIP gap.
+    - A hard business constraint cannot be represented by the capabilities above.
+    - The primary decision is not route construction.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: >-
+      No project-specific scale envelope has been benchmarked yet. Candidate selection
+      must use DecisionBrain benchmark evidence rather than assume a customer limit.
+
+distribution:
+  package: pyvrp
+  verified_version: 0.13.4
+  compatible_version_spec: ">=0.13.4,<0.14.0"
+  import_name: pyvrp
+  requires_python: ">=3.11"
+  license_spdx: MIT
+  homepage: https://pyvrp.org/
+  documentation: https://pyvrp.org/
+  source_repository: https://github.com/PyVRP/PyVRP
+  native_extensions: true
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: cp312-cp312-macosx_11_0_arm64
+    self_compiled: false
+    modules:
+      - pyvrp/_pyvrp.cpython-312-darwin.so
+      - pyvrp/search/_search.cpython-312-darwin.so
+  verified_environment:
+    conda_environment: decisionbrain
+    python_version: "3.12"
+    platform: macos-arm64
+
+interface:
+  profile: pyvrp.ils
+  preferred_api: model_builder
+  imports:
+    - from pyvrp import Model
+    - from pyvrp.stop import MaxRuntime
+  model_builder:
+    constructor: pyvrp.Model()
+    methods:
+      - add_depot
+      - add_client
+      - add_vehicle_type
+      - add_profile
+      - add_edge
+    alternative_inputs:
+      - pyvrp.ProblemData
+      - VRPLIB file via pyvrp.read()
+  solve:
+    call: model.solve(stop=criterion, seed=seed, display=False, initial_solution=solution_or_none)
+    stopping_criteria:
+      - name: MaxRuntime
+        budget_unit: wall_clock_seconds
+        workload_stable: false
+        environment_sensitive: true
+        recommended_uses:
+          - final_intensification
+          - global_safety_limit
+        caveat: >-
+          A fixed seed with MaxRuntime does not guarantee the same iteration count or
+          solution across machines or changing system load.
+      - name: MaxIterations
+        budget_unit: iterations
+        workload_stable: true
+        environment_sensitive: false
+        recommended_uses:
+          - comparable_candidate_evaluation
+          - deterministic_work_budget
+        caveat: >-
+          The iteration count is fixed, but strict reproducibility still requires the same
+          PyVRP version, build, input ordering, parameters, and deterministic execution environment.
+      - name: NoImprovement
+        budget_unit: non_improving_iterations
+        workload_stable: false
+        environment_sensitive: false
+        recommended_uses:
+          - convergence_based_intensification
+        caveat: Improvements reset the counter, so total work is not fixed in advance.
+      - name: FirstFeasible
+        budget_unit: first_feasible_solution
+        workload_stable: false
+        environment_sensitive: false
+        recommended_uses:
+          - feasibility_search
+        caveat: Failure to stop does not prove that the modeled instance is infeasible.
+      - name: MultipleCriteria
+        budget_unit: composite
+        workload_stable: false
+        environment_sensitive: true
+        recommended_uses:
+          - combined_quality_and_safety_limits
+        caveat: Its reproducibility and workload properties depend on the component criteria.
+    important_parameters:
+      seed: Integer random seed; use a fixed value for reproducible runs.
+      collect_stats: Collect progress statistics; defaults to true.
+      display: Print solver progress; use false for normal Agent runs.
+      initial_solution: Optional pyvrp.Solution warm start.
+      params: Optional pyvrp.SolveParams for advanced tuning.
+  result:
+    type: pyvrp.Result
+    fields:
+      feasibility_check: result.is_feasible()
+      objective: result.cost()
+      best_solution: result.best
+      routes: result.best.routes()
+      route_visits: route.visits()
+      runtime_seconds: result.runtime
+      iterations: result.num_iterations
+    warning: >-
+      PyVRP feasibility applies only to the best incumbent under PyVRP's modeled constraints.
+      It is necessary but not sufficient for DecisionBrain acceptance, and a false value does
+      not prove that the modeled instance is infeasible.
+  facts:
+    warm_start:
+      supported: true
+      parameter: initial_solution
+      value_type: pyvrp.Solution
+      purpose: Reuse a feasible incumbent when cheaply re-optimizing a changed subproblem.
+    reproducibility:
+      fixed_seed_scope: random_stream_only
+      time_based_stop_strictly_reproducible: false
+      workload_stable_criteria:
+        - MaxIterations
+      strict_reproducibility_requirements:
+        - identical PyVRP version and native build
+        - identical input ordering and SolveParams
+        - non-time-based stopping criterion
+        - deterministic execution environment
+    feasibility:
+      true_meaning: The best returned incumbent satisfies the constraints modeled inside PyVRP.
+      false_meaning: This run returned no feasible incumbent within its search and stopping policy.
+      false_proves_problem_infeasible: false
+      proof_requirement: >-
+        Use an independent exact feasibility model or a mathematically sufficient infeasibility
+        condition before declaring the business subproblem infeasible.
+    numeric_inputs:
+      distance_python_annotation: int
+      duration_python_annotation: int
+      internal_storage: integer
+      positive_float_behavior: truncated_toward_zero
+      required_conversion: >-
+        Choose a business-preserving scale and explicitly round to int before add_edge; never rely
+        on PyVRP's implicit float-to-integer truncation. Apply the inverse scale to outputs.
+    route_visits:
+      returns: client_location_indices
+      includes_depot: false
+      business_id_mapping: model.data().location(index).name
+      complete_route_mapping: Explicitly prepend and append the business depot ID when required.
+    objective:
+      general_objective: result.cost()
+      pure_distance: result.best.distance()
+      distance_unit_matches_edge_distance: true
+      general_objective_equals_distance_when:
+        - all vehicle types use unit_distance_cost=1
+        - duration, fixed, and overtime costs are zero
+        - no optional-client prize changes the objective
+        - the returned incumbent is feasible
+
+solver_documentation:
+  - id: iterated_local_search
+    summary: Search vehicle-routing solutions with PyVRP's hybrid genetic and iterated local-search machinery.
+    minimal_call_example: |
+      from pyvrp import Model
+      from pyvrp.stop import MaxRuntime
+      model = Model()
+      depot = model.add_depot(x=0, y=0)
+      client = model.add_client(x=1, y=1, delivery=1)
+      model.add_vehicle_type(num_available=1, capacity=1, start_depot=depot)
+      model.add_edge(depot, client, distance=1, duration=1)
+      model.add_edge(client, depot, distance=1, duration=1)
+      result = model.solve(stop=MaxRuntime(10), seed=0, display=False)
+
+agent_guidance:
+  algorithm_design:
+    - Select this capability only when every hard routing rule maps to a listed capability.
+    - Record unsupported business rules explicitly; do not silently approximate hard constraints.
+    - Report heuristic_or_incumbent rather than proven_optimal.
+    - Choose a deterministic seed and a runtime budget with time reserved for output validation.
+  solving:
+    - Read input_schema.json, solution_schema.json, and feasibility_checker.py first.
+    - Keep a mapping between PyVRP location indices and business entity identifiers.
+    - Scale non-integer time, distance, demand, and cost values explicitly and document the scale.
+    - Build all required directed edges when using explicit distance or duration matrices.
+    - Convert result.best.routes() into the problem-level semantic solution schema.
+    - Reject an internally infeasible result and always run feasibility_checker.py.
+  minimal_call_example: |
+    from pyvrp import Model
+    from pyvrp.stop import MaxRuntime
+
+    model = Model()
+    depot = model.add_depot(x=0, y=0, name="depot")
+    client = model.add_client(x=1, y=1, delivery=1, name="customer-1")
+    model.add_vehicle_type(num_available=1, capacity=10, start_depot=depot)
+
+    locations = [depot, client]
+    for frm in locations:
+        for to in locations:
+            if frm is not to:
+                model.add_edge(frm, to, distance=1, duration=1)
+
+    result = model.solve(stop=MaxRuntime(10.0), seed=0, display=False)
+    if not result.is_feasible():
+        raise RuntimeError("PyVRP did not produce a feasible solution")
+
+    visits_by_route = [list(route.visits()) for route in result.best.routes()]
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; import pyvrp;
+      assert version('pyvrp') == '0.13.4'; print(version('pyvrp'))"
+    expected_version: 0.13.4
+  acceptance_requirements:
+    - The generated solution conforms to solution_schema.json.
+    - feasibility_checker.py reports schema_valid=true and feasible=true.
+    - solver_result.json records algorithm id, package version, seed, runtime, and objective.
+  benchmark_status: not_benchmarked

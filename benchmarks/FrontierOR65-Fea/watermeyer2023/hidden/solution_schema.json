@@ -1,0 +1,4 @@
+{
+  "objective_value": "<int> Overall project duration, equal to the start time of the project end activity.",
+  "start_times": "<list[int], length num_nodes> Start time chosen for each activity, indexed from the project start activity through the project end activity."
+}

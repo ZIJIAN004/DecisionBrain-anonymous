@@ -1,0 +1,18 @@
+{
+  "paper_id": "knueven2020",
+  "paper_title": "On Mixed Integer Programming Formulations for the Unit Commitment Problem",
+  "publication": "INFORMS Journal on Computing",
+  "year": 2020,
+  "direction": "min",
+  "problem_class": "Energy & Unit Commitment",
+  "category": "operational",
+  "formulation_type": "MIP",
+  "application_field": "Energy & Power Systems",
+  "avg_num_var": 450144.0,
+  "avg_num_int_var": 129600.0,
+  "avg_num_constr": 623040.0,
+  "source_link": "https://doi.org/10.1287/ijoc.2019.0944",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)",
+  "instance": "infeasible",
+  "infeasibility_type": "constraint"
+}

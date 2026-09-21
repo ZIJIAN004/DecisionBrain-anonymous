@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total cost of the assignment, equal to the aggregate A-cost times the aggregate B-cost plus the aggregate C-cost over all matched entity-position pairs.",
+  "assignment": "<list[int], length n> Position assigned to each entity, where the value at index i is the position to which entity i is matched."
+}

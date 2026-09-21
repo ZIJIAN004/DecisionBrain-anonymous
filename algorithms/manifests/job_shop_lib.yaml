@@ -1,0 +1,289 @@
+schema_version: "1.3"
+
+id: job_shop_lib
+display_name: JobShopLib
+status: experimental
+kind: python_library
+summary: >-
+  Complete JobShopLib 1.7.0 package integration for job-shop scheduling. The
+  Agent can select its exact OR-Tools solver, constructive dispatching rules,
+  or simulated annealing through one package-level guide.
+
+algorithm:
+  problem_families:
+    - resource_scheduling
+  method: job_shop_toolkit
+  method_class: mixed
+  optimality: mixed
+  supports_warm_start: true
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - classical_job_shop
+    - flexible_job_shop_instances
+    - operation_precedence
+    - unary_machine_capacity
+    - makespan_minimization
+    - release_dates
+    - deadlines
+    - due_date_penalties
+    - exact_constraint_programming
+    - dispatching_rules
+    - simulated_annealing
+    - critical_path_neighborhood
+    - custom_neighbor_generator
+    - custom_objective_function
+    - benchmark_instance_loading
+    - random_instance_generation
+    - graph_representations
+    - reinforcement_learning_environments
+    - schedule_visualization
+  limitations:
+    - Solver guarantees differ by selected solver and must not be transferred across the suite.
+    - Simulated annealing and dispatching rules do not prove optimality or infeasibility.
+    - Deadline handling by penalty objectives is not a hard-feasibility proof.
+    - Reinforcement-learning environments do not include a pretrained solving policy.
+    - This manifest does not claim workforce, crew, or general project-scheduling coverage.
+    - The package does not emit DecisionBrain's problem-specific solution schema directly.
+
+selection:
+  required_features:
+    - primary_problem_is_job_shop_scheduling
+    - selected_solver_interface_matches_required_guarantees
+    - all_business_constraints_are_independently_validated
+  good_fit_when:
+    - One package should support exact solving, fast construction, and heuristic improvement.
+    - Classical job-shop data structures and machine schedules match the task.
+    - Benchmark loading, graph representations, or RL environments are useful auxiliaries.
+  reject_when:
+    - The task requires scheduling semantics absent from JobShopLib.
+    - A heuristic solver is selected where the user requires a mathematical proof.
+    - A penalty is the only representation of a hard business constraint.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: >-
+      No DecisionBrain scale envelope has been benchmarked for any suite member.
+      Compare solvers using explicit time or step budgets on representative instances.
+
+distribution:
+  package: job-shop-lib
+  verified_version: 1.7.0
+  compatible_version_spec: ">=1.7.0,<1.8.0"
+  import_name: job_shop_lib
+  requires_python: ">=3.10,<4.0"
+  license_spdx: MIT
+  homepage: https://github.com/Pabloo22/job_shop_lib
+  documentation: https://job-shop-lib.readthedocs.io/en/stable/
+  source_repository: https://github.com/Pabloo22/job_shop_lib
+  native_extensions: false
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: py3-none-any
+    self_compiled: false
+    modules:
+      - job_shop_lib
+  verified_environment:
+    conda_environment: DecisionBrain/venv
+    python_version: "3.12"
+    platform: windows-amd64
+
+interface:
+  profile: job_shop_lib
+  preferred_api: solver_suite
+  imports:
+    - from job_shop_lib import JobShopInstance, Operation, Schedule
+    - from job_shop_lib.constraint_programming import ORToolsSolver
+    - from job_shop_lib.dispatching.rules import DispatchingRuleSolver
+    - from job_shop_lib.metaheuristics import SimulatedAnnealingSolver
+  model_builder:
+    constructor: job_shop_lib.JobShopInstance(jobs, name=name)
+    methods:
+      - job_shop_lib.Operation
+      - job_shop_lib.JobShopInstance
+    alternative_inputs:
+      - job_shop_lib.benchmarking.load_benchmark_instance(name)
+      - job_shop_lib.generation.GeneralInstanceGenerator(...).generate()
+  solvers:
+    - id: constraint_programming
+      method: constraint_programming_sat
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from job_shop_lib.constraint_programming import ORToolsSolver
+      constructor: ORToolsSolver(max_time_in_seconds=seconds, log_search_progress=False)
+      call: solver.solve(instance, arrival_times=arrival_times_or_none, deadlines=deadlines_or_none)
+      supports_warm_start: false
+      supports_random_seed: false
+      supports_time_limit: true
+      stopping_criteria:
+        - name: max_time_in_seconds
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_exact_search
+            - proof_or_incumbent_search
+          caveat: A time limit may return an incumbent without an optimality proof.
+      important_parameters:
+        max_time_in_seconds: Optional wall-clock solve limit.
+        log_search_progress: Enable backend search logs; use false for normal Agent runs.
+        arrival_times: Optional operation arrival-time matrix passed to solve().
+        deadlines: Optional operation deadline matrix passed to solve().
+      result:
+        type: job_shop_lib.Schedule
+        fields:
+          makespan: schedule.makespan()
+          machine_schedules: schedule.schedule
+          critical_path: schedule.critical_path()
+          is_complete: schedule.is_complete()
+        warning: >-
+          The API returns a Schedule rather than a proof-status result object. Do not
+          claim proven optimality or infeasibility without separate backend evidence.
+    - id: dispatching_rules
+      method: dispatching_rule
+      method_class: constructive_heuristic
+      optimality: heuristic_or_incumbent
+      imports:
+        - from job_shop_lib.dispatching.rules import DispatchingRuleSolver
+      constructor: DispatchingRuleSolver(dispatching_rule="most_work_remaining")
+      call: solver.solve(instance)
+      supports_warm_start: false
+      supports_random_seed: false
+      supports_time_limit: false
+      stopping_criteria: []
+      important_parameters:
+        dispatching_rule: Built-in rule name or custom operation selector callable.
+        machine_chooser: Built-in strategy or callable for flexible-machine selection.
+        ready_operations_filter: Filters controlling which ready operations may be selected.
+      result:
+        type: job_shop_lib.Schedule
+        fields:
+          makespan: schedule.makespan()
+          machine_schedules: schedule.schedule
+          critical_path: schedule.critical_path()
+          is_complete: schedule.is_complete()
+        warning: A complete schedule is a heuristic construction, not an optimality proof.
+    - id: simulated_annealing
+      method: simulated_annealing
+      method_class: metaheuristic
+      optimality: heuristic_or_incumbent
+      imports:
+        - from job_shop_lib.metaheuristics import SimulatedAnnealingSolver
+      constructor: SimulatedAnnealingSolver(steps=steps, updates=0, seed=seed)
+      call: solver.solve(instance, initial_state=schedule_or_none)
+      supports_warm_start: true
+      supports_random_seed: true
+      supports_time_limit: false
+      stopping_criteria:
+        - name: steps
+          budget_unit: iterations
+          workload_stable: true
+          environment_sensitive: false
+          recommended_uses:
+            - comparable_candidate_evaluation
+            - deterministic_work_budget
+          caveat: A fixed seed and step count do not provide an optimality guarantee.
+      important_parameters:
+        initial_temperature: Starting temperature for accepting worsening moves.
+        ending_temperature: Final annealing temperature.
+        steps: Number of annealing iterations.
+        updates: Progress updates; use zero for normal Agent runs.
+        seed: Integer seed for the solver's random generator.
+        objective_function: Optional callable from Schedule to float.
+        neighbor_generator: Optional callable producing a neighboring Schedule.
+        initial_state: Optional job_shop_lib.Schedule warm start passed to solve().
+      result:
+        type: job_shop_lib.Schedule
+        fields:
+          makespan: schedule.makespan()
+          machine_schedules: schedule.schedule
+          critical_path: schedule.critical_path()
+          is_complete: schedule.is_complete()
+        warning: >-
+          The returned schedule is a heuristic incumbent. Penalty-based objective values
+          do not establish hard feasibility.
+  facts:
+    instance_mapping:
+      operation_type: job_shop_lib.Operation
+      instance_type: job_shop_lib.JobShopInstance
+      guidance: Preserve business IDs outside the package and map them to job and operation indices.
+    schedule:
+      result_type: job_shop_lib.Schedule
+      machine_sequences: schedule.schedule
+      makespan: schedule.makespan()
+      completeness: schedule.is_complete()
+    feasibility_boundary: >-
+      Schedule completeness covers JobShopLib's encoded sequencing semantics only;
+      DecisionBrain must independently check every business constraint.
+
+solver_documentation:
+  - id: constraint_programming
+    summary: Solve job-shop schedules with an OR-Tools CP-SAT model and proof-aware outcomes.
+    minimal_call_example: |
+      from job_shop_lib import JobShopInstance, Operation
+      from job_shop_lib.constraint_programming import ORToolsSolver
+      instance = JobShopInstance([[Operation(machines=0, duration=1)]])
+      solver = ORToolsSolver(max_time_in_seconds=10)
+      schedule = solver.solve(instance)
+      assert schedule.is_complete()
+  - id: dispatching_rules
+    summary: Construct schedules quickly by repeatedly applying a selected dispatching rule.
+    minimal_call_example: |
+      from job_shop_lib import JobShopInstance, Operation
+      from job_shop_lib.dispatching.rules import DispatchingRuleSolver, DispatchingRuleType
+      instance = JobShopInstance([[Operation(machines=0, duration=1)]])
+      solver = DispatchingRuleSolver(dispatching_rule=DispatchingRuleType.SHORTEST_PROCESSING_TIME)
+      schedule = solver.solve(instance)
+      assert schedule.is_complete()
+  - id: simulated_annealing
+    summary: Improve a complete job-shop schedule through simulated-annealing neighborhood search.
+    minimal_call_example: |
+      from job_shop_lib import JobShopInstance, Operation
+      from job_shop_lib.metaheuristics import SimulatedAnnealingSolver
+      instance = JobShopInstance([[Operation(machines=0, duration=1)]])
+      solver = SimulatedAnnealingSolver(steps=10, updates=0, seed=0)
+      schedule = solver.solve(instance)
+      assert schedule.is_complete()
+
+agent_guidance:
+  algorithm_design:
+    - Select one solver from interface.solvers and justify it from required guarantees and budget.
+    - Use constraint_programming for bounded exact search, dispatching_rules for fast construction, and simulated_annealing for heuristic improvement.
+    - Do not treat RL environments as a ready-made solver because the package ships no pretrained policy.
+  solving:
+    - Read input_schema.json, solution_schema.json, and feasibility_checker.py first.
+    - Preserve business-ID mappings when constructing Operation objects.
+    - Record the selected solver ID and all solver-specific parameters.
+    - Validate schedule completeness and run feasibility_checker.py before accepting the result.
+  minimal_call_example: |
+    from job_shop_lib import JobShopInstance, Operation
+    from job_shop_lib.constraint_programming import ORToolsSolver
+    from job_shop_lib.dispatching.rules import DispatchingRuleSolver
+    from job_shop_lib.metaheuristics import SimulatedAnnealingSolver
+
+    jobs = [
+        [Operation(machines=0, duration=2), Operation(machines=1, duration=1)],
+        [Operation(machines=1, duration=2), Operation(machines=0, duration=1)],
+    ]
+    instance = JobShopInstance(jobs, name="two-job-example")
+
+    exact = ORToolsSolver(max_time_in_seconds=10).solve(instance)
+    constructed = DispatchingRuleSolver("most_work_remaining").solve(instance)
+    improved = SimulatedAnnealingSolver(steps=200, updates=0, seed=0).solve(
+        instance,
+        initial_state=constructed,
+    )
+    assert exact.is_complete() and improved.is_complete()
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; import job_shop_lib;
+      assert version('job-shop-lib') == '1.7.0'; print(version('job-shop-lib'))"
+    expected_version: 1.7.0
+  acceptance_requirements:
+    - The generated solution conforms to solution_schema.json.
+    - feasibility_checker.py reports schema_valid=true and feasible=true.
+    - solver_result.json records package id, selected solver id, package version, parameters, runtime, and makespan.
+  benchmark_status: not_benchmarked

@@ -1,0 +1,30 @@
+{
+  "network": {
+    "num_nodes": "<int> Total number of nodes in the directed network.",
+    "num_arcs": "<int> Total number of directed physical arcs in the network.",
+    "nodes": "<list[int], length num_nodes> Identifiers for all nodes in the network.",
+    "arcs": [
+      {
+        "arc_id": "<int> Unique identifier for this arc.",
+        "from_node": "<int> Node where this directed arc originates.",
+        "to_node": "<int> Node where this directed arc terminates.",
+        "capacity": "<int> Maximum total bandwidth that can flow through this arc across all commodities.",
+        "cost": "<int> Per-unit routing cost for any commodity using this arc."
+      }
+    ]
+  },
+  "commodities": {
+    "num_commodities": "<int> Total number of commodities (call groups) to be routed or rejected.",
+    "commodity_list": [
+      {
+        "commodity_id": "<int> Unique identifier for this commodity.",
+        "origin": "<int> Node where this commodity originates.",
+        "destination": "<int> Node where this commodity must be delivered.",
+        "demand": "<int> Bandwidth required by this commodity.",
+        "revenue": "<int> Revenue earned if this commodity is successfully routed through the physical network.",
+        "artificial_arc_cost": "<int> Cost incurred if this commodity is rejected instead of being routed."
+      }
+    ]
+  },
+  "objective": "<str> Direction of optimization for the total routing and rejection cost."
+}

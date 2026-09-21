@@ -1,0 +1,62 @@
+{
+  "num_time_periods": "<int> Total number of equally spaced time periods spanning the planning day.",
+  "maximum_displacement_delta": "<int> Maximum number of time periods by which any flight's scheduled departure may differ from its requested departure.",
+  "airports": "<list[str], length num_airports> IATA codes of the airports in the network.",
+  "flights": [
+    {
+      "id": "<int> Unique identifier for the flight.",
+      "dep_airport": "<str> IATA code of the airport from which the flight departs.",
+      "arr_airport": "<str> IATA code of the airport at which the flight arrives.",
+      "dep_period": "<int> Requested departure time period for the flight.",
+      "arr_period": "<int> Requested arrival time period for the flight.",
+      "delta_sch": "<int> Scheduled en-route duration in time periods, equal to the difference between the requested arrival and departure periods.",
+      "delta_min": "<int> Minimum feasible en-route duration in time periods.",
+      "delta_max": "<int> Maximum feasible en-route duration in time periods.",
+      "max_dep_delay": "<int> Maximum allowable departure delay in time periods.",
+      "max_arr_delay": "<int> Maximum allowable arrival delay in time periods.",
+      "cost_dep_delay": "<float> Per-period cost of departure delay for this flight.",
+      "cost_arr_delay": "<float> Per-period cost of arrival delay for this flight."
+    }
+  ],
+  "aircraft_connections": [
+    {
+      "flight_i": "<int> Identifier of the first (arriving) flight in the aircraft turnaround connection.",
+      "flight_j": "<int> Identifier of the second (departing) flight in the aircraft turnaround connection.",
+      "min_connection_time": "<int> Minimum number of time periods required between the arrival of the first flight and the departure of the second flight."
+    }
+  ],
+  "passenger_connections": [
+    {
+      "flight_i": "<int> Identifier of the first (arriving) flight in the passenger itinerary connection.",
+      "flight_j": "<int> Identifier of the second (departing) flight in the passenger itinerary connection.",
+      "min_connection_time": "<int> Minimum number of time periods required between the arrival of the first flight and the departure of the second flight for passenger transfers."
+    }
+  ],
+  "capacity_envelopes": {
+    "<airport_code>": {
+      "VMC": [
+        {
+          "a": "<int> Coefficient on the number of departures in this capacity envelope segment under visual meteorological conditions.",
+          "b": "<int> Coefficient on the number of arrivals in this capacity envelope segment under visual meteorological conditions.",
+          "Q": "<int> Maximum combined weighted operations allowed per time period for this segment under visual meteorological conditions."
+        }
+      ],
+      "IMC": [
+        {
+          "a": "<int> Coefficient on the number of departures in this capacity envelope segment under instrument meteorological conditions.",
+          "b": "<int> Coefficient on the number of arrivals in this capacity envelope segment under instrument meteorological conditions.",
+          "Q": "<int> Maximum combined weighted operations allowed per time period for this segment under instrument meteorological conditions."
+        }
+      ]
+    }
+  },
+  "scenarios": [
+    {
+      "id": "<int> Unique identifier for the weather scenario.",
+      "probability": "<float> Probability that this weather scenario occurs.",
+      "operating_conditions": {
+        "<airport_code>": "<list[str], length num_time_periods> Weather condition (VMC or IMC) prevailing at this airport during each time period in this scenario."
+      }
+    }
+  ]
+}

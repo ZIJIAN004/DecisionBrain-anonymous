@@ -1,0 +1,16 @@
+{
+    "paper_id":  "carvalho1999",
+    "paper_title":  "Exact solution of bin-packing problems using column generation and branch-and-bound",
+    "publication":  "Annals of Operations Research",
+    "year":  1999,
+    "direction":  "min",
+    "problem_class":  "Packing / Cutting Stock",
+    "category":  "planning",
+    "formulation_type":  "IP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  38404.0,
+    "avg_num_int_var":  38404.0,
+    "avg_num_constr":  1232.0,
+    "source_link":  "https://link.springer.com/article/10.1023/A:1018952112615",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

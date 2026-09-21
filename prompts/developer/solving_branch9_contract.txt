@@ -1,0 +1,87 @@
+【环境】workspace 是当前 cwd；shell 上限约 __TIME_BUDGET__ 秒，solver 内部时限必须更短。
+
+【必须生成】
+- from_data_to_input.py：读取真实 `data/`，通过 JSON 解析和结构化映射确定性生成 input.json 的可重复执行转换程序；完成后必须保留。
+- input.json：符合 input_schema.json 的规范化输入，只能通过一次独立的 `python3 from_data_to_input.py` shell 调用生成。
+- solver.py：读取真实数据、调用选定算法、生成并自检结果，由 Runtime 的 `run_solver` 执行。
+- solution.json：符合 solution_schema.json 的完整业务语义解，只能由 `run_solver` 执行 solver.py 生成。
+- feasibility_result.json：调用 feasibility_checker.py 产生。
+- solver_result.json：详细求解摘要。
+- stage_outputs/solving.json：仅保存阶段决策和 solver_result.json 引用。
+
+solver_result.json 严格结构：
+{
+  "status": "optimal | time_limit | infeasible | failed",
+  "objective": 0,
+  "mip_gap": null,
+  "optimality": "proven_optimal | heuristic_or_incumbent",
+  "input_file": "input.json",
+  "solution_file": "solution.json",
+  "code_file": "solver.py",
+  "feasibility_result_file": "feasibility_result.json",
+  "algorithm_execution": {
+    "source": "library | generated",
+    "planned_algorithm_id": "manifest id 或 null",
+    "executed_algorithm_id": "实际 manifest id 或 null",
+    "version": "实际版本或 null",
+    "guide_consulted": true,
+    "availability_check": {"ok": true, "detail": "版本、导入和环境检查摘要；generated 时说明不适用"},
+    "seed": 0,
+    "runtime_limit_seconds": 0,
+    "fallback_used": false,
+    "deviation_reason": "未偏离时为空字符串"
+  },
+  "solution_summary": {},
+  "constraint_check": [
+    {"name": "约束名", "ok": true, "detail": "简短摘要"}
+  ],
+  "validation": {
+    "schema_check": {"ok": true, "issues": []},
+    "feasibility_checker": {
+      "schema_valid": true,
+      "feasible": true,
+      "objective_value": 0,
+      "violations": [],
+      "warnings": []
+    },
+    "business_semantic_check": {"ok": true, "issues": []},
+    "algorithm_mapping_check": {
+      "ok": true,
+      "issues": [],
+      "mapped_capabilities": ["业务规则 -> manifest capability"]
+    },
+    "implementation_check": {"ok": true, "issues": []}
+  },
+  "diagnosis": ""
+}
+
+library 执行必须填写 executed_algorithm_id/version，guide_consulted=true 且 availability_check.ok=true。generated 执行的 executed_algorithm_id/version 必须为 null。实际算法与 planned_algorithm_id 不同时，fallback_used=true 且 deviation_reason 非空。
+
+stage_outputs/solving.json 三种格式：
+
+成功：
+{
+  "decision": "solved",
+  "message": "简短说明",
+  "result": {"solver_result_file": "solver_result.json"}
+}
+
+需要澄清：
+{
+  "decision": "needs_clarification",
+  "message": "为什么必须澄清",
+  "questions": [
+    {"id": "short_id", "text": "具体问题", "answer_type": "text", "options": [], "context": "证据"}
+  ]
+}
+
+失败：
+{"decision": "failed", "message": "失败原因和已尝试动作"}
+
+【solved 最低标准】
+- 不得使用 write_file、replace_in_file 或嵌入完整实例 JSON 的 shell 命令直接创建、重写或修补 input.json。from_data_to_input.py 不得硬编码或逐项复述实例数据；源结构已符合 schema 时必须原样序列化，确需转换时必须显式实现并验证必需字段、实体数量、ID 集合、数组/矩阵/时间序列维度和未声明转换字段逐值相等。转换失败必须非零退出且不得留下部分 input.json。
+- solver.py 成功运行；所有 JSON 文件存在且合法。
+- solver_result.json 满足上述结构，status 不是 infeasible/failed。
+- feasibility_result.json 与 solver_result.validation.feasibility_checker 一致，并且 schema_valid=true、feasible=true。
+- library/hybrid 库调用与 algorithm_design、manifest 和 algorithm_execution 一致；fallback 不得静默发生。
+- 写完所有文件后用 read_file 或 json.load 验收。

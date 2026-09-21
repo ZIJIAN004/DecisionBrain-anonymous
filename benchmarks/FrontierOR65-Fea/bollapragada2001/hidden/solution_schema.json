@@ -1,0 +1,24 @@
+{
+  "objective_value": "<float> Total cost of the truss structure, summing cost density times length times chosen area for every bar.",
+  "bar_areas": [
+    {
+      "bar_id": "<int> Bar to which this area assignment applies.",
+      "area": "<float> Cross-sectional area selected for this bar from the discrete candidate set.",
+      "area_index": "<int> Zero-based position of the selected area within the discrete candidate list."
+    }
+  ],
+  "displacements": [
+    {
+      "dof_id": "<int> Degree of freedom at which this displacement occurs.",
+      "load": "<int> Loading condition under which this displacement occurs.",
+      "value": "<float> Nodal displacement at this degree of freedom under this loading condition."
+    }
+  ],
+  "bar_forces": [
+    {
+      "bar_id": "<int> Bar in which this internal force acts.",
+      "load": "<int> Loading condition under which this force occurs.",
+      "force": "<float> Internal axial force in this bar under this loading condition (positive is tension, negative is compression)."
+    }
+  ]
+}

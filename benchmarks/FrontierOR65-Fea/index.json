@@ -1,0 +1,471 @@
+{
+    "benchmark":  "FrontierOR",
+    "suite":  "FrontierOR65-Fea",
+    "source_root_layout":  "\u003clarge_root\u003e/\u003cpaper_id\u003e/{instance,gurobi_solution}/",
+    "candidate_rule":  "descending instance_bytes; stop at first hidden-checker feasibility match",
+    "stratification":  {
+                           "dimensions":  [
+                                              "problem_class",
+                                              "formulation_type"
+                                          ],
+                           "selection_within_stratum":  "lower median by instance_bytes, then paper_id"
+                       },
+    "case_count":  65,
+    "cases":  {
+                  "delage2022":  {
+                                     "instance_index":  3,
+                                     "instance_bytes":  3747,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Cutting Stock / Production Planning",
+                                     "formulation_type":  "MIP"
+                                 },
+                  "knueven2020":  {
+                                      "instance_index":  5,
+                                      "instance_bytes":  647202,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Energy \u0026 Unit Commitment",
+                                      "formulation_type":  "MIP"
+                                  },
+                  "taninmis2022":  {
+                                       "instance_index":  4,
+                                       "instance_bytes":  690359,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Energy \u0026 Unit Commitment",
+                                       "formulation_type":  "Stochastic/Robust/DRO"
+                                   },
+                  "freling2003":  {
+                                      "instance_index":  2,
+                                      "instance_bytes":  264128,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Facility Location",
+                                      "formulation_type":  "MIP"
+                                  },
+                  "rostami2021":  {
+                                      "instance_index":  1,
+                                      "instance_bytes":  905815,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Facility Location",
+                                      "formulation_type":  "Stochastic/Robust/DRO"
+                                  },
+                  "seker2021":  {
+                                    "instance_index":  5,
+                                    "instance_bytes":  3722039,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Graph Optimization",
+                                    "formulation_type":  "BIP"
+                                },
+                  "gualandi2012":  {
+                                       "instance_index":  3,
+                                       "instance_bytes":  644197,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Graph Optimization",
+                                       "formulation_type":  "CP"
+                                   },
+                  "morrison2016":  {
+                                       "instance_index":  4,
+                                       "instance_bytes":  490801,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Graph Optimization",
+                                       "formulation_type":  "IP"
+                                   },
+                  "gschwind2021":  {
+                                       "instance_index":  5,
+                                       "instance_bytes":  197552,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Graph Optimization",
+                                       "formulation_type":  "MIP"
+                                   },
+                  "armbruster2012":  {
+                                         "instance_index":  2,
+                                         "instance_bytes":  5040358,
+                                         "reference_feasible":  true,
+                                         "problem_class":  "Graph Optimization",
+                                         "formulation_type":  "SDP"
+                                     },
+                  "rothenbacher2019":  {
+                                           "instance_index":  5,
+                                           "instance_bytes":  35352,
+                                           "reference_feasible":  true,
+                                           "problem_class":  "Lot Sizing / Inventory",
+                                           "formulation_type":  "BIP"
+                                       },
+                  "desaulniers2014":  {
+                                          "instance_index":  3,
+                                          "instance_bytes":  39657,
+                                          "reference_feasible":  true,
+                                          "problem_class":  "Lot Sizing / Inventory",
+                                          "formulation_type":  "MIP"
+                                      },
+                  "gruson2021":  {
+                                     "instance_index":  4,
+                                     "instance_bytes":  1985645,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Lot Sizing / Inventory",
+                                     "formulation_type":  "Stochastic/Robust/DRO"
+                                 },
+                  "barnhart2000":  {
+                                       "instance_index":  2,
+                                       "instance_bytes":  117871,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Network Design \u0026 Flow",
+                                       "formulation_type":  "IP"
+                                   },
+                  "zetina2019":  {
+                                     "instance_index":  2,
+                                     "instance_bytes":  10353328,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Network Design \u0026 Flow",
+                                     "formulation_type":  "MIP"
+                                 },
+                  "bertsimas2024":  {
+                                        "instance_index":  5,
+                                        "instance_bytes":  3740613,
+                                        "reference_feasible":  true,
+                                        "problem_class":  "Network Design \u0026 Flow",
+                                        "formulation_type":  "Stochastic/Robust/DRO"
+                                    },
+                  "pinnoi1997":  {
+                                     "instance_index":  1,
+                                     "instance_bytes":  6425,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Other (Assembly Line Balancing)",
+                                     "formulation_type":  "MIP"
+                                 },
+                  "belhoul2014":  {
+                                      "instance_index":  3,
+                                      "instance_bytes":  30375176,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Other (Assignment)",
+                                      "formulation_type":  "IP"
+                                  },
+                  "amaldi2013":  {
+                                     "instance_index":  5,
+                                     "instance_bytes":  19083,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Other (Clustering)",
+                                     "formulation_type":  "MIP"
+                                 },
+                  "kress2019":  {
+                                    "instance_index":  4,
+                                    "instance_bytes":  549,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Other (Container Terminal)",
+                                    "formulation_type":  "IP"
+                                },
+                  "xie2019":  {
+                                  "instance_index":  4,
+                                  "instance_bytes":  9552,
+                                  "reference_feasible":  true,
+                                  "problem_class":  "Other (Container Terminal)",
+                                  "formulation_type":  "MIP"
+                              },
+                  "earl2005":  {
+                                   "instance_index":  3,
+                                   "instance_bytes":  5824,
+                                   "reference_feasible":  true,
+                                   "problem_class":  "Other (Cooperative Control)",
+                                   "formulation_type":  "MIP"
+                               },
+                  "pettersson2020":  {
+                                         "instance_index":  3,
+                                         "instance_bytes":  381949978,
+                                         "reference_feasible":  true,
+                                         "problem_class":  "Other (General MIP)",
+                                         "formulation_type":  "IP"
+                                     },
+                  "bragin2022":  {
+                                     "instance_index":  2,
+                                     "instance_bytes":  2545677,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Other (General MIP)",
+                                     "formulation_type":  "MIP"
+                                 },
+                  "savelsbergh1997":  {
+                                          "instance_index":  1,
+                                          "instance_bytes":  45168,
+                                          "reference_feasible":  true,
+                                          "problem_class":  "Other (Generalized Assignment)",
+                                          "formulation_type":  "MIP"
+                                      },
+                  "lai2021":  {
+                                  "instance_index":  3,
+                                  "instance_bytes":  862490,
+                                  "reference_feasible":  true,
+                                  "problem_class":  "Other (Grouping / Partitioning)",
+                                  "formulation_type":  "MIP"
+                              },
+                  "forrest2006":  {
+                                      "instance_index":  1,
+                                      "instance_bytes":  397169,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Other (Knapsack)",
+                                      "formulation_type":  "IP"
+                                  },
+                  "castro2021":  {
+                                     "instance_index":  1,
+                                     "instance_bytes":  1799707176,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Other (Network Flow)",
+                                     "formulation_type":  "NLP/MINLP"
+                                 },
+                  "rahimian2017":  {
+                                       "instance_index":  5,
+                                       "instance_bytes":  256697,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Other (Nurse Rostering)",
+                                       "formulation_type":  "MIP"
+                                   },
+                  "chen1999":  {
+                                   "instance_index":  1,
+                                   "instance_bytes":  18864,
+                                   "reference_feasible":  true,
+                                   "problem_class":  "Other (Parallel Machine Scheduling)",
+                                   "formulation_type":  "IP"
+                               },
+                  "watermeyer2023":  {
+                                         "instance_index":  3,
+                                         "instance_bytes":  1098474,
+                                         "reference_feasible":  true,
+                                         "problem_class":  "Other (Project Scheduling)",
+                                         "formulation_type":  "CP"
+                                     },
+                  "araujo2020":  {
+                                     "instance_index":  2,
+                                     "instance_bytes":  32336,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Other (Project Scheduling)",
+                                     "formulation_type":  "MIP"
+                                 },
+                  "wangy2020":  {
+                                    "instance_index":  2,
+                                    "instance_bytes":  51370617,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Other (Quadratic Assignment)",
+                                    "formulation_type":  "QP/MIQP"
+                                },
+                  "caprara1999":  {
+                                      "instance_index":  5,
+                                      "instance_bytes":  906043,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Other (Quadratic Knapsack)",
+                                      "formulation_type":  "QP/MIQP"
+                                  },
+                  "buchheim2018":  {
+                                       "instance_index":  1,
+                                       "instance_bytes":  576281,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Other (Quadratic Optimization)",
+                                       "formulation_type":  "QP/MIQP"
+                                   },
+                  "dienstknecht2024":  {
+                                           "instance_index":  5,
+                                           "instance_bytes":  13903,
+                                           "reference_feasible":  true,
+                                           "problem_class":  "Other (Resource Assignment)",
+                                           "formulation_type":  "MIP"
+                                       },
+                  "song2021":  {
+                                   "instance_index":  2,
+                                   "instance_bytes":  50634,
+                                   "reference_feasible":  true,
+                                   "problem_class":  "Other (Resource Loading)",
+                                   "formulation_type":  "MIP"
+                               },
+                  "bront2009":  {
+                                    "instance_index":  5,
+                                    "instance_bytes":  54761,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Other (Revenue Management)",
+                                    "formulation_type":  "IP"
+                                },
+                  "muter2010":  {
+                                    "instance_index":  4,
+                                    "instance_bytes":  5687,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Other (Set Covering / Partitioning)",
+                                    "formulation_type":  "BIP"
+                                },
+                  "zhang2025":  {
+                                    "instance_index":  4,
+                                    "instance_bytes":  9672644,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Other (Set Covering / Partitioning)",
+                                    "formulation_type":  "IP"
+                                },
+                  "bollapragada2001":  {
+                                           "instance_index":  4,
+                                           "instance_bytes":  41631,
+                                           "reference_feasible":  true,
+                                           "problem_class":  "Other (Structural Design)",
+                                           "formulation_type":  "MIP"
+                                       },
+                  "wang2025":  {
+                                   "instance_index":  2,
+                                   "instance_bytes":  98336,
+                                   "reference_feasible":  true,
+                                   "problem_class":  "Other (Submodular Optimization)",
+                                   "formulation_type":  "BIP"
+                               },
+                  "roberti2015":  {
+                                      "instance_index":  5,
+                                      "instance_bytes":  230824,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Other (Transportation)",
+                                      "formulation_type":  "MIP"
+                                  },
+                  "sadykov2013":  {
+                                      "instance_index":  5,
+                                      "instance_bytes":  178336,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Packing / Cutting Stock",
+                                      "formulation_type":  "BIP"
+                                  },
+                  "carvalho1999":  {
+                                       "instance_index":  1,
+                                       "instance_bytes":  225485,
+                                       "reference_feasible":  true,
+                                       "problem_class":  "Packing / Cutting Stock",
+                                       "formulation_type":  "IP"
+                                   },
+                  "furini2016":  {
+                                     "instance_index":  5,
+                                     "instance_bytes":  5106,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Packing / Cutting Stock",
+                                     "formulation_type":  "MIP"
+                                 },
+                  "bergman2019":  {
+                                      "instance_index":  3,
+                                      "instance_bytes":  13278,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Packing / Cutting Stock",
+                                      "formulation_type":  "QP/MIQP"
+                                  },
+                  "kobayashi2021":  {
+                                        "instance_index":  5,
+                                        "instance_bytes":  43056929,
+                                        "reference_feasible":  true,
+                                        "problem_class":  "Portfolio Optimization",
+                                        "formulation_type":  "Bilevel/Multi-level"
+                                    },
+                  "bertsimas2022":  {
+                                        "instance_index":  3,
+                                        "instance_bytes":  3473240,
+                                        "reference_feasible":  true,
+                                        "problem_class":  "Portfolio Optimization",
+                                        "formulation_type":  "MIP"
+                                    },
+                  "xu2024":  {
+                                 "instance_index":  1,
+                                 "instance_bytes":  205584,
+                                 "reference_feasible":  true,
+                                 "problem_class":  "Portfolio Optimization",
+                                 "formulation_type":  "QP/MIQP"
+                             },
+                  "ozturk2020":  {
+                                     "instance_index":  3,
+                                     "instance_bytes":  5463,
+                                     "reference_feasible":  true,
+                                     "problem_class":  "Scheduling (Machine / Crew / Workforce)",
+                                     "formulation_type":  "BIP"
+                                 },
+                  "bierwirth2017":  {
+                                        "instance_index":  4,
+                                        "instance_bytes":  27149,
+                                        "reference_feasible":  true,
+                                        "problem_class":  "Scheduling (Machine / Crew / Workforce)",
+                                        "formulation_type":  "CP"
+                                    },
+                  "schwerdfeger2016":  {
+                                           "instance_index":  2,
+                                           "instance_bytes":  3176,
+                                           "reference_feasible":  true,
+                                           "problem_class":  "Scheduling (Machine / Crew / Workforce)",
+                                           "formulation_type":  "IP"
+                                       },
+                  "roshanaei2017":  {
+                                        "instance_index":  3,
+                                        "instance_bytes":  88130,
+                                        "reference_feasible":  true,
+                                        "problem_class":  "Scheduling (Machine / Crew / Workforce)",
+                                        "formulation_type":  "MIP"
+                                    },
+                  "elci2022":  {
+                                   "instance_index":  2,
+                                   "instance_bytes":  9419,
+                                   "reference_feasible":  true,
+                                   "problem_class":  "Scheduling (Machine / Crew / Workforce)",
+                                   "formulation_type":  "Stochastic/Robust/DRO"
+                               },
+                  "byeon2022":  {
+                                    "instance_index":  2,
+                                    "instance_bytes":  19111,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Stochastic / Robust / Bilevel Optimization",
+                                    "formulation_type":  "Bilevel/Multi-level"
+                                },
+                  "rahmaniani2020":  {
+                                         "instance_index":  4,
+                                         "instance_bytes":  492701,
+                                         "reference_feasible":  true,
+                                         "problem_class":  "Stochastic / Robust / Bilevel Optimization",
+                                         "formulation_type":  "Stochastic/Robust/DRO"
+                                     },
+                  "ropke2009":  {
+                                    "instance_index":  1,
+                                    "instance_bytes":  37598,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Vehicle Routing \u0026 TSP",
+                                    "formulation_type":  "BIP"
+                                },
+                  "laporte2003":  {
+                                      "instance_index":  2,
+                                      "instance_bytes":  342214,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Vehicle Routing \u0026 TSP",
+                                      "formulation_type":  "IP"
+                                  },
+                  "desaulniers2010":  {
+                                          "instance_index":  5,
+                                          "instance_bytes":  140230,
+                                          "reference_feasible":  true,
+                                          "problem_class":  "Vehicle Routing \u0026 TSP",
+                                          "formulation_type":  "MIP"
+                                      },
+                  "levin2017":  {
+                                    "instance_index":  2,
+                                    "instance_bytes":  297757,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Vehicle Routing \u0026 TSP",
+                                    "formulation_type":  "NLP/MINLP"
+                                },
+                  "cote2019":  {
+                                   "instance_index":  1,
+                                   "instance_bytes":  17335,
+                                   "reference_feasible":  true,
+                                   "problem_class":  "Vehicle Routing \u0026 TSP",
+                                   "formulation_type":  "Stochastic/Robust/DRO"
+                               },
+                  "ribeiro1994":  {
+                                      "instance_index":  5,
+                                      "instance_bytes":  7606304,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Vehicle Scheduling",
+                                      "formulation_type":  "BIP"
+                                  },
+                  "huisman2005":  {
+                                      "instance_index":  3,
+                                      "instance_bytes":  11973,
+                                      "reference_feasible":  true,
+                                      "problem_class":  "Vehicle Scheduling",
+                                      "formulation_type":  "MIP"
+                                  },
+                  "wangk2020":  {
+                                    "instance_index":  5,
+                                    "instance_bytes":  16483243,
+                                    "reference_feasible":  true,
+                                    "problem_class":  "Vehicle Scheduling",
+                                    "formulation_type":  "Stochastic/Robust/DRO"
+                                }
+              }
+}

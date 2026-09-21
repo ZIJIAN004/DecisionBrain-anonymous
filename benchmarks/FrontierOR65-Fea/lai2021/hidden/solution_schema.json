@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total diversity score, computed as the sum of pairwise distances between all pairs of elements assigned to the same group, across all groups.",
+  "assignment": "<dict, key: '{element}'> Group to which each element is assigned, where keys are zero-indexed element identifiers and values are zero-indexed group identifiers.",
+  "groups": "<dict, key: '{group}'> List of elements assigned to each group, where keys are zero-indexed group identifiers and values are sorted lists of zero-indexed element identifiers."
+}

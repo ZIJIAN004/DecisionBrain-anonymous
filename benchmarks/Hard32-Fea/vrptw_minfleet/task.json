@@ -1,0 +1,13 @@
+{
+  "paper_id": "vrptw_minfleet",
+  "paper_title": "Capped-Fleet Vehicle Routing with Time Windows on the Gehring & Homberger benchmark",
+  "publication": "Homberger & Gehring, A two-phase hybrid metaheuristic for the vehicle routing problem with time windows, EJOR 162(1)",
+  "year": 2005,
+  "direction": "min",
+  "problem_class": "Vehicle Routing & TSP",
+  "category": "operational",
+  "formulation_type": "MIP",
+  "application_field": "Logistics & Distribution",
+  "source_link": "https://www.sintef.no/projectweb/top/vrptw/homberger-benchmark/",
+  "origin": "Gehring & Homberger instances via PyVRP/Instances (MIT); fleet caps from the SINTEF best-known solution tables"
+}

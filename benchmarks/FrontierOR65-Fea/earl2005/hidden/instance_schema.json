@@ -1,0 +1,31 @@
+{
+  "N_D": "<int> Number of defending robots on the playing field.",
+  "N_A": "<int> Number of attacking robots on the playing field.",
+  "epsilon": "<float> Weight on the defenders' cumulative control effort in the objective.",
+  "M_u": "<int> Number of sides of the regular polygon approximating each defender's unit-circle control input constraint.",
+  "M_I": "<int> Number of sides of the regular polygon approximating each defender's intercept region.",
+  "M_dz": "<int> Number of sides of the regular polygon approximating the circular Defense Zone.",
+  "N_u": "<int> Number of discrete control steps for each defender.",
+  "N_a": "<int> Number of discrete sample steps for each attacker.",
+  "R_dz": "<float> Radius of the circular Defense Zone centered at the origin.",
+  "R_I": "<float> Inscribed radius of the regular polygon defining each defender's intercept region.",
+  "v_a": "<float> Constant speed magnitude of each attacker.",
+  "T_a": "<float> Uniform time interval between consecutive attacker sample steps.",
+  "T_u": "<float> Uniform time interval between consecutive defender control steps.",
+  "defenders": [
+    {
+      "x_s": "<float> Initial x-coordinate of the defender's position.",
+      "y_s": "<float> Initial y-coordinate of the defender's position.",
+      "xdot_s": "<float> Initial x-component of the defender's velocity.",
+      "ydot_s": "<float> Initial y-component of the defender's velocity."
+    }
+  ],
+  "attackers": [
+    {
+      "p_s": "<float> Initial x-coordinate of the attacker's position.",
+      "q_s": "<float> Initial y-coordinate of the attacker's position.",
+      "v_p": "<float> Constant x-component of the attacker's velocity toward the Defense Zone.",
+      "v_q": "<float> Constant y-component of the attacker's velocity toward the Defense Zone."
+    }
+  ]
+}

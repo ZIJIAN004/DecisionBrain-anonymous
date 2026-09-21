@@ -1,0 +1,16 @@
+{
+    "paper_id":  "caprara1999",
+    "paper_title":  "Exact Solution of the Quadratic Knapsack Problem",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  1999,
+    "direction":  "max",
+    "problem_class":  "Other (Quadratic Knapsack)",
+    "category":  "planning",
+    "formulation_type":  "QP/MIQP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  90000.0,
+    "avg_num_int_var":  90000.0,
+    "avg_num_constr":  134851.0,
+    "source_link":  "https://pubsonline.informs.org/doi/10.1287/ijoc.11.2.125",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

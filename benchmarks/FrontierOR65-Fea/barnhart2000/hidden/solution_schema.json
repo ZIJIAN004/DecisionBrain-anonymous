@@ -1,0 +1,16 @@
+{
+  "objective_value": "<float> Total cost of rejected commodities across the entire routing plan.",
+  "commodities": [
+    {
+      "commodity_id": "<int> Identifier of the commodity whose routing outcome is described in this entry.",
+      "rejected": "<bool> Whether this commodity is rejected and sent on its artificial arc instead of being routed through the network.",
+      "path_arcs": [
+        {
+          "from": "<int> Origin node of an arc used on this commodity's routing path.",
+          "to": "<int> Destination node of an arc used on this commodity's routing path.",
+          "arc_id": "<int> Identifier of an arc used on this commodity's routing path."
+        }
+      ]
+    }
+  ]
+}

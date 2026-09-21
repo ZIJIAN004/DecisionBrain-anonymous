@@ -1,0 +1,15 @@
+{
+  "num_nodes": "<int> Number of nodes in the directed network.",
+  "num_arcs": "<int> Number of directed arcs in the network.",
+  "num_commodities": "<int> Number of commodities to be shipped through the network.",
+  "arcs": "<list[list[int]], shape [num_arcs][2]> Each arc as a pair [from_node, to_node] representing a directed connection between two nodes.",
+  "fixed_costs": "<dict, key: '{from_node}_{to_node}'> One-time installation cost incurred if the arc is opened for use.",
+  "variable_costs": "<dict, key: '{from_node}_{to_node}', value: list[int], length num_commodities> Per-unit transportation cost for routing each commodity along the arc.",
+  "commodities": [
+    {
+      "origin": "<int> Node where this commodity's shipment originates.",
+      "destination": "<int> Node where this commodity's shipment must be delivered.",
+      "demand": "<int> Total quantity of this commodity that must be shipped from origin to destination."
+    }
+  ]
+}

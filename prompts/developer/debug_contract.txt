@@ -1,0 +1,32 @@
+下方给出问题定义、数学模型、当前求解代码、失败症状(客观)，以及你已做过的实验与求解器客观结论。请推进一步排查。
+
+【输出格式】只输出一个 JSON 对象（不要多余文字、不要代码块标记之外的解释）：
+{
+  "reasoning": "本步推理：当前最可能的根因假设及理由",
+  "hypotheses": [{"id": "H1", "desc": "假设描述", "layer": "formulation/implementation/business/data/strategy", "likelihood": "high/medium/low"}],
+  "action": "experiment 或 conclude",
+  "experiment": {
+    "label": "实验简述（如：关闭日历窗口约束组 cal_*）",
+    "purpose": "出现什么结果就证实/证伪哪个假设",
+    "variant_code": "完整、可独立运行的诊断变体代码：在当前求解代码基础上做一处受控改动、其余不变；最后必须照常 print(\"RESULT_JSON=\"+json.dumps({...}))，至少含 status 与 constraint_check，供后端读取客观结论。代码直接作为 JSON 字符串填写，不要添加 Markdown 代码块标记。"
+  },
+  "conclusion": {
+    "root_cause": "定位到的根因（一句话）",
+    "layer": "formulation/implementation/business/data/strategy",
+    "broken_assumption": "若根因是某条登记假设错了，填它的 key；否则留空",
+    "next_solver_mode": "仅当 layer=strategy 时填：feasible_first_heuristic/decomposition/rolling_horizon/direct_milp_with_probe 之一",
+    "fix_instruction": "对真模型或真代码的定向最小修复指示（具体到哪条约束/哪段逻辑、怎么改）",
+    "needs_user": false,
+    "user_question": "仅当 needs_user=true：给用户的一个具体确认问题"
+  }
+}
+
+规则：
+- action=experiment 时必须给出 experiment(含 variant_code)；action=conclude 时必须给出 conclusion。
+- variant_code 必须能被现成执行器直接运行：只读当前目录数据文件，禁止 os/sys/subprocess/网络/删除文件等危险操作。
+- 结论一律以重新求解后的客观结果为准；算法没找到解不得作为 infeasible 或 needs_user 的依据。
+- 若输入包含【后端从原始数据和实际解提取的失败证据】，必须优先使用这些证据定位根因；已由验收证明的约束违反应优先归因到建模、实现或策略，不得泛泛要求用户确认。
+- 如果证据已经足以定位根因，可以直接 action=conclude，不必为了实验而实验；fix_instruction 必须具体到要修改的算法/约束/回检逻辑。
+- 输入若含【假设登记表 assumptions】，优先核对是不是某条假设(尤其 user_confirmed=false 的)被证伪；是则把 layer 归到该假设的 stage，并在 broken_assumption 填它的 key。
+- layer=strategy 用于『求解策略选错』：模型可解、约束没问题，但当前策略(如直接铺开大 MILP)在时间预算内拿不到可行解或太慢。给出 next_solver_mode，要求下一轮先用启发式/构造法拿到可行解再局部优化；这不是业务无解，绝不可 needs_user。
+- 务必输出合法 JSON；字符串内的双引号要用反斜杠转义。

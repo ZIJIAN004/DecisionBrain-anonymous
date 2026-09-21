@@ -1,0 +1,9 @@
+{
+  "objective_value": "<float> Total Euclidean travel distance across all operated delivery routes.",
+  "routes": [
+    {
+      "customer_ids": "<list[int], length varies per route> Customers served by the vehicle on this route, listed in visit order.",
+      "path": "<list[int], length len(customer_ids)+2> Full node sequence traversed by the vehicle, starting and ending at the depot."
+    }
+  ]
+}

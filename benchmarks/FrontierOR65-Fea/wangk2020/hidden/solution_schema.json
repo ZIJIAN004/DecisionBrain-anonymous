@@ -1,0 +1,13 @@
+{
+  "objective_value": "<float> Weighted combination of total schedule displacement cost and expected operational departure and arrival delay cost across all flights and scenarios.",
+  "schedule": "<dict, key: '{flight_id}'> First-stage scheduled times for each flight, with sub-fields 'scheduled_dep' (<int> time period in which the flight is scheduled to depart) and 'scheduled_arr' (<int> time period in which the flight is scheduled to arrive).",
+  "scenario_solutions": [
+    {
+      "scenario_id": "<int> Identifier of the weather scenario these operational decisions correspond to.",
+      "x_dep": "<dict, key: '{flight_id}_{period}'> Indicator equal to 1 if the flight is operated to depart no earlier than this period under this scenario, and 0 otherwise.",
+      "x_arr": "<dict, key: '{flight_id}_{period}'> Indicator equal to 1 if the flight is operated to arrive no earlier than this period under this scenario, and 0 otherwise.",
+      "v_dep": "<dict, key: '{flight_id}'> Number of periods by which the flight's operated departure is later than its scheduled departure under this scenario.",
+      "v_arr": "<dict, key: '{flight_id}'> Number of periods by which the flight's operated arrival is later than its scheduled arrival under this scenario."
+    }
+  ]
+}

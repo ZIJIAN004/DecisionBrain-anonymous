@@ -1,0 +1,7 @@
+# Problem Description
+
+A facility operates a set of identical parallel machines and must schedule a collection of independent jobs across them. The number of machines is at least two, and the number of jobs strictly exceeds the number of machines. Each job has a known positive integer processing time. Every job must be assigned to exactly one machine, and each machine processes all jobs assigned to it without interruption, so that a machine's completion time equals the total processing time of the jobs it receives. The average machine completion time is defined as the sum of all job processing times divided by the number of machines.
+
+The goal is to assign every job to a machine so as to minimize the normalized sum of squared workload deviations. This measure is computed by taking, for each machine, the squared difference between that machine's completion time and the average machine completion time, summing these squared differences over all machines, taking the square root of that sum, and then dividing by the average machine completion time. Because the average machine completion time is fixed for a given instance, minimizing this normalized deviation measure is equivalent to minimizing the sum of the squared completion times across all machines.
+
+The input data for each instance specifies the number of machines, the number of jobs, and the processing time of every job. Processing times are positive integers. Jobs are labeled so that their processing times appear in nonincreasing order.

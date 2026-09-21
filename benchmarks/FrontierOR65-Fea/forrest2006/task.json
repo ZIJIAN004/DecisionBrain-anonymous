@@ -1,0 +1,16 @@
+{
+    "paper_id":  "forrest2006",
+    "paper_title":  "A Column-Generation Approach to the Multiple Knapsack Problem with Color Constraints",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2006,
+    "direction":  "max",
+    "problem_class":  "Other (Knapsack)",
+    "category":  "strategic",
+    "formulation_type":  "IP",
+    "application_field":  "Manufacturing \u0026 Production",
+    "avg_num_var":  82355.0,
+    "avg_num_int_var":  82355.0,
+    "avg_num_constr":  75237.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.1040.0078",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

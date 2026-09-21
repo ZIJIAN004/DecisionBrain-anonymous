@@ -1,0 +1,18 @@
+{
+  "parameters": {
+    "num_routes_k": "<int> Number of bus routes operated during the service day.",
+    "num_trips_M": "<int> Total number of bus trips to be served across all routes.",
+    "num_duties_N": "<int> Total number of candidate driver duties available for selection."
+  },
+  "trips": [
+    {
+      "trip_id": "<int> Zero-based identifier for this bus trip, ordered by departure time.",
+      "route": "<int> Index of the bus route on which this trip operates.",
+      "departure_min": "<int> Scheduled departure time of this trip, in minutes from midnight.",
+      "duration_min": "<int> Scheduled travel duration of this trip in minutes.",
+      "end_min": "<int> Scheduled completion time of this trip, in minutes from midnight."
+    }
+  ],
+  "duties": "<list[list[int]], length num_duties_N> Each entry lists the trip_id values covered by that candidate duty, representing a feasible sequence of trips a single driver can perform.",
+  "costs": "<list[float], length num_duties_N> Operating cost of each candidate driver duty."
+}

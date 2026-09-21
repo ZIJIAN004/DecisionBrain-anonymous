@@ -1,0 +1,50 @@
+【输出文件】`stage_outputs/feasibility_review.json`
+
+文件必须是且仅是一个合法 JSON 对象：
+
+{
+  "schema_version": "1.0",
+  "decision": "accept | reject",
+  "responsibility": "instance | solving | null",
+  "summary": "验收结论及主要依据",
+  "evidence": [
+    {"source": "具体文件及字段或代码位置", "finding": "该证据证明了什么"}
+  ],
+  "required_changes": ["Formulator 需要完成的具体修复"],
+  "confidence": "low | medium | high",
+  "infeasibility_proof": "实例不可行证明的类型、来源和适用范围；非 instance 时为空字符串",
+  "remediation_handoff": {
+    "requirement_ids": ["稳定的业务要求 ID"],
+    "change_ids": ["稳定的修复动作 ID"],
+    "problem_requirement": "problem.md/intake 中对应的业务硬约束",
+    "observed_solution_behavior": "旧 solution 的业务失败表现",
+    "responsibility_reason": "Formulator 完整模型的具体责任原因",
+    "required_changes": ["不依赖 checker 实现细节的语义修复动作"]
+  }
+}
+
+字段规则：
+- accept：responsibility 为 null，required_changes 为空数组，infeasibility_proof 为空字符串，remediation_handoff 为 null。
+- reject：responsibility 为 instance 或 solving，evidence 至少一条。
+- instance：required_changes 为空数组，infeasibility_proof 非空，remediation_handoff 为 null；solver_result.status 必须为 infeasible，结构化证明完整，且代码与执行证据表明一个完整精确模型覆盖全部硬约束。
+- solving：required_changes 至少一条，infeasibility_proof 为空字符串，remediation_handoff 必须提供。
+- remediation_handoff 只写业务要求、旧 solution 可观察行为、责任原因和语义修复动作；不得包含 checker、feasibility_result、代码行号、函数名或内部判定字段。
+- requirement_ids 与 change_ids 使用稳定、简短的 lowercase_snake_case。
+
+候选解路径：
+- 先读取 feasibility_checker.py，再按其实际 CLI 用 run_feasibility_checker 对当前 input.json 和 solution.json 执行一次，使其生成新的 feasibility_result.json。
+- 不假设 checker 参数；执行或路径失败时诊断后重试。工具明确提示同一失败重复 5 次时，reject 并归 solving。
+- feasibility_check_receipt.json 必须仍与当前 checker、input、solution 和 result 一致。
+- feasibility_result.schema_valid=true 且 feasible=true 才可 accept。
+
+无候选路径：
+- 不要求 solution.json，不执行 checker。
+- 审查 status、diagnosis、execution、solver.py、runtime_solver_outcome.json（如有）和修复历史。
+- runtime_timeout、time_limit、unknown、no_solution_found 和 infeasible_or_unbounded 均须 reject，责任为 solving，并指出 Formulator 在完整模型、求解调用、状态处理或业务结果映射中需要修复的具体事项。
+
+正式不可行路径：
+- 不执行 checker。
+- 核对 infeasibility_proof、solver.py、实际 execution、全部变量、全部硬约束和完整目标。
+- 只有完整模型的可信 Gurobi INFEASIBLE 状态或证书可归 instance。
+
+写入 verdict 后用 read_file 检查最终文件。不要修改其他文件。

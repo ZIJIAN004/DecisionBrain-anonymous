@@ -1,0 +1,13 @@
+{
+  "num_jobs": "<int> Total number of jobs to be processed across all machines.",
+  "num_machines": "<int> Number of identical parallel batch-processing machines available.",
+  "batch_capacity": "<int> Maximum total size of jobs that can be processed together in a single batch.",
+  "jobs": [
+    {
+      "job_id": "<int> Unique identifier for the job.",
+      "release_date": "<int> Earliest time at which the job becomes available for processing.",
+      "processing_time": "<int> Duration required to process the job.",
+      "size": "<int> Amount of machine capacity the job consumes when assigned to a batch."
+    }
+  ]
+}

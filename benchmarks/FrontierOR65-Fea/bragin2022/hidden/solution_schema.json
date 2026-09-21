@@ -1,0 +1,4 @@
+{
+  "objective_value": "<float> Total assignment cost across all jobs.",
+  "assignments": "<dict, key: '{job}'> Machine to which each job is assigned (0-indexed)."
+}

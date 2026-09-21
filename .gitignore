@@ -1,0 +1,54 @@
+# Secrets and local environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# OS and editor state
+.DS_Store
+.vscode/
+.claude/settings.local.json
+
+# Python environments, caches and build artifacts
+.venv/
+__pycache__/
+*.py[cod]
+.cache/
+.pytest_cache/
+/.pytest-*/
+/.tmp-*/
+/.pt-*/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Logs
+*.log
+nohup.out
+
+# Local experiment launch scripts are not part of the source distribution.
+/scripts/
+
+# Runtime session data
+/opt_sessions/
+runs/
+/benchmark-results/
+/.frontieror-reference-check-results.json
+
+# Locally reconstructed benchmark data. Keep manifests and instructions tracked.
+/data/Hard32-Fea/instances/
+/data/Hard32-Fea/solutions/
+/data/Hard32-Fea/downloads/
+/data/Hard32-Fea/work/
+/data/FrontierOR65-Fea/dataset/
+/data/FrontierOR65-Fea/downloads/
+
+
+# Large local archives
+*.tar
+*.tar.gz

@@ -1,0 +1,22 @@
+{
+  "n": "<int> Number of nodes in the transportation network, each serving as an origin, destination, and candidate hub location.",
+  "num_scenarios": "<int> Number of demand scenarios representing uncertain future conditions.",
+  "cost_parameters": {
+    "chi": "<float> Unit cost rate for shipping flow from an origin node to its assigned hub (collection leg).",
+    "alpha": "<float> Unit cost rate for shipping flow between two hubs (inter-hub transfer leg).",
+    "delta": "<float> Unit cost rate for shipping flow from a hub to a destination node (distribution leg)."
+  },
+  "p_hubs": "<int or null> Exact number of hubs that must be opened in the p-hub median variant, or null if not applicable.",
+  "node_coordinates": "<list[list[float]], shape [n][2]> Geographic x-y coordinates of each node in the network.",
+  "distances": "<list[list[float]], shape [n][n]> Euclidean distance between each pair of nodes.",
+  "base_demands": "<list[list[int]], shape [n][n]> Baseline number of shipments from each origin node to each destination node, with zero on the diagonal.",
+  "fixed_costs": "<list[int], length n> One-time setup cost incurred when opening each candidate node as a hub.",
+  "hub_capacities": "<list[int] or null, length n> Maximum total outgoing flow that each hub can handle in the capacitated variant, or null if uncapacitated.",
+  "scenarios": [
+    {
+      "probability": "<float> Likelihood of this demand scenario occurring.",
+      "pi_factors": "<list[float], length n> Multiplicative scaling factor applied to each node when generating scenario-specific demands.",
+      "demands": "<list[list[int]], shape [n][n]> Number of shipments from each origin to each destination under this scenario, with zero on the diagonal."
+    }
+  ]
+}

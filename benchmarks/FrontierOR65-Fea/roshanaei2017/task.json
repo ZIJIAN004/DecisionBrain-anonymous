@@ -1,0 +1,16 @@
+{
+  "paper_id": "roshanaei2017",
+  "paper_title": "Collaborative Operating Room Planning and Scheduling",
+  "publication": "INFORMS Journal on Computing",
+  "year": 2017,
+  "direction": "min",
+  "problem_class": "Scheduling (Machine / Crew / Workforce)",
+  "category": "strategic",
+  "formulation_type": "MIP",
+  "application_field": "Healthcare",
+  "avg_num_var": 103862.0,
+  "avg_num_int_var": 101663.0,
+  "avg_num_constr": 213791.0,
+  "source_link": "https://doi.org/10.1287/ijoc.2017.0745",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

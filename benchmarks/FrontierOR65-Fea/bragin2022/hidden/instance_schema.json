@@ -1,0 +1,7 @@
+{
+  "num_machines": "<int> Number of machines available to process jobs.",
+  "num_jobs": "<int> Number of jobs that must be assigned to machines.",
+  "cost_matrix": "<list[list[int]], shape [num_machines][num_jobs]> Cost incurred when a specific job is assigned to a specific machine.",
+  "resource_matrix": "<list[list[int]], shape [num_machines][num_jobs]> Amount of machine resource consumed when a specific job is assigned to a specific machine.",
+  "capacities": "<list[int], length num_machines> Maximum total resource available on each machine."
+}

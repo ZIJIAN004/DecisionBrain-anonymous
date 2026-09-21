@@ -1,0 +1,7 @@
+{
+  "objective_value": "<float> Total cost of the purchasing tour, combining travel costs along traversed edges and purchase costs at visited markets.",
+  "visited_markets": "<list[int]> Markets (excluding the depot) that the purchaser visits during the tour.",
+  "tour": "<list[int]> Ordered sequence of vertices starting at the depot that describes the traversal order of the closed tour.",
+  "tour_edges": "<list[list[int]]> Undirected edges traversed by the tour, each given as a pair of endpoint vertices.",
+  "purchases": "<dict, key: '{product}' -> dict, key: '{market}'> Quantity of each product bought at each market along the tour."
+}

@@ -1,0 +1,42 @@
+{
+  "num_requests": "<int> Total number of transportation requests to be fulfilled.",
+  "num_nodes": "<int> Total number of nodes in the network, including origin depot, pickup nodes, delivery nodes, and destination depot.",
+  "num_vehicles": "<int> Number of identical vehicles available in the fleet.",
+  "vehicle_capacity": "<int> Maximum load that each vehicle can carry at any point along its route.",
+  "planning_horizon": "<int> Latest time by which all vehicles must return to the depot.",
+  "fixed_cost_per_vehicle": "<int> Fixed cost incurred each time a vehicle is dispatched from the depot.",
+  "objective": {
+    "primary": "<str> The primary optimization goal for the fleet.",
+    "secondary": "<str> The secondary optimization goal, applied among solutions tied on the primary goal."
+  },
+  "depot": {
+    "x": "<float> X-coordinate of the depot location.",
+    "y": "<float> Y-coordinate of the depot location.",
+    "time_window": "<list[int], length 2> Earliest departure and latest return times for vehicles at the depot."
+  },
+  "requests": [
+    {
+      "request_id": "<int> Unique identifier for this transportation request.",
+      "pickup_node": "<int> Node index where the load for this request is picked up.",
+      "delivery_node": "<int> Node index where the load for this request is delivered.",
+      "load": "<int> Quantity of goods to be transported for this request.",
+      "pickup_coord": "<list[float], length 2> X and Y coordinates of the pickup location.",
+      "delivery_coord": "<list[float], length 2> X and Y coordinates of the delivery location.",
+      "pickup_time_window": "<list[float], length 2> Earliest and latest times at which service may begin at the pickup location.",
+      "delivery_time_window": "<list[float], length 2> Earliest and latest times at which service may begin at the delivery location.",
+      "travel_time_pickup_to_delivery": "<float> Travel time (Euclidean distance) from the pickup location to the delivery location for this request."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "<int> Unique index of this node in the network.",
+      "type": "<str> Role of this node: 'depot_origin', 'pickup', 'delivery', or 'depot_destination'.",
+      "x": "<float> X-coordinate of this node.",
+      "y": "<float> Y-coordinate of this node.",
+      "demand": "<int> Change in vehicle load when visiting this node (positive for pickups, negative for deliveries, zero for depots).",
+      "service_time": "<int> Time spent servicing at this node before departing.",
+      "time_window": "<list[float], length 2> Earliest and latest times at which service may begin at this node.",
+      "pair": "<int> Node index of the corresponding paired pickup or delivery node (present only for pickup and delivery nodes)."
+    }
+  ]
+}

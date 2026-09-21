@@ -1,0 +1,7 @@
+{
+  "graph": {
+    "num_vertices": "<int> Total number of vertices in the graph.",
+    "num_edges": "<int> Total number of edges in the graph.",
+    "edges": "<list[list[int]], length num_edges> Each entry is a pair of vertex indices representing an undirected edge between two vertices."
+  }
+}

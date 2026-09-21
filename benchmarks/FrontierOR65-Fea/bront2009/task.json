@@ -1,0 +1,16 @@
+{
+    "paper_id":  "bront2009",
+    "paper_title":  "A Column Generation Algorithm for Choice-Based Network Revenue Management",
+    "publication":  "Operations Research",
+    "year":  2009,
+    "direction":  "max",
+    "problem_class":  "Other (Revenue Management)",
+    "category":  "strategic",
+    "formulation_type":  "IP",
+    "application_field":  "Retail \u0026 Revenue Management",
+    "avg_num_var":  1.0,
+    "avg_num_int_var":  0.0,
+    "avg_num_constr":  13.0,
+    "source_link":  "https://doi.org/10.1287/opre.1080.0567",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

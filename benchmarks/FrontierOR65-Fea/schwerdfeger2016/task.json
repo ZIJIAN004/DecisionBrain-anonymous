@@ -1,0 +1,16 @@
+{
+  "paper_id": "schwerdfeger2016",
+  "paper_title": "A fast and effective subset sum based improvement procedure for workload balancing on identical parallel machines",
+  "publication": "Computers & Operations Research",
+  "year": 2016,
+  "direction": "min",
+  "problem_class": "Scheduling (Machine / Crew / Workforce)",
+  "category": "strategic",
+  "formulation_type": "IP",
+  "application_field": "Manufacturing & Production",
+  "avg_num_var": 3934.0,
+  "avg_num_int_var": 3920.0,
+  "avg_num_constr": 294.0,
+  "source_link": "https://doi.org/10.1016/j.cor.2016.03.008",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

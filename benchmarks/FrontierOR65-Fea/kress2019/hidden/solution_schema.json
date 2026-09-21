@@ -1,0 +1,24 @@
+{
+  "objective_value": "<float> Makespan of seaside container processing, equal to the earliest time by which all seaside containers have been placed at their target slots.",
+  "crane_w_positions": "<dict, key: '{time_step}'> Slot position of the seaside crane at each time step from zero through the time horizon.",
+  "crane_l_positions": "<dict, key: '{time_step}'> Slot position of the landside crane at each time step from zero through the time horizon.",
+  "seaside_events": [
+    {
+      "container_id": "<int> Identifier of the seaside container this event describes.",
+      "target_slot": "<int> Storage slot where this seaside container must ultimately be placed.",
+      "seaside_drop_time": "<int> Time at which the seaside crane begins dropping this container at an intermediate or target slot.",
+      "seaside_drop_slot": "<int> Slot where the seaside crane drops this container.",
+      "landside_lift_time": "<int, optional> Time at which the landside crane begins lifting this container from the intermediate slot, present only when cooperative handling is used.",
+      "landside_lift_slot": "<int, optional> Intermediate slot from which the landside crane picks up this container, present only when cooperative handling is used.",
+      "landside_drop_time": "<int, optional> Time at which the landside crane begins dropping this container at its target slot, present only when cooperative handling is used."
+    }
+  ],
+  "landside_events": [
+    {
+      "container_id": "<int> Identifier of the landside container this event describes.",
+      "source_slot": "<int> Interior storage slot where this landside container was initially located.",
+      "lift_time": "<int> Time at which the landside crane begins lifting this container from its source slot.",
+      "drop_time": "<int> Time at which the landside crane begins dropping this container at the landside handover point."
+    }
+  ]
+}

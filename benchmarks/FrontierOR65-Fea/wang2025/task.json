@@ -1,0 +1,16 @@
+{
+    "paper_id":  "wang2025",
+    "paper_title":  "An efficient branch-and-cut algorithm for approximately submodular function maximization",
+    "publication":  "arXiv preprint",
+    "year":  2019,
+    "direction":  "max",
+    "problem_class":  "Other (Submodular Optimization)",
+    "category":  "strategic",
+    "formulation_type":  "BIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  61.0,
+    "avg_num_int_var":  60.0,
+    "avg_num_constr":  10.0,
+    "source_link":  "https://doi.org/10.1109/smc.2019.8913989",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

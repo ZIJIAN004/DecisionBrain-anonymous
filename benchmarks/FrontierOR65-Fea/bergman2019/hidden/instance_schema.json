@@ -1,0 +1,8 @@
+{
+  "n": "<int> Number of items available for assignment to knapsacks.",
+  "m": "<int> Number of knapsacks available to hold items.",
+  "profits": "<list[int], length n> Individual profit earned when each item is placed in any knapsack.",
+  "pairwise_profits": "<list[list[int]], shape [n][n]> Symmetric matrix of bonus profit earned when two items are placed together in the same knapsack, with zero diagonal.",
+  "weights": "<list[int], length n> Weight consumed by each item when placed in a knapsack.",
+  "capacities": "<list[int], length m> Maximum total weight each knapsack can hold."
+}

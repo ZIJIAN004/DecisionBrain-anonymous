@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total number of distinct colors used across all selected vertices.",
+  "selected_vertices": "<dict, key: '{cluster}'> The vertex chosen from each cluster.",
+  "coloring": "<dict, key: '{vertex}'> The color assigned to each selected vertex."
+}

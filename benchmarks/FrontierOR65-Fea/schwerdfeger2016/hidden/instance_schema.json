@@ -1,0 +1,5 @@
+{
+  "num_machines": "<int> Number of identical parallel machines available to process jobs.",
+  "num_jobs": "<int> Number of independent jobs to be assigned across the machines.",
+  "processing_times": "<list[int], length num_jobs> Processing time of each job, listed in nonincreasing order."
+}

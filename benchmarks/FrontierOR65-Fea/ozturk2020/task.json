@@ -1,0 +1,16 @@
+{
+  "paper_id": "ozturk2020",
+  "paper_title": "A truncated column generation algorithm for the parallel batch scheduling problem to minimize total flow time",
+  "publication": "European Journal of Operational Research",
+  "year": 2020,
+  "direction": "min",
+  "problem_class": "Scheduling (Machine / Crew / Workforce)",
+  "category": "operational",
+  "formulation_type": "BIP",
+  "application_field": "Manufacturing & Production",
+  "avg_num_var": 10450.0,
+  "avg_num_int_var": 10000.0,
+  "avg_num_constr": 30446.0,
+  "source_link": "https://doi.org/10.1016/j.ejor.2020.03.044",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

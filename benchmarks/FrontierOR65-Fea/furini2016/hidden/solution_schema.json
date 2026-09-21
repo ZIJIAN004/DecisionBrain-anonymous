@@ -1,0 +1,10 @@
+{
+  "objective_value": "<float> Total profit of the items retained from the panel.",
+  "items_selected": [
+    {
+      "item_id": "<int> Identifier of the item type that is kept as a finished item.",
+      "plate_dims": "<list[int], length 2> Length and width of the finished item kept.",
+      "copies": "<int> Number of finished copies retained of this item type."
+    }
+  ]
+}

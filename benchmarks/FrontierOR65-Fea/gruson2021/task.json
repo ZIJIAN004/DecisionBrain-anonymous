@@ -1,0 +1,16 @@
+{
+    "paper_id":  "gruson2021",
+    "paper_title":  "Benders decomposition for a stochastic three-level lot sizing and replenishment problem with a distribution structure",
+    "publication":  "European Journal of Operational Research",
+    "year":  2021,
+    "direction":  "min",
+    "problem_class":  "Lot Sizing / Inventory",
+    "category":  "planning",
+    "formulation_type":  "Stochastic/Robust/DRO",
+    "application_field":  "Supply Chain \u0026 Inventory",
+    "avg_num_var":  4825320.0,
+    "avg_num_int_var":  1320.0,
+    "avg_num_constr":  4824088.0,
+    "source_link":  "https://doi.org/10.1016/j.ejor.2020.09.019",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

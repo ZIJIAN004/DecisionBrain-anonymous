@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Total cost of the solution, combining supply costs across all customer-facility-period triples with inventory holding costs across all facilities and periods.",
+  "assignment": "<dict, key: '{customer}'> Index of the single facility to which each customer is assigned for the entire planning horizon.",
+  "inventory": "<dict, key: '{facility}', value: list[float] of length num_periods> Amount of product held at each facility at the end of each period."
+}

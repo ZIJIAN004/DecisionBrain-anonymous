@@ -1,0 +1,237 @@
+schema_version: "1.3"
+
+id: alns
+display_name: ALNS
+status: experimental
+kind: python_library
+summary: >-
+  ALNS 7.0.0 is an adaptive large-neighborhood-search framework that supplies the search loop, operator selection, acceptance, stopping, and statistics around user-defined solution states and destroy/repair operators.
+
+algorithm:
+  problem_families:
+    - routing
+    - resource_scheduling
+    - packing
+    - cutting_stock
+    - inventory
+    - mixed_combinatorial
+  method: large_neighborhood_search
+  method_class: metaheuristic
+  optimality: heuristic_or_incumbent
+  supports_warm_start: true
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - adaptive_large_neighborhood_search
+    - custom_solution_state
+    - custom_destroy_operators
+    - custom_repair_operators
+    - adaptive_operator_selection
+    - multiple_acceptance_criteria
+    - iteration_runtime_and_no_improvement_stopping
+    - operator_outcome_statistics
+    - search_callbacks
+  limitations:
+    - ALNS does not provide a problem-specific state, objective, initial solution, destroy operator, repair operator, or feasibility checker.
+    - The framework minimizes State.objective() and requires transformations for maximization problems.
+    - Returned best_state is a heuristic incumbent and never proves global optimality or infeasibility.
+    - Operator correctness and candidate feasibility remain the generated implementation's responsibility.
+    - Runtime-based stopping is environment-sensitive even with a fixed random seed.
+
+selection:
+  required_features:
+    - a_complete_solution_state_and_objective_are_defined
+    - at_least_one_destroy_and_one_repair_operator_can_be_implemented
+    - every_accepted_state_can_be_checked_or_constructed_feasible
+  good_fit_when:
+    - Exact search is too slow but domain-specific destroy and repair neighborhoods are available.
+    - Several reusable neighborhoods should adapt their selection weights from observed outcomes.
+    - A feasible incumbent can be improved under an explicit iteration or time budget.
+  reject_when:
+    - No reliable initial solution or repair operator can produce feasible states.
+    - A proof of optimality or infeasibility is mandatory.
+    - Objective evaluation or feasibility checks are too expensive for repeated neighborhood evaluation.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: Performance depends primarily on generated state copies, operator complexity, repair quality, and evaluation budget.
+
+distribution:
+  package: alns
+  verified_version: 7.0.0
+  compatible_version_spec: ">=7.0.0,<8.0.0"
+  import_name: alns
+  requires_python: ">=3.9,<4.0"
+  license_spdx: MIT
+  homepage: https://github.com/N-Wouda/ALNS
+  documentation: https://alns.readthedocs.io/
+  source_repository: https://github.com/N-Wouda/ALNS
+  native_extensions: false
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: py3-none-any
+    self_compiled: false
+    modules:
+      - alns
+  verified_environment:
+    conda_environment: DecisionBrain/venv
+    python_version: "3.12"
+    platform: windows-amd64
+
+interface:
+  profile: alns
+  preferred_api: search_framework
+  imports:
+    - from alns import ALNS, State
+    - from alns.select import AlphaUCB, MABSelector, RandomSelect, RouletteWheel, SegmentedRouletteWheel
+    - from alns.accept import HillClimbing, SimulatedAnnealing
+    - from alns.stop import MaxIterations, MaxRuntime, NoImprovement
+  solvers:
+    - id: adaptive_large_neighborhood_search
+      method: large_neighborhood_search
+      method_class: metaheuristic
+      optimality: heuristic_or_incumbent
+      constructor: alns.ALNS(rng)
+      registration_calls:
+        - alns.add_destroy_operator(operator, name=None)
+        - alns.add_repair_operator(operator, name=None)
+      call: alns.iterate(initial_solution, op_select, accept, stop, **kwargs)
+      supports_warm_start: true
+      supports_random_seed: true
+      supports_time_limit: true
+      stopping_criteria:
+        - name: MaxIterations
+          budget_unit: iterations
+          workload_stable: true
+          environment_sensitive: false
+          recommended_uses:
+            - reproducible_operator_evaluation_budget
+          caveat: Equal iteration counts do not imply equal runtime when operators have variable cost.
+        - name: MaxRuntime
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - hard_wall_clock_budget
+          caveat: Runtime stop changes the number of random draws and is not strictly reproducible across environments.
+        - name: NoImprovement
+          budget_unit: non_improving_iterations
+          workload_stable: true
+          environment_sensitive: false
+          recommended_uses:
+            - convergence_style_termination
+          caveat: It can stop at a poor local incumbent and supplies no proof.
+      result:
+        type: alns.Result
+        fields:
+          best_state: result.best_state
+          objective: result.best_state.objective()
+          objectives: result.statistics.objectives
+          runtime_seconds: result.statistics.total_runtime
+          destroy_operator_counts: result.statistics.destroy_operator_counts
+          repair_operator_counts: result.statistics.repair_operator_counts
+        warning: best_state is only the best state observed by the configured heuristic run.
+  selection_schemes:
+    - AlphaUCB
+    - MABSelector
+    - RandomSelect
+    - RouletteWheel
+    - SegmentedRouletteWheel
+  acceptance_criteria:
+    - AlwaysAccept
+    - GreatDeluge
+    - HillClimbing
+    - LateAcceptanceHillClimbing
+    - MovingAverageThreshold
+    - NonLinearGreatDeluge
+    - RandomAccept
+    - RecordToRecordTravel
+    - SimulatedAnnealing
+  stopping_criteria:
+    - MaxIterations
+    - MaxRuntime
+    - NoImprovement
+  facts:
+    state:
+      protocol: alns.State
+      required_method: objective() -> float
+      optimization_direction: minimization
+    operators:
+      destroy_signature: destroy(state, rng, **kwargs) -> state
+      repair_signature: repair(state, rng, **kwargs) -> state
+      copy_requirement: Destroy operators receive the maintained current state and must copy it before mutation.
+      feasibility_responsibility: Generated repair and acceptance logic must preserve or explicitly reject business-infeasible candidates.
+    reproducibility:
+      rng_constructor: numpy.random.default_rng(seed)
+      fixed_seed_scope: random_stream_only
+      runtime_stop_strictly_reproducible: false
+    guarantee_boundary: >-
+      ALNS reports observed incumbents and search statistics; it cannot prove global optimality or original-problem infeasibility.
+
+solver_documentation:
+  - id: adaptive_large_neighborhood_search
+    summary: Run adaptive large-neighborhood search with user-defined destroy and repair operators.
+    minimal_call_example: |
+      import numpy as np
+      from alns import ALNS
+      from alns.accept import HillClimbing
+      from alns.select import RandomSelect
+      from alns.stop import MaxIterations
+      class State:
+          def __init__(self, value):
+              self.value = value
+          def objective(self):
+              return float(self.value)
+      def destroy(state, rng):
+          return State(state.value)
+      def repair(state, rng):
+          return State(state.value)
+      alns = ALNS(np.random.default_rng(0))
+      alns.add_destroy_operator(destroy)
+      alns.add_repair_operator(repair)
+      result = alns.iterate(State(1), RandomSelect(1, 1), HillClimbing(), MaxIterations(1))
+      assert result.best_state.objective() == 1.0
+
+agent_guidance:
+  algorithm_design:
+    - Define the complete State representation, objective, initial solution, destroy operators, and repair operators before selecting ALNS.
+    - Explain how every repair operator restores all hard constraints and how infeasible candidates are rejected.
+    - Choose and parameterize one selection scheme, one acceptance criterion, and one stopping criterion from the guide.
+  solving:
+    - Pass numpy.random.default_rng(seed) to ALNS and record the seed and stopping criterion.
+    - Ensure operators return copied states and never silently mutate the current state.
+    - Validate result.best_state against feasibility_checker.py before writing solution.json.
+    - >-
+      Treat the installed ALNS 7.0.0 API as authoritative: do not copy constructor calls from older examples. RouletteWheel requires four scores plus decay, num_destroy, and num_repair; passing one score or omitting these arguments raises TypeError/ValueError.
+    - >-
+      For SimulatedAnnealing(method="exponential"), step must be in the package's valid range (at most 1); use a valid multiplicative step or choose a different method.
+    - >-
+      Do not import a nonexistent alns.statistics module or assume result.statistics.iterations exists. Use documented result fields such as result.statistics.total_runtime and the objective history, and inspect available attributes before logging optional statistics.
+    - >-
+      Save and validate result.best_state immediately after iterate. Diagnostic logging or statistics introspection must not run before candidate serialization, so a logging/API error cannot discard an otherwise feasible incumbent.
+  minimal_call_example: |
+    import numpy as np
+    from alns import ALNS
+    from alns.accept import HillClimbing
+    from alns.select import RouletteWheel
+    from alns.stop import MaxIterations
+
+    search = ALNS(np.random.default_rng(0))
+    search.add_destroy_operator(destroy)
+    search.add_repair_operator(repair)
+    selector = RouletteWheel([5, 2, 1, 0.5], 0.8, 1, 1)
+    result = search.iterate(initial_state, selector, HillClimbing(), MaxIterations(1000))
+    best_state = result.best_state
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; from alns import ALNS;
+      assert version('alns') == '7.0.0'; print(version('alns'))"
+    expected_version: 7.0.0
+  acceptance_requirements:
+    - ALNS and its selection, acceptance, and stopping modules import in Python 3.12.
+    - A minimal custom State with one destroy and one repair operator completes an iteration.
+    - Every returned business state passes feasibility_checker.py before output.
+    - solver_result.json records package id, version, seed, operators, criteria, iterations, objective, and runtime.
+  benchmark_status: not_benchmarked

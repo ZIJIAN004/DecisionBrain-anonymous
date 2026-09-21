@@ -1,0 +1,9 @@
+{
+  "n": "<int> Number of tasks (and agents) to be matched one-to-one.",
+  "p": "<int> Number of distinct performance criteria evaluated for each assignment.",
+  "cost_matrices": "<list[list[list[int]]], shape [p][n][n]> Cost of assigning task i to agent j under criterion k.",
+  "ideal_point": "<list[int], length p> Best achievable total cost for each criterion when that criterion is optimized independently.",
+  "nadir_approximation": "<list[int], length p> Worst total cost observed for each criterion across the set of individually optimal solutions.",
+  "reference_point": "<list[float], length p> Target total cost for each criterion that the assignment should aim toward.",
+  "search_direction_lambda": "<list[float], length p> Weight controlling how deviations from the target are scaled for each criterion."
+}

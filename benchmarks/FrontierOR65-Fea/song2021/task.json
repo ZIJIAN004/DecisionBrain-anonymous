@@ -1,0 +1,16 @@
+{
+    "paper_id":  "song2021",
+    "paper_title":  "Polyhedral Results and Branch-and-Cut for the Resource Loading Problem",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2021,
+    "direction":  "min",
+    "problem_class":  "Other (Resource Loading)",
+    "category":  "strategic",
+    "formulation_type":  "MIP",
+    "application_field":  "Manufacturing \u0026 Production",
+    "avg_num_var":  69536.0,
+    "avg_num_int_var":  62367.0,
+    "avg_num_constr":  14563.0,
+    "source_link":  "https://doi.org/10.1287/ijoc.2020.0957",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

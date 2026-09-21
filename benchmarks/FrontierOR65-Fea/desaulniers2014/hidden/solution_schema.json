@@ -1,0 +1,15 @@
+{
+  "objective_value": "<float> Total cost combining all vehicle travel costs and inventory holding costs across all locations and periods.",
+  "solution_details": {
+    "periods": {
+      "{period}": {
+        "routes": "<list[list[int]]> Sequence of location identifiers visited on each vehicle route in this period, each starting and ending at the supplier (0).",
+        "deliveries": "<dict, key: '{customer}'> Quantity of commodity delivered to each customer who receives a delivery in this period.",
+        "inventories": {
+          "depot": "<float> Quantity of commodity stored at the supplier at the end of this period.",
+          "{customer}": "<float> Quantity of commodity stored at each customer at the end of this period."
+        }
+      }
+    }
+  }
+}

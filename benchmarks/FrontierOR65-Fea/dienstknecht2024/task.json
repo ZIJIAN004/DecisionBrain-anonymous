@@ -1,0 +1,16 @@
+{
+    "paper_id":  "dienstknecht2024",
+    "paper_title":  "Sharing in construction projects: On determining optimal container assignments for the on-site accommodation of trades",
+    "publication":  "European Journal of Operational Research",
+    "year":  2024,
+    "direction":  "min",
+    "problem_class":  "Other (Resource Assignment)",
+    "category":  "strategic",
+    "formulation_type":  "MIP",
+    "application_field":  "Manufacturing \u0026 Production",
+    "avg_num_var":  14560.0,
+    "avg_num_int_var":  7378.0,
+    "avg_num_constr":  23714.0,
+    "source_link":  "https://doi.org/10.1016/j.ejor.2023.11.045",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

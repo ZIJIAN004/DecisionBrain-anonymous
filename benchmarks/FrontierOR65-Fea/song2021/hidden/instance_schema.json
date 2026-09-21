@@ -1,0 +1,19 @@
+{
+  "planning_horizon_H": "<int> Total number of discrete time periods in the planning horizon.",
+  "num_orders_n": "<int> Number of orders to be scheduled.",
+  "unit_cost_nonregular_capacity_sigma": "<float> Cost per unit of nonregular (overtime) capacity used in any period.",
+  "capacities": "<list[int], length H> Regular workforce capacity in man-hours available in each period.",
+  "orders": [
+    {
+      "order_id": "<int> Unique identifier for the order.",
+      "work_content_p": "<int> Total man-hours of work required to complete the order.",
+      "lower_exec_interval_length_l": "<int> Minimum number of consecutive periods over which the order must be executed.",
+      "upper_exec_interval_length_l_bar": "<int> Maximum number of consecutive periods over which the order may be executed.",
+      "intensity_upper_bound_UB": "<float> Maximum fraction of the order's work content that may be performed in any single period.",
+      "intensity_lower_bound_LB": "<float> Minimum fraction of the order's work content that must be performed in any period during which the order is active.",
+      "release_date_r": "<int> Earliest period in which work on the order may begin.",
+      "due_date_d": "<int> Target completion period after which tardiness penalties apply.",
+      "tardiness_cost_w": "<int> Per-period penalty cost incurred for each period the order finishes past its due date."
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "num_days": "<int> Total number of days in the planning horizon.",
+  "num_weeks": "<int> Total number of complete weeks in the planning horizon.",
+  "num_nurses": "<int> Total number of nurses available for scheduling.",
+  "num_shift_types": "<int> Total number of distinct shift types that can be assigned.",
+  "num_weekends": "<int> Total number of weekends in the planning horizon.",
+  "shift_types": [
+    {
+      "id": "<int> Unique identifier for this shift type.",
+      "name": "<str> Descriptive name of this shift type.",
+      "length_minutes": "<int> Duration of this shift type in minutes."
+    }
+  ],
+  "forbidden_shift_rotations": [
+    {
+      "shift_type": "<int> Shift type that, when assigned on a day, restricts the next day's assignment.",
+      "cannot_be_followed_by": "<int> Shift type that may not be assigned on the day immediately following the preceding shift type."
+    }
+  ],
+  "nurses": [
+    {
+      "id": "<int> Unique identifier for this nurse.",
+      "max_shifts_per_type": "<dict, key: '{shift_type_id}'> Maximum number of shifts of each type this nurse may work over the planning horizon.",
+      "min_total_minutes": "<int> Minimum total working time in minutes this nurse must accumulate over the planning horizon.",
+      "max_total_minutes": "<int> Maximum total working time in minutes this nurse may accumulate over the planning horizon.",
+      "min_consecutive_shifts": "<int> Minimum number of consecutive working days allowed in any unbroken stretch of working days for this nurse.",
+      "max_consecutive_shifts": "<int> Maximum number of consecutive working days allowed in any unbroken stretch of working days for this nurse.",
+      "min_consecutive_days_off": "<int> Minimum number of consecutive days off allowed in any unbroken stretch of off-days for this nurse.",
+      "max_weekends": "<int> Maximum number of weekends this nurse may work over the planning horizon.",
+      "day_off_requests": "<list[int], length varies> Days on which this nurse must not be assigned any shift."
+    }
+  ],
+  "shift_on_requests": [
+    {
+      "nurse_id": "<int> Nurse for whom this shift-on request applies.",
+      "day": "<int> Day on which the requested shift assignment is desired.",
+      "shift_type": "<int> Shift type that is requested to be assigned.",
+      "penalty": "<int> Penalty incurred if this nurse is not assigned the requested shift type on the specified day."
+    }
+  ],
+  "shift_off_requests": [
+    {
+      "nurse_id": "<int> Nurse for whom this shift-off request applies.",
+      "day": "<int> Day on which the nurse prefers not to work the specified shift.",
+      "shift_type": "<int> Shift type that the nurse prefers not to be assigned.",
+      "penalty": "<int> Penalty incurred if this nurse is assigned the specified shift type on the specified day."
+    }
+  ],
+  "coverage_requirements": [
+    {
+      "day": "<int> Day to which this staffing requirement applies.",
+      "shift_type": "<int> Shift type to which this staffing requirement applies.",
+      "preferred": "<int> Preferred number of nurses to be assigned this shift type on this day.",
+      "under_weight": "<int> Penalty weight per nurse below the preferred staffing level for this day and shift type.",
+      "over_weight": "<int> Penalty weight per nurse above the preferred staffing level for this day and shift type."
+    }
+  ]
+}

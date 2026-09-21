@@ -1,0 +1,16 @@
+{
+  "paper_id": "huisman2005",
+  "paper_title": "Multiple-Depot Integrated Vehicle and Crew Scheduling",
+  "publication": "Transportation Science",
+  "year": 2005,
+  "direction": "min",
+  "problem_class": "Vehicle Scheduling",
+  "category": "operational",
+  "formulation_type": "MIP",
+  "application_field": "Public Transit & Mobility",
+  "avg_num_var": 287214.0,
+  "avg_num_int_var": 287214.0,
+  "avg_num_constr": 1512.0,
+  "source_link": "https://doi.org/10.1287/trsc.1040.0104",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

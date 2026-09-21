@@ -1,0 +1,16 @@
+{
+  "paper_id": "cote2019",
+  "paper_title": "The Vehicle Routing Problem with Stochastic Two-Dimensional Items",
+  "publication": "Transportation Science",
+  "year": 2020,
+  "direction": "min",
+  "problem_class": "Vehicle Routing & TSP",
+  "category": "operational",
+  "formulation_type": "Stochastic/Robust/DRO",
+  "application_field": "Transportation & Logistics",
+  "avg_num_var": 56.0,
+  "avg_num_int_var": 55.0,
+  "avg_num_constr": 11.0,
+  "source_link": "https://doi.org/10.1287/trsc.2019.0904",
+  "origin": "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

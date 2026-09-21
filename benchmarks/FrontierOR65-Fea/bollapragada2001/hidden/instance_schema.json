@@ -1,0 +1,71 @@
+{
+  "structure_type": "<str> Identifier for the truss topology used in this instance.",
+  "dimension": "<int> Number of spatial dimensions of the truss (2 for planar, 3 for space trusses).",
+  "num_bars": "<int> Total number of bars in the truss structure.",
+  "num_nodes": "<int> Total number of nodes in the truss structure, including supports.",
+  "num_loading_conditions": "<int> Number of independent external loading conditions the structure must withstand.",
+  "num_free_dofs": "<int> Number of unconstrained nodal displacement directions across all free nodes.",
+  "num_linking_groups": "<int> Number of groups of symmetrically located bars that must share the same cross-sectional area.",
+  "linking_groups": "<list[dict], length num_linking_groups> Groups of bars required to receive identical cross-sectional areas due to structural symmetry.",
+  "nodes": [
+    {
+      "node_id": "<int> Unique identifier for this node.",
+      "x": "<float> Horizontal coordinate of the node.",
+      "y": "<float> Vertical coordinate of the node.",
+      "is_support": "<bool> Whether this node is a fixed support with no freedom of movement.",
+      "fixed_dofs": "<list[str]> Coordinate directions in which this support node is fixed (present only for support nodes)."
+    }
+  ],
+  "bars": [
+    {
+      "bar_id": "<int> Unique identifier for this bar.",
+      "node_i": "<int> Node at the start end of the bar.",
+      "node_j": "<int> Node at the finish end of the bar.",
+      "length": "<float> Physical length of the bar computed from node coordinates.",
+      "direction_cosines": "<list[float], length dimension> Cosines of the angle between the bar's orientation and each coordinate axis."
+    }
+  ],
+  "degrees_of_freedom": [
+    {
+      "dof_id": "<int> Unique identifier for this degree of freedom.",
+      "node": "<int> Node to which this degree of freedom belongs.",
+      "direction": "<str> Coordinate direction of this degree of freedom."
+    }
+  ],
+  "material_properties": {
+    "modulus_of_elasticity": "<float> Young's modulus of the bar material, relating stress to strain.",
+    "cost_density": "<float> Cost per unit volume used to compute the total structural cost."
+  },
+  "discrete_areas": "<list[float], length num_discrete_areas> Candidate cross-sectional areas from which exactly one must be chosen for each bar.",
+  "num_discrete_areas": "<int> Number of candidate cross-sectional areas available for selection.",
+  "stress_bounds": {
+    "lower": "<float> Default minimum allowable stress in any bar (negative denotes compression).",
+    "upper": "<float> Default maximum allowable stress in any bar (positive denotes tension)."
+  },
+  "bar_specific_stress_bounds": [
+    {
+      "bar_id": "<int> Bar to which these stress limits apply.",
+      "lower": "<float> Minimum allowable stress for this bar.",
+      "upper": "<float> Maximum allowable stress for this bar."
+    }
+  ],
+  "displacement_bounds": {
+    "lower": "<float or null> Minimum allowable nodal displacement at any free degree of freedom, or null if unbounded.",
+    "upper": "<float or null> Maximum allowable nodal displacement at any free degree of freedom, or null if unbounded."
+  },
+  "loading_conditions": [
+    {
+      "load_id": "<int> Unique identifier for this loading condition.",
+      "description": "<str> Human-readable summary of the applied loads.",
+      "loads": [
+        {
+          "node": "<int> Node at which this external force is applied.",
+          "direction": "<str> Coordinate direction of the applied force.",
+          "dof_id": "<int> Degree of freedom at which the force acts.",
+          "force": "<float> Magnitude and sign of the applied external force."
+        }
+      ]
+    }
+  ],
+  "expected_optimal_mass": "<float> Known best objective value for this instance from the literature."
+}

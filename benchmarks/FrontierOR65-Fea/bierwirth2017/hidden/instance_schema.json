@@ -1,0 +1,20 @@
+{
+  "num_jobs": "<int> Total number of jobs to be scheduled.",
+  "num_machines": "<int> Total number of machines in the job shop.",
+  "num_operations": "<int> Total number of operations across all jobs.",
+  "due_date_factor": "<float> Multiplier applied to each job's total processing time to compute its due date.",
+  "jobs": [
+    {
+      "job_id": "<int> Unique identifier for the job, indexed from 0.",
+      "weight": "<int> Priority weight of the job, used to penalize late completion.",
+      "release_date": "<int> Earliest time at which the job's first operation may begin processing.",
+      "due_date": "<int> Target completion time for the job.",
+      "operations": [
+        {
+          "machine": "<int> Machine on which this operation must be processed.",
+          "processing_time": "<int> Time required to process this operation on its assigned machine."
+        }
+      ]
+    }
+  ]
+}

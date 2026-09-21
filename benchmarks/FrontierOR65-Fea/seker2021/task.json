@@ -1,0 +1,16 @@
+{
+    "paper_id":  "seker2021",
+    "paper_title":  "An Exact Cutting Plane Algorithm to Solve the Selective Graph Coloring Problem in Perfect Graphs",
+    "publication":  "Discrete Applied Mathematics",
+    "year":  2021,
+    "direction":  "min",
+    "problem_class":  "Graph Optimization",
+    "category":  "planning",
+    "formulation_type":  "BIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  33567.0,
+    "avg_num_int_var":  33567.0,
+    "avg_num_constr":  5768230.0,
+    "source_link":  "https://www.sciencedirect.com/science/article/abs/pii/S0377221720308031",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

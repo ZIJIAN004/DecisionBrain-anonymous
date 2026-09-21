@@ -1,0 +1,16 @@
+{
+    "paper_id":  "bragin2022",
+    "paper_title":  "Surrogate \"Level-Based\" Lagrangian Relaxation for mixed-integer linear programming",
+    "publication":  "Scientific Reports",
+    "year":  2022,
+    "direction":  "min",
+    "problem_class":  "Other (General MIP)",
+    "category":  "planning",
+    "formulation_type":  "MIP",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  128000.0,
+    "avg_num_int_var":  128000.0,
+    "avg_num_constr":  1680.0,
+    "source_link":  "https://www.nature.com/articles/s41598-022-26264-1",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

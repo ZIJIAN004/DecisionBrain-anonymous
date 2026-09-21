@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Worst-case weighted deviation of the chosen assignment's total costs from the reference point across all criteria.",
+  "assignment": "<list[int], length n> Agent assigned to each task, where entry i gives the agent performing task i.",
+  "assignment_matrix": "<list[list[int]], shape [n][n]> One-to-one pairing between tasks and agents (1 if task i is assigned to agent j, 0 otherwise)."
+}

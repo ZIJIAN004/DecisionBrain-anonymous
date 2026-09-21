@@ -1,0 +1,2429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DecisionBrain</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --surface: #ffffff;
+            --surface-soft: #f9fafb;
+            --border: #d8dee8;
+            --border-soft: #e8edf4;
+            --text: #172033;
+            --muted: #657189;
+            --blue: #2563eb;
+            --blue-soft: #e8f0ff;
+            --green: #16875d;
+            --green-soft: #e7f7ef;
+            --amber: #a15c00;
+            --amber-soft: #fff3d9;
+            --red: #c93636;
+            --red-soft: #fde9e9;
+            --cyan: #087f9f;
+            --shadow: 0 10px 30px rgba(23, 32, 51, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                "Microsoft YaHei", sans-serif;
+            letter-spacing: 0;
+        }
+
+        button,
+        textarea,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+            cursor: pointer;
+        }
+
+        button:disabled,
+        textarea:disabled {
+            cursor: not-allowed;
+            opacity: 0.58;
+        }
+
+        .app {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 12px 18px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 0 rgba(23, 32, 51, 0.02);
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: #172033;
+            color: #fff;
+            font-weight: 800;
+            flex: 0 0 auto;
+        }
+
+        .brand-title {
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 760;
+            white-space: nowrap;
+        }
+
+        .brand-subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .icon-button,
+        .text-button,
+        .primary-button,
+        .danger-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            transition: border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease,
+                transform 0.12s ease;
+        }
+
+        .icon-button {
+            width: 36px;
+            font-size: 18px;
+        }
+
+        .text-button,
+        .primary-button,
+        .danger-button {
+            gap: 6px;
+            padding: 0 12px;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .primary-button {
+            border-color: var(--blue);
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .danger-button {
+            border-color: #efb4b4;
+            color: var(--red);
+        }
+
+        .icon-button:hover,
+        .text-button:hover {
+            border-color: #9aa8bd;
+            background: var(--surface-soft);
+        }
+
+        .primary-button:hover {
+            background: #1e55ca;
+        }
+
+        .danger-button:hover {
+            background: var(--red-soft);
+        }
+
+        .benchmark-dialog {
+            width: min(680px, calc(100vw - 32px));
+            max-height: calc(100vh - 48px);
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: 0 24px 70px rgba(23, 32, 51, 0.22);
+        }
+
+        .benchmark-dialog::backdrop {
+            background: rgba(23, 32, 51, 0.38);
+        }
+
+        .benchmark-dialog-body {
+            display: grid;
+            gap: 16px;
+            padding: 20px;
+        }
+
+        .benchmark-dialog-head,
+        .benchmark-actions,
+        .benchmark-progress-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .benchmark-dialog-head h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .benchmark-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 0.7fr);
+            gap: 12px;
+        }
+
+        .benchmark-field {
+            display: grid;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .benchmark-field select {
+            width: 100%;
+            min-height: 40px;
+            padding: 0 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .benchmark-note,
+        .benchmark-progress {
+            padding: 12px;
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            background: var(--surface-soft);
+        }
+
+        .benchmark-note {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .benchmark-progress-log {
+            display: grid;
+            gap: 6px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 12px;
+        }
+
+        .benchmark-result-runs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .shell {
+            display: grid;
+            grid-template-columns: 300px minmax(0, 1fr);
+            gap: 16px;
+            height: 100%;
+            min-height: 0;
+            padding: 16px;
+        }
+
+        .runs-pane,
+        .workspace {
+            min-height: 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .runs-pane {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            overflow: hidden;
+        }
+
+        .pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .pane-title {
+            font-size: 14px;
+            font-weight: 760;
+            color: #344056;
+        }
+
+        .run-list {
+            min-height: 0;
+            overflow: auto;
+            padding: 8px;
+        }
+
+        .run-row {
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            text-align: left;
+            color: var(--text);
+        }
+
+        .run-row:hover {
+            background: var(--surface-soft);
+        }
+
+        .run-row.active {
+            border-color: #9bb8f5;
+            background: var(--blue-soft);
+        }
+
+        .run-row-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 13px;
+            font-weight: 690;
+            line-height: 1.35;
+        }
+
+        .run-row-meta {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 64px;
+            height: 24px;
+            padding: 0 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-created,
+        .status-running {
+            color: var(--blue);
+            background: var(--blue-soft);
+        }
+
+        .status-needs_clarification {
+            color: var(--amber);
+            background: var(--amber-soft);
+        }
+
+        .status-succeeded {
+            color: var(--green);
+            background: var(--green-soft);
+        }
+
+        .status-failed,
+        .status-cancelled {
+            color: var(--red);
+            background: var(--red-soft);
+        }
+
+        .status-draft {
+            color: var(--muted);
+            background: var(--surface-soft);
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            overflow: hidden;
+        }
+
+        .run-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .run-title-wrap {
+            min-width: 0;
+        }
+
+        .run-title {
+            margin: 0;
+            font-size: 20px;
+            line-height: 1.25;
+            font-weight: 780;
+            overflow-wrap: anywhere;
+        }
+
+        .run-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .run-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .content-scroll {
+            min-height: 0;
+            overflow: auto;
+            padding: 0 18px 18px;
+        }
+
+        .section {
+            padding: 18px 0;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .section:last-child {
+            border-bottom: 0;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.4;
+            font-weight: 780;
+            color: #344056;
+        }
+
+        .empty-state {
+            display: grid;
+            align-content: center;
+            gap: 8px;
+            min-height: 180px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .empty-state strong {
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .summary-band {
+            display: grid;
+            gap: 12px;
+        }
+
+        .summary-main {
+            border-left: 4px solid var(--blue);
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: var(--surface-soft);
+        }
+
+        .summary-main p {
+            margin: 0;
+            line-height: 1.72;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .metric {
+            min-width: 0;
+            padding: 10px;
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .metric-value {
+            margin-top: 5px;
+            font-weight: 760;
+            overflow-wrap: anywhere;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+
+        .data-table caption {
+            margin-bottom: 8px;
+            color: #344056;
+            font-weight: 760;
+            text-align: left;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid var(--border-soft);
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+            overflow-wrap: anywhere;
+        }
+
+        .data-table th {
+            width: 46%;
+            background: var(--surface-soft);
+            color: #344056;
+            font-weight: 700;
+        }
+
+        .details-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        details.result-detail {
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        details.result-detail summary {
+            padding: 10px 12px;
+            color: #344056;
+            font-weight: 740;
+            cursor: pointer;
+        }
+
+        .detail-body {
+            padding: 0 12px 12px;
+            color: #273348;
+            line-height: 1.72;
+        }
+
+        .detail-body p,
+        .markdown p {
+            margin: 0 0 10px;
+        }
+
+        .detail-body ul,
+        .markdown ul {
+            margin: 0 0 10px 20px;
+            padding: 0;
+        }
+
+        .detail-body code,
+        .markdown code {
+            padding: 1px 4px;
+            border-radius: 4px;
+            background: #eef2f7;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.92em;
+        }
+
+        .stage-flow-scroll {
+            overflow-x: auto;
+            padding: 2px 2px 8px;
+        }
+
+        .stage-flow {
+            min-width: 900px;
+        }
+
+        .stage-strip {
+            display: grid;
+            grid-template-columns: repeat(5, 24px minmax(112px, 1fr)) 24px minmax(112px, 1fr);
+            align-items: stretch;
+            gap: 0;
+        }
+
+        .stage-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9aa8bd;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .stage-item {
+            min-width: 0;
+            padding: 10px;
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .stage-item.done {
+            border-color: #b8e4cc;
+            background: var(--green-soft);
+        }
+
+        .stage-item.active {
+            border-color: #9bb8f5;
+            background: var(--blue-soft);
+        }
+
+        .stage-item.failed {
+            border-color: #efb4b4;
+            background: var(--red-soft);
+        }
+
+        .stage-item.skipped {
+            border-style: dashed;
+            background: var(--surface-soft);
+            color: var(--muted);
+        }
+
+        .stage-index {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            margin-right: 6px;
+            border-radius: 50%;
+            background: #eef2f7;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .stage-item.done .stage-index {
+            background: #c8ecd8;
+            color: var(--green);
+        }
+
+        .stage-item.active .stage-index {
+            background: #cbdafd;
+            color: var(--blue);
+        }
+
+        .stage-item.failed .stage-index {
+            background: #f5caca;
+            color: var(--red);
+        }
+
+        .stage-name {
+            font-size: 13px;
+            font-weight: 750;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stage-round {
+            margin-left: 6px;
+            padding: 1px 5px;
+            border-radius: 6px;
+            background: var(--chip-bg, rgba(127, 127, 127, 0.18));
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .stage-note {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .review-feedback-flow {
+            display: grid;
+            grid-template-columns: repeat(5, 24px minmax(112px, 1fr)) 24px minmax(112px, 1fr);
+            margin-top: 10px;
+        }
+
+        .review-feedback-card {
+            grid-column: 5 / 10;
+            position: relative;
+            padding: 12px 14px;
+            border: 1px dashed #d9ad62;
+            border-radius: 10px;
+            background: var(--amber-soft);
+        }
+
+        .review-feedback-card::before {
+            content: "↓ reviewer feedback";
+            position: absolute;
+            top: -20px;
+            right: 10px;
+            color: var(--amber);
+            font-size: 11px;
+            font-weight: 750;
+        }
+
+        .review-feedback-card.accepted {
+            border-color: #8cc9aa;
+            background: var(--green-soft);
+        }
+
+        .review-feedback-card.idle {
+            border-color: var(--border);
+            background: var(--surface-soft);
+        }
+
+        .review-feedback-head,
+        .review-feedback-targets {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .review-feedback-title {
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .review-feedback-summary {
+            margin-top: 6px;
+            color: var(--text);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .review-feedback-targets {
+            justify-content: flex-start;
+            margin-top: 8px;
+        }
+
+        .review-route-chip {
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--amber);
+            font-size: 11px;
+            font-weight: 750;
+        }
+
+        .review-feedback-card.accepted .review-route-chip {
+            color: var(--green);
+        }
+
+        .review-history {
+            display: grid;
+            gap: 4px;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .activity-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .activity-item {
+            display: grid;
+            grid-template-columns: 84px minmax(0, 1fr);
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .activity-time {
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .activity-body {
+            min-width: 0;
+            line-height: 1.55;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .activity-body strong {
+            color: #344056;
+        }
+
+        .activity-body.error {
+            color: var(--red);
+        }
+
+        .activity-body.warning {
+            color: var(--amber);
+        }
+
+        .clarification {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid #f0cf8d;
+            border-radius: 8px;
+            background: var(--amber-soft);
+        }
+
+        .question {
+            display: grid;
+            gap: 8px;
+        }
+
+        .question-title {
+            font-weight: 720;
+            line-height: 1.55;
+        }
+
+        .option-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .option-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 9px;
+            border: 1px solid #e8bd69;
+            border-radius: 8px;
+            background: #fffaf0;
+            font-size: 13px;
+        }
+
+        .answer-input,
+        .composer-input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            resize: vertical;
+        }
+
+        .answer-input:focus,
+        .composer-input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .answer-input {
+            min-height: 42px;
+            padding: 9px 10px;
+        }
+
+        .artifact-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .artifact-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .artifact-name {
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .artifact-meta {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 32px;
+            padding: 0 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .download-link:hover {
+            background: var(--blue-soft);
+        }
+
+        .composer {
+            display: grid;
+            gap: 8px;
+            padding: 12px 18px;
+            border-top: 1px solid var(--border);
+            background: #fff;
+        }
+
+        .attachment-bar {
+            display: none;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .attachment-bar.visible {
+            display: flex;
+        }
+
+        .attachment-chip {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            gap: 6px;
+            padding: 5px 8px;
+            border-radius: 8px;
+            background: var(--surface-soft);
+            border: 1px solid var(--border-soft);
+            color: #344056;
+            font-size: 12px;
+        }
+
+        .attachment-chip span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 260px;
+        }
+
+        .attachment-chip button {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        .composer-row {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: end;
+        }
+
+        .composer-input {
+            min-height: 44px;
+            max-height: 130px;
+            padding: 11px 12px;
+            line-height: 1.45;
+        }
+
+        .file-input {
+            position: fixed;
+            top: -100px;
+            left: -100px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (max-width: 980px) {
+            body {
+                overflow: auto;
+            }
+
+            .app {
+                min-height: 100%;
+                height: auto;
+            }
+
+            .shell {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: calc(100vh - 58px);
+            }
+
+            .runs-pane {
+                max-height: 260px;
+            }
+
+            .workspace {
+                min-height: 680px;
+            }
+
+            .metric-grid,
+            .data-grid,
+            .benchmark-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .topbar,
+            .run-header,
+            .composer {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .shell {
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .brand-subtitle {
+                display: none;
+            }
+
+            .run-header {
+                display: grid;
+            }
+
+            .run-actions {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .content-scroll {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .composer-row {
+                grid-template-columns: auto 1fr auto;
+            }
+
+            .text-button .button-label {
+                display: none;
+            }
+
+            .activity-item {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">DB</div>
+                <div class="brand-title">DecisionBrain</div>
+                <div class="brand-subtitle" data-i18n="run_console">Run Console</div>
+            </div>
+            <div class="top-actions">
+                <label class="sr-only" for="language-select" data-i18n="language">Language</label>
+                <select id="language-select" class="text-button" aria-label="Language">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+                <span id="connection-status" class="status-pill status-draft" data-i18n="disconnected">Disconnected</span>
+                <button id="open-benchmark" class="text-button" type="button">Benchmark</button>
+                <button id="refresh-runs" class="icon-button" type="button" data-i18n-title="refresh_runs" data-i18n-aria-label="refresh_runs" title="Refresh Runs" aria-label="Refresh Runs">↻</button>
+            </div>
+        </header>
+
+        <main class="shell">
+            <aside class="runs-pane">
+                <div class="pane-header">
+                    <div class="pane-title" data-i18n="run_history">Run History</div>
+                    <button id="new-run" class="icon-button" type="button" data-i18n-title="new_run" data-i18n-aria-label="new_run" title="New Run" aria-label="New Run">＋</button>
+                </div>
+                <div id="run-list" class="run-list"></div>
+            </aside>
+
+            <section class="workspace">
+                <div class="run-header">
+                    <div class="run-title-wrap">
+                        <h1 id="run-title" class="run-title" data-i18n="new_run">New Run</h1>
+                        <div id="run-meta" class="run-meta"></div>
+                    </div>
+                    <div class="run-actions">
+                        <span id="run-status" class="status-pill status-draft" data-i18n="draft">Draft</span>
+                        <button id="cancel-run" class="danger-button" type="button" hidden data-i18n="cancel">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="content-scroll">
+                    <section id="result-section" class="section"></section>
+                    <section id="clarification-section" class="section" hidden></section>
+                    <section id="progress-section" class="section"></section>
+                    <section id="artifact-section" class="section"></section>
+                </div>
+
+                <form id="compose-form" class="composer">
+                    <div id="attachment-bar" class="attachment-bar"></div>
+                    <div class="composer-row">
+                        <button type="button" id="upload-attachment-btn" class="icon-button" data-i18n-title="upload_data" data-i18n-aria-label="upload_data" title="Upload data files" aria-label="Upload data files">⌁</button>
+                        <label class="sr-only" for="user-input" data-i18n="question_or_reply">Enter a question or reply</label>
+                        <textarea id="user-input" class="composer-input" rows="1" data-i18n-placeholder="describe_problem" placeholder="Describe the optimization problem"></textarea>
+                        <button id="send-btn" class="primary-button" type="submit" data-i18n="send" data-i18n-title="send" data-i18n-aria-label="send" title="Send" aria-label="Send">Send</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <dialog id="benchmark-dialog" class="benchmark-dialog">
+        <div class="benchmark-dialog-body">
+            <div class="benchmark-dialog-head">
+                <div>
+                    <h2 data-i18n="frontieror_evaluation">FrontierOR Evaluation</h2>
+                    <div class="run-meta" data-i18n="benchmark_default">Runs one tiny task by default</div>
+                </div>
+                <button id="close-benchmark" class="icon-button" type="button" data-i18n-aria-label="close" aria-label="Close">×</button>
+            </div>
+            <div class="benchmark-grid">
+                <label class="benchmark-field"><span data-i18n="task">Task</span>
+                    <select id="benchmark-task"></select>
+                </label>
+                <label class="benchmark-field">Feasibility Review
+                    <input id="benchmark-feasibility-review-enabled" type="checkbox" checked>
+                </label>
+            </div>
+            <div id="benchmark-progress" class="benchmark-progress" hidden></div>
+            <div class="benchmark-actions">
+                <button id="cancel-benchmark" class="danger-button" type="button" hidden data-i18n="cancel_evaluation">Cancel Evaluation</button>
+                <button id="start-benchmark" class="primary-button" type="button" data-i18n="start_evaluation">Start Evaluation</button>
+            </div>
+        </div>
+    </dialog>
+
+    <input type="file" id="chat-attachment-file" class="file-input" accept=".csv,.txt,.json,.xlsx,.xls,.xlsm" multiple>
+
+    <script>
+        const API_BASE = window.location.origin || 'http://127.0.0.1:8008';
+        const CURRENT_RUN_KEY = 'decisionbrain_display_current_run_v1';
+        const UI_LANGUAGE_KEY = 'decisionbrain_ui_language_v1';
+        const DEFAULT_UI_LANGUAGE = '__DBN_UI_LANGUAGE__';
+        const LANGUAGE_RESOURCES = {
+            en: {
+                run_console: 'Run Console', language: 'Language', disconnected: 'Disconnected',
+                refresh_runs: 'Refresh Runs', run_history: 'Run History', new_run: 'New Run',
+                draft: 'Draft', cancel: 'Cancel', upload_data: 'Upload data files',
+                question_or_reply: 'Enter a question or reply', describe_problem: 'Describe the optimization problem',
+                send: 'Send', frontieror_evaluation: 'FrontierOR Evaluation',
+                benchmark_default: 'Runs one tiny task by default', close: 'Close', task: 'Task',
+                cancel_evaluation: 'Cancel Evaluation', start_evaluation: 'Start Evaluation',
+                intake: 'Intake', problem_contract: 'Problem Contract', algorithm_design: 'Algorithm Design',
+                solving: 'Solving', feasibility_review: 'Feasibility Review', explanation: 'Explanation',
+                created: 'Created', running: 'Running', needs_clarification: 'Needs Clarification',
+                succeeded: 'Succeeded', failed: 'Failed', cancelled: 'Cancelled', yes: 'Yes', no: 'No',
+                unnamed_run: 'Unnamed Run', submitting: 'Submitting', created_at: 'Created', updated_at: 'Updated',
+                source: 'Source', no_runs: 'No Runs', no_runs_hint: 'Runs will appear here after creation.',
+                prepare_run: 'Ready to Create a Run', prepare_run_hint: 'Enter a problem to see progress and results.',
+                loading_run: 'Loading Run', please_wait: 'Please wait.', result: 'Result',
+                no_result: 'This Run has not produced a result.', recommended_params: 'Recommended Parameters',
+                predicted_quality: 'Predicted Quality', safety_intervals: 'Safety Intervals',
+                objective_explanation: 'Objective', decision_explanation: 'Decisions',
+                constraint_explanation: 'Constraints', risk_notes: 'Risks', next_actions: 'Next Actions',
+                status: 'Status', objective_value: 'Objective Value', bound: 'Bound', clarification: 'Clarification',
+                more_information: 'More information is required.', submit_clarification: 'Submit Clarification',
+                question: 'Question', answer_placeholder: 'Enter an answer', progress: 'Progress', waiting: 'Waiting',
+                completed: 'Completed', not_enabled: 'Not enabled', round: 'Round', awaiting_review: 'Awaiting review',
+                instance_infeasible: 'Instance infeasible', accepted: 'Accepted', rejected: 'Rejected',
+                responsibility: 'Responsibility', unknown: 'Unknown', no_events: 'No Events',
+                no_events_hint: 'Events will appear after the Run starts.', started: 'started', artifact: 'Artifact',
+                user: 'User', error: 'Error', warning: 'Warning', run_completed: 'Run completed', next_step: 'Next step',
+                artifacts: 'Artifacts', no_artifacts: 'No Artifacts', no_artifacts_hint: 'Downloads appear after generation.',
+                download: 'Download', reply_clarification: 'Reply to the clarification questions', remove: 'Remove',
+                connecting: 'Connecting', connected: 'Connected', connection_failed: 'Connection Failed',
+                cannot_connect: 'Cannot connect to the service', loading_tasks: 'Loading tasks...',
+                benchmark_read_failed: 'Could not load Benchmark', starting_evaluation: 'Starting evaluation...',
+                start_failed: 'Start Failed', status_read_failed: 'Status Read Failed', feasible: 'Feasible',
+                direct_contract: 'Direct Contract', feasibility_rate: 'Feasibility Rate', median_gap: 'Median Gap',
+                view_run: 'View Run', enabled: 'Enabled', disabled: 'Disabled', unsupported_file: 'Unsupported file type: ',
+                runs_read_failed: 'Could not load Runs', run_read_failed: 'Could not load Run',
+                tasks_read_failed: 'Could not load FrontierOR tasks', benchmark_start_failed: 'Could not start Benchmark',
+                benchmark_status_failed: 'Could not load Benchmark status', benchmark_cancel_failed: 'Could not cancel Benchmark'
+            },
+            zh: {
+                run_console: 'Run 展示台', language: '语言', disconnected: '未连接', refresh_runs: '刷新 Runs',
+                run_history: 'Run 历史', new_run: '新建 Run', draft: '新建', cancel: '取消', upload_data: '上传数据文件',
+                question_or_reply: '输入问题或回复', describe_problem: '描述优化问题', send: '发送',
+                frontieror_evaluation: 'FrontierOR 测评', benchmark_default: '默认只运行一个 tiny 任务',
+                close: '关闭', task: '任务', cancel_evaluation: '取消测评', start_evaluation: '开始测评',
+                intake: '需求收集', problem_contract: '问题契约', algorithm_design: '算法设计', solving: '求解',
+                feasibility_review: '可行性验收', explanation: '结果解释', created: '已创建', running: '运行中',
+                needs_clarification: '待澄清', succeeded: '已完成', failed: '失败', cancelled: '已取消',
+                yes: '是', no: '否', unnamed_run: '未命名 Run', submitting: '提交中', created_at: '创建',
+                updated_at: '更新', source: '来源', no_runs: '暂无 Run', no_runs_hint: '创建后会显示在这里',
+                prepare_run: '准备创建 Run', prepare_run_hint: '输入问题并提交后，页面会展示运行进度与结果。',
+                loading_run: '正在读取 Run', please_wait: '请稍候', result: '结果', no_result: 'Run 尚未产生结果。',
+                recommended_params: '推荐参数', predicted_quality: '预测质量', safety_intervals: '安全区间',
+                objective_explanation: '目标解释', decision_explanation: '决策解释', constraint_explanation: '约束说明',
+                risk_notes: '风险提示', next_actions: '后续动作', status: '状态', objective_value: '目标值', bound: '界',
+                clarification: '澄清', more_information: '需要补充信息', submit_clarification: '提交澄清',
+                question: '问题', answer_placeholder: '补充回答', progress: '进度', waiting: '等待', completed: '完成',
+                not_enabled: '本次未启用', round: '第 {value} 轮', awaiting_review: '等待验收',
+                instance_infeasible: '实例不可行', accepted: '接受', rejected: '拒绝', responsibility: '责任',
+                unknown: '未识别', no_events: '暂无事件', no_events_hint: '运行开始后会显示在这里', started: '开始',
+                artifact: '产物', user: '用户', error: '错误', warning: '提醒', run_completed: 'Run 完成',
+                next_step: '下一步', artifacts: '产物', no_artifacts: '暂无产物',
+                no_artifacts_hint: '生成后会显示下载入口', download: '下载', reply_clarification: '回复澄清问题',
+                remove: '移除', connecting: '连接中', connected: '已连接', connection_failed: '连接失败',
+                cannot_connect: '无法连接服务', loading_tasks: '读取任务中…', benchmark_read_failed: '无法读取 Benchmark',
+                starting_evaluation: '正在启动测评…', start_failed: '启动失败', status_read_failed: '状态读取失败',
+                feasible: '可行', direct_contract: '直接契约', feasibility_rate: '可行率', median_gap: 'Gap 中位数',
+                view_run: '查看 Run', enabled: '开启', disabled: '关闭', unsupported_file: '不支持的文件类型：',
+                runs_read_failed: 'Runs 读取失败', run_read_failed: 'Run 读取失败',
+                tasks_read_failed: 'FrontierOR 任务列表读取失败', benchmark_start_failed: 'Benchmark 启动失败',
+                benchmark_status_failed: 'Benchmark 状态读取失败', benchmark_cancel_failed: 'Benchmark 取消失败'
+            }
+        };
+        let uiLanguage = localStorage.getItem(UI_LANGUAGE_KEY) ||
+            (['en', 'zh'].includes(DEFAULT_UI_LANGUAGE) ? DEFAULT_UI_LANGUAGE : 'en');
+        function t(key, values = {}) {
+            let value = LANGUAGE_RESOURCES[uiLanguage]?.[key] || LANGUAGE_RESOURCES.en[key] || key;
+            Object.entries(values).forEach(([name, replacement]) => {
+                value = value.replace('{' + name + '}', replacement);
+            });
+            return value;
+        }
+        const ALLOWED_FILE = /\.(csv|txt|json|xlsx|xls|xlsm)$/i;
+        const PENDING_RUN_ID = '__pending_run__';
+        const DISPLAY_VIEW = 'display';
+        const STAGES = ['intake', 'problem_contract', 'algorithm_design', 'solving', 'feasibility_review', 'explanation'];
+        const DISPLAY_HIDDEN_EVENT_TYPES = new Set([
+            'diagnostic',
+            'llm_stream_started',
+            'llm_stream_chunk',
+            'llm_stream_finished',
+            'tool_call',
+            'tool_result',
+        ]);
+        const DISPLAY_HIDDEN_STREAMS = new Set(['reasoning', 'code']);
+
+        const runListEl = document.getElementById('run-list');
+        const runTitleEl = document.getElementById('run-title');
+        const runMetaEl = document.getElementById('run-meta');
+        const runStatusEl = document.getElementById('run-status');
+        const resultSectionEl = document.getElementById('result-section');
+        const clarificationSectionEl = document.getElementById('clarification-section');
+        const progressSectionEl = document.getElementById('progress-section');
+        const artifactSectionEl = document.getElementById('artifact-section');
+        const refreshRunsBtn = document.getElementById('refresh-runs');
+        const newRunBtn = document.getElementById('new-run');
+        const cancelRunBtn = document.getElementById('cancel-run');
+        const uploadBtn = document.getElementById('upload-attachment-btn');
+        const fileInput = document.getElementById('chat-attachment-file');
+        const attachmentBar = document.getElementById('attachment-bar');
+        const composeForm = document.getElementById('compose-form');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const connectionStatusEl = document.getElementById('connection-status');
+        const languageSelect = document.getElementById('language-select');
+        const benchmarkOpenBtn = document.getElementById('open-benchmark');
+        const benchmarkDialog = document.getElementById('benchmark-dialog');
+        const benchmarkCloseBtn = document.getElementById('close-benchmark');
+        const benchmarkStartBtn = document.getElementById('start-benchmark');
+        const benchmarkCancelBtn = document.getElementById('cancel-benchmark');
+        const benchmarkTaskSelect = document.getElementById('benchmark-task');
+        const benchmarkFeasibilityReviewEnabled = document.getElementById('benchmark-feasibility-review-enabled');
+        const benchmarkProgressEl = document.getElementById('benchmark-progress');
+
+        let runs = [];
+        let selectedRunId = localStorage.getItem(CURRENT_RUN_KEY) || null;
+        const activeControllers = new Map();
+        let attachments = [];
+        let initialRunsLoaded = false;
+        const pendingRuns = new Map();
+        const runStates = new Map();
+        let currentBenchmarkId = null;
+        let benchmarkPollTimer = null;
+        let benchmarkTasksLoaded = false;
+
+        function applyStaticTranslations() {
+            document.documentElement.lang = uiLanguage === 'zh' ? 'zh-CN' : 'en';
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                element.textContent = t(element.dataset.i18n);
+            });
+            for (const attribute of ['title', 'aria-label', 'placeholder']) {
+                document.querySelectorAll('[data-i18n-' + attribute + ']').forEach(element => {
+                    element.setAttribute(attribute, t(element.dataset['i18n' + attribute
+                        .split('-').map(part => part[0].toUpperCase() + part.slice(1)).join('')]));
+                });
+            }
+            languageSelect.value = uiLanguage;
+        }
+
+        function setLanguage(language) {
+            uiLanguage = language === 'zh' ? 'zh' : 'en';
+            localStorage.setItem(UI_LANGUAGE_KEY, uiLanguage);
+            applyStaticTranslations();
+            renderCurrent();
+            if (currentBenchmarkId) pollBenchmark();
+        }
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderInline(text) {
+            return escapeHtml(text)
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>');
+        }
+
+        function renderMarkdown(value) {
+            const source = String(value == null ? '' : value).replace(/\r\n/g, '\n').trim();
+            if (!source) return '';
+            return source.split(/\n{2,}/).map(block => {
+                const lines = block.split('\n');
+                const heading = block.match(/^(#{1,3})\s+(.+)$/);
+                if (heading && lines.length === 1) {
+                    const level = Math.min(3, heading[1].length);
+                    return '<h' + level + '>' + renderInline(heading[2]) + '</h' + level + '>';
+                }
+                if (lines.every(line => /^\s*[-*]\s+/.test(line))) {
+                    return '<ul>' + lines.map(line =>
+                        '<li>' + renderInline(line.replace(/^\s*[-*]\s+/, '')) + '</li>'
+                    ).join('') + '</ul>';
+                }
+                return '<p>' + lines.map(renderInline).join('<br>') + '</p>';
+            }).join('');
+        }
+
+        function newRunState(runId) {
+            return {
+                runId,
+                record: null,
+                events: [],
+                artifacts: [],
+                resultDocs: {},
+                loading: false,
+            };
+        }
+
+        function isPendingRunId(runId) {
+            return String(runId || '').startsWith(PENDING_RUN_ID);
+        }
+
+        function makePendingRunId() {
+            return PENDING_RUN_ID + ':' + Date.now().toString(36) + ':' +
+                Math.random().toString(36).slice(2, 8);
+        }
+
+        function isRunBusy(runId) {
+            return Boolean(runId && activeControllers.has(runId));
+        }
+
+        function isStateBusy(state) {
+            return isRunBusy(state.record?.run_id || state.runId);
+        }
+
+        function ensureRunState(runId) {
+            if (!runStates.has(runId)) runStates.set(runId, newRunState(runId));
+            return runStates.get(runId);
+        }
+
+        function currentState() {
+            if (selectedRunId && isPendingRunId(selectedRunId)) {
+                return pendingRuns.get(selectedRunId) || newRunState(selectedRunId);
+            }
+            if (selectedRunId) return ensureRunState(selectedRunId);
+            return {
+                runId: null,
+                record: { status: 'draft', command: t('new_run') },
+                events: [],
+                artifacts: [],
+                resultDocs: {},
+                loading: false,
+            };
+        }
+
+        function statusLabel(status) {
+            return {
+                created: t('created'),
+                running: t('running'),
+                needs_clarification: t('needs_clarification'),
+                succeeded: t('succeeded'),
+                failed: t('failed'),
+                cancelled: t('cancelled'),
+                draft: t('draft'),
+            }[status || 'draft'] || status;
+        }
+
+        function setStatusPill(el, status) {
+            const value = status || 'draft';
+            el.className = 'status-pill status-' + value;
+            el.textContent = statusLabel(value);
+        }
+
+        function stageLabel(stage) {
+            return STAGES.includes(stage) ? t(stage) : (stage || 'Runtime');
+        }
+
+        function formatTime(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleString(uiLanguage === 'zh' ? 'zh-CN' : 'en-GB', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            });
+        }
+
+        function formatBytes(value) {
+            const size = Number(value || 0);
+            if (size < 1024) return size + ' B';
+            if (size < 1024 * 1024) return (size / 1024).toFixed(1) + ' KB';
+            return (size / 1024 / 1024).toFixed(1) + ' MB';
+        }
+
+        function formatScalar(value) {
+            if (value == null) return '';
+            if (typeof value === 'number') return Number.isInteger(value) ? String(value) : value.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+            if (typeof value === 'boolean') return value ? t('yes') : t('no');
+            if (typeof value === 'string') return value;
+            if (typeof value === 'object' && 'lower' in value && 'upper' in value) {
+                return formatScalar(value.lower) + ' - ' + formatScalar(value.upper);
+            }
+            return JSON.stringify(value);
+        }
+
+        function isDisplayEvent(event) {
+            if (!event) return false;
+            if (event.level === 'debug') return false;
+            if (DISPLAY_HIDDEN_EVENT_TYPES.has(event.type)) return false;
+            if (event.type === 'assistant_message' && DISPLAY_HIDDEN_STREAMS.has(event.payload?.stream)) {
+                return false;
+            }
+            return true;
+        }
+
+        function mergeEvent(state, event) {
+            if (!isDisplayEvent(event)) return;
+            const exists = state.events.some(item => item.sequence === event.sequence);
+            if (!exists) {
+                state.events.push(event);
+                state.events.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+            }
+        }
+
+        function latestEvent(state, type) {
+            return [...(state.events || [])].reverse().find(event => event.type === type);
+        }
+
+        function terminalStatus(status) {
+            return ['succeeded', 'failed', 'cancelled'].includes(status);
+        }
+
+        function updateConnection(status, label) {
+            setStatusPill(connectionStatusEl, status);
+            connectionStatusEl.textContent = label || statusLabel(status);
+        }
+
+        function syncRunListRecord(record) {
+            if (!record?.run_id || isPendingRunId(record.run_id)) return;
+            const index = runs.findIndex(run => run.run_id === record.run_id);
+            if (index >= 0) {
+                runs[index] = record;
+            } else {
+                runs.unshift(record);
+            }
+        }
+
+        function renderRunList() {
+            const rows = [];
+            rows.push(...[...pendingRuns.values()].map(state => state.record));
+            rows.push(...runs);
+            if (!rows.length) {
+                runListEl.innerHTML = '<div class="empty-state"><strong>' + t('no_runs') +
+                    '</strong><span>' + t('no_runs_hint') + '</span></div>';
+                return;
+            }
+            runListEl.innerHTML = rows.map(record => {
+                const runId = record.run_id || PENDING_RUN_ID;
+                const isPending = isPendingRunId(runId);
+                const active = selectedRunId === runId;
+                const title = record.command || record.config?.title || record.run_id || t('unnamed_run');
+                const time = formatTime(record.updated_at || record.created_at);
+                return '<button class="run-row' + (active ? ' active' : '') + '" type="button" data-run-id="' + escapeHtml(runId) + '">' +
+                    '<div><div class="run-row-title">' + escapeHtml(title) + '</div>' +
+                    '<div class="run-row-meta">' + escapeHtml(time || (isPending ? t('submitting') : '')) + '</div></div>' +
+                    '<span class="status-pill status-' + escapeHtml(record.status || 'draft') + '">' +
+                    escapeHtml(statusLabel(record.status || 'draft')) + '</span></button>';
+            }).join('');
+            runListEl.querySelectorAll('.run-row').forEach(row => {
+                row.addEventListener('click', () => selectRun(row.dataset.runId));
+            });
+        }
+
+        function renderCurrent() {
+            const state = currentState();
+            const record = state.record || {};
+            const status = record.status || 'draft';
+            const title = record.command || record.config?.title || record.run_id || t('new_run');
+            runTitleEl.textContent = title;
+            setStatusPill(runStatusEl, status);
+            runMetaEl.innerHTML = renderMeta(record);
+            cancelRunBtn.hidden = !(selectedRunId && !terminalStatus(status) && status !== 'draft');
+            renderResult(state);
+            renderClarification(state);
+            renderProgress(state);
+            renderArtifacts(state);
+            updateInputState(state);
+            renderRunList();
+        }
+
+        function renderMeta(record) {
+            const parts = [];
+            if (record.run_id && !isPendingRunId(record.run_id)) parts.push('Run ID: ' + escapeHtml(record.run_id));
+            if (record.parent_run_id) parts.push('Parent: ' + escapeHtml(record.parent_run_id));
+            if (record.created_at) parts.push(t('created_at') + ': ' + escapeHtml(formatTime(record.created_at)));
+            if (record.updated_at) parts.push(t('updated_at') + ': ' + escapeHtml(formatTime(record.updated_at)));
+            const source = record.config?.source;
+            if (source) parts.push(t('source') + ': ' + escapeHtml(source));
+            return parts.map(item => '<span>' + item + '</span>').join('');
+        }
+
+        function renderResult(state) {
+            const record = state.record || {};
+            if (!state.runId && record.status === 'draft') {
+                resultSectionEl.innerHTML =
+                    '<div class="empty-state"><strong>' + t('prepare_run') + '</strong><span>' +
+                    t('prepare_run_hint') + '</span></div>';
+                return;
+            }
+            if (state.loading && !(state.events || []).length) {
+                resultSectionEl.innerHTML = '<div class="empty-state"><strong>' + t('loading_run') +
+                    '</strong><span>' + t('please_wait') + '</span></div>';
+                return;
+            }
+
+            const finish = latestEvent(state, 'run_finished');
+            const explanation = state.resultDocs?.explanation || {};
+            const solution = state.resultDocs?.solution || {};
+            const summary = explanation.summary || finish?.message || record.error_summary ||
+                (record.result_summary ? JSON.stringify(record.result_summary) : '');
+            const metrics = collectMetrics(record, finish, solution);
+            const parts = [
+                '<div class="section-head"><h2 class="section-title">' + t('result') + '</h2></div>',
+                '<div class="summary-band">',
+                '<div class="summary-main markdown">' + (summary ? renderMarkdown(summary) : '<p>' + t('no_result') + '</p>') + '</div>',
+            ];
+            if (metrics.length) {
+                parts.push('<div class="metric-grid">' + metrics.map(metric =>
+                    '<div class="metric"><div class="metric-label">' + escapeHtml(metric.label) + '</div>' +
+                    '<div class="metric-value">' + escapeHtml(metric.value) + '</div></div>'
+                ).join('') + '</div>');
+            }
+            parts.push('</div>');
+
+            const tables = [];
+            if (solution.recommended_params) tables.push(renderObjectTable(t('recommended_params'), solution.recommended_params));
+            if (solution.predicted_quality) tables.push(renderObjectTable(t('predicted_quality'), solution.predicted_quality));
+            if (solution.safety_intervals) tables.push(renderObjectTable(t('safety_intervals'), solution.safety_intervals));
+            if (tables.length) parts.push('<div class="data-grid">' + tables.join('') + '</div>');
+
+            const details = [
+                [t('objective_explanation'), explanation.objective_explanation],
+                [t('decision_explanation'), explanation.decision_explanation],
+                [t('constraint_explanation'), explanation.constraint_explanation],
+                [t('risk_notes'), explanation.risk_notes],
+                [t('next_actions'), explanation.next_actions],
+            ].filter(([, value]) => value);
+            if (details.length) {
+                parts.push('<div class="details-list">' + details.map(([label, value], index) =>
+                    '<details class="result-detail"' + (index === 0 ? ' open' : '') + '>' +
+                    '<summary>' + escapeHtml(label) + '</summary>' +
+                    '<div class="detail-body markdown">' + renderMarkdown(value) + '</div></details>'
+                ).join('') + '</div>');
+            }
+
+            resultSectionEl.innerHTML = parts.join('');
+        }
+
+        function collectMetrics(record, finish, solution) {
+            const payload = finish?.payload || {};
+            const summary = record.result_summary || {};
+            const metrics = [];
+            const statusValue = record.status || payload.status || summary.status;
+            if (statusValue) {
+                metrics.push({ label: t('status'), value: statusLabel(statusValue) });
+            }
+            const objective = payload.objective ?? summary.objective ?? solution.objective;
+            if (objective != null) metrics.push({ label: t('objective_value'), value: formatScalar(objective) });
+            if (summary.objective_bound != null) metrics.push({ label: t('bound'), value: formatScalar(summary.objective_bound) });
+            if (summary.gap != null) metrics.push({ label: 'Gap', value: formatScalar(summary.gap) });
+            return metrics.slice(0, 4);
+        }
+
+        function renderObjectTable(title, obj) {
+            const rows = Object.entries(obj || {}).map(([key, value]) =>
+                '<tr><th>' + escapeHtml(key) + '</th><td>' + escapeHtml(formatScalar(value)) + '</td></tr>'
+            ).join('');
+            return '<table class="data-table"><caption>' + escapeHtml(title) + '</caption><tbody>' + rows + '</tbody></table>';
+        }
+
+        function renderClarification(state) {
+            const record = state.record || {};
+            const clarification = latestEvent(state, 'clarification_requested');
+            if (record.status !== 'needs_clarification' || !clarification) {
+                clarificationSectionEl.hidden = true;
+                clarificationSectionEl.innerHTML = '';
+                return;
+            }
+            const questions = clarification.payload?.questions || [];
+            const busy = isStateBusy(state);
+            clarificationSectionEl.hidden = false;
+            clarificationSectionEl.innerHTML =
+                '<div class="section-head"><h2 class="section-title">' + t('clarification') + '</h2></div>' +
+                '<form id="clarification-form" class="clarification">' +
+                '<div class="markdown">' + renderMarkdown(clarification.message || t('more_information')) + '</div>' +
+                questions.map((question, index) => renderQuestion(question, index)).join('') +
+                '<button id="clarification-submit" class="primary-button" type="submit"' +
+                (busy ? ' disabled' : '') + '>' + (busy ? t('submitting') : t('submit_clarification')) +
+                '</button></form>';
+            document.getElementById('clarification-form').addEventListener('submit', event => {
+                event.preventDefault();
+                submitClarification(questions);
+            });
+        }
+
+        function renderQuestion(question, index) {
+            const qid = 'q-' + index;
+            const options = Array.isArray(question.options) ? question.options : [];
+            const optionHtml = options.length ? '<div class="option-list">' + options.map((option, optionIndex) =>
+                '<label class="option-chip"><input type="radio" name="' + qid + '-option" value="' +
+                escapeHtml(option) + '"' + (optionIndex === 0 ? ' checked' : '') + '> ' + escapeHtml(option) + '</label>'
+            ).join('') + '</div>' : '';
+            return '<div class="question" data-question-index="' + index + '">' +
+                '<div class="question-title">' + escapeHtml(question.text || question.question || (t('question') + ' ' + (index + 1))) + '</div>' +
+                optionHtml +
+                '<textarea class="answer-input" name="' + qid + '-text" rows="2" placeholder="' + t('answer_placeholder') + '"></textarea>' +
+                '</div>';
+        }
+
+        function renderProgress(state) {
+            const events = state.events || [];
+            const blockedFinishSequences = clarificationStageFinishSequences(events);
+            progressSectionEl.innerHTML =
+                '<div class="section-head"><h2 class="section-title">' + t('progress') + '</h2></div>' +
+                '<div class="stage-flow-scroll"><div class="stage-flow">' +
+                '<div class="stage-strip">' + renderStageStrip(
+                    events,
+                    state.record?.status,
+                    blockedFinishSequences,
+                    state.record?.config
+                ) + '</div>' +
+                renderFeasibilityFeedback(state) + '</div></div>' +
+                '<div class="activity-list">' + renderActivity(events, blockedFinishSequences) + '</div>';
+        }
+
+        function clarificationStageFinishSequences(events) {
+            const blocked = new Set();
+            events.forEach((event, index) => {
+                if (event.type !== 'clarification_requested') return;
+                for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+                    const previous = events[cursor];
+                    if (previous.type === 'stage_finished' && previous.stage) {
+                        blocked.add(previous.sequence);
+                        break;
+                    }
+                    if (['stage_started', 'clarification_requested', 'user_message', 'run_finished'].includes(previous.type)) {
+                        break;
+                    }
+                }
+            });
+            return blocked;
+        }
+
+        function latestPendingClarificationStage(events, status) {
+            if (status !== 'needs_clarification') return null;
+            for (let index = events.length - 1; index >= 0; index -= 1) {
+                const event = events[index];
+                if (event.type !== 'clarification_requested') continue;
+                for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+                    const previous = events[cursor];
+                    if (previous.type === 'stage_finished' && previous.stage) return previous.stage;
+                    if (['stage_started', 'clarification_requested', 'user_message', 'run_finished'].includes(previous.type)) break;
+                }
+                return event.stage || null;
+            }
+            return null;
+        }
+
+        function renderStageStrip(events, status, blockedFinishSequences, config = {}) {
+            const current = new Map(STAGES.map(key => [key, { state: 'idle', note: t('waiting') }]));
+            // Feasibility Review may return execution upstream; retain repeated-stage rounds.
+            const runCount = new Map(STAGES.map(key => [key, 0]));
+            for (const event of events) {
+                if (event.type === 'stage_started' && event.stage && current.has(event.stage)) {
+                    runCount.set(event.stage, runCount.get(event.stage) + 1);
+                    current.set(event.stage, { state: 'active', note: event.message || t('running') });
+                } else if (event.type === 'stage_finished' && event.stage && current.has(event.stage)) {
+                    if (blockedFinishSequences.has(event.sequence)) continue;
+                    current.set(event.stage, { state: 'done', note: event.duration_ms != null ? event.duration_ms + ' ms' : t('completed') });
+                } else if (event.type === 'error' && event.stage && current.has(event.stage)) {
+                    current.set(event.stage, { state: 'failed', note: t('failed') });
+                }
+            }
+            const pendingStage = latestPendingClarificationStage(events, status);
+            if (pendingStage && current.has(pendingStage)) {
+                current.set(pendingStage, { state: 'active', note: t('needs_clarification') });
+            }
+            if (status === 'succeeded') {
+                for (const [key, value] of current.entries()) {
+                    if (value.state === 'active') current.set(key, { state: 'done', note: t('completed') });
+                }
+            }
+            if (config.feasibility_review_enabled === false)
+                current.set('feasibility_review', { state: 'skipped', note: t('not_enabled') });
+            return STAGES.map((key, index) => {
+                const item = current.get(key);
+                const rounds = runCount.get(key) || 0;
+                const roundTag = rounds > 1 ? '<span class="stage-round">' + t('round', { value: rounds }) + '</span>' : '';
+                const arrow = index ? '<div class="stage-arrow" aria-hidden="true">→</div>' : '';
+                return arrow + '<div class="stage-item ' + escapeHtml(item.state) + '">' +
+                    '<div class="stage-name"><span class="stage-index">' + (index + 1) + '</span>' +
+                    escapeHtml(t(key)) + roundTag + '</div>' +
+                    '<div class="stage-note">' + escapeHtml(item.note) + '</div></div>';
+            }).join('');
+        }
+
+        function renderFeasibilityFeedback(state) {
+            const review = state.resultDocs?.feasibilityReview;
+            const reviewEnabled = state.record?.config?.feasibility_review_enabled !== false;
+            if (!reviewEnabled) return '';
+            if (!review) {
+                return '<div class="review-feedback-flow"><div class="review-feedback-card idle">' +
+                    '<div class="review-feedback-head"><span class="review-feedback-title">Feasibility Review</span>' +
+                    '<span class="run-meta">' + t('awaiting_review') + '</span></div>' +
+                    '<div class="review-feedback-targets"><span class="review-route-chip">↩ ' + t('algorithm_design') + '</span>' +
+                    '<span class="review-route-chip">↩ ' + t('solving') + '</span><span class="review-route-chip">' +
+                    t('accepted') + ' → ' + t('explanation') + '</span></div>' +
+                    '</div></div>';
+            }
+
+            const decision = String(review.decision || '');
+            const responsibility = String(review.responsibility || '');
+            const targetLabel = responsibility === 'algorithm_design' ? t('algorithm_design') :
+                responsibility === 'solving' ? t('solving') : responsibility === 'instance' ? t('instance_infeasible') : '';
+            const accepted = decision === 'accept';
+            const title = 'Feasibility Review ' + (accepted ? t('accepted') : t('rejected'));
+            const route = accepted ? t('accepted') + ' → ' + t('explanation') :
+                t('responsibility') + ' → ' + (targetLabel || t('unknown'));
+            const summary = review.summary || 'Feasibility Review completed.';
+            return '<div class="review-feedback-flow"><div class="review-feedback-card ' +
+                (accepted ? 'accepted' : '') + '">' +
+                '<div class="review-feedback-head"><span class="review-feedback-title">' + escapeHtml(title) + '</span>' +
+                '</div>' +
+                '<div class="review-feedback-summary">' + escapeHtml(summary) + '</div>' +
+                '<div class="review-feedback-targets"><span class="review-route-chip">' + escapeHtml(route) + '</span></div>' +
+                '</div></div>';
+        }
+
+        function renderActivity(events, blockedFinishSequences) {
+            const visible = events.filter(event =>
+                !['diagnostic'].includes(event.type) &&
+                !(event.type === 'stage_finished' && blockedFinishSequences.has(event.sequence))
+            );
+            if (!visible.length) return '<div class="empty-state"><strong>' + t('no_events') +
+                '</strong><span>' + t('no_events_hint') + '</span></div>';
+            return visible.slice(-60).map(event => {
+                const body = activityText(event);
+                const style = event.type === 'error' ? ' error' : (event.type === 'warning' ? ' warning' : '');
+                return '<div class="activity-item"><div class="activity-time">' + escapeHtml(formatTime(event.timestamp)) + '</div>' +
+                    '<div class="activity-body' + style + '">' + body + '</div></div>';
+            }).join('');
+        }
+
+        function activityText(event) {
+            if (event.type === 'stage_started') {
+                return '<strong>' + escapeHtml(stageLabel(event.stage)) + '</strong> ' + t('started');
+            } else if (event.type === 'stage_finished') {
+                return '<strong>' + escapeHtml(stageLabel(event.stage)) + '</strong> ' + t('completed') +
+                    (event.message ? ': ' + escapeHtml(event.message) : '');
+            } else if (event.type === 'assistant_message') {
+                return '<strong>Agent</strong>：<span class="markdown">' + renderMarkdown(event.message) + '</span>';
+            } else if (event.type === 'artifact_created') {
+                const path = event.payload?.relative_path || event.message;
+                return '<strong>' + t('artifact') + '</strong>: ' + escapeHtml(path);
+            } else if (event.type === 'clarification_requested') {
+                return '<strong>' + t('needs_clarification') + '</strong>: ' + escapeHtml(event.message);
+            } else if (event.type === 'user_message') {
+                return '<strong>' + t('user') + '</strong>: ' + escapeHtml(event.message);
+            } else if (event.type === 'error') {
+                return '<strong>' + t('error') + '</strong>: ' + escapeHtml(event.message);
+            } else if (event.type === 'warning') {
+                return '<strong>' + t('warning') + '</strong>: ' + escapeHtml(event.message);
+            } else if (event.type === 'run_finished') {
+                return '<strong>' + t('run_completed') + '</strong>: ' + escapeHtml(event.message);
+            } else if (event.type === 'progress_reported') {
+                const next = event.payload?.next_step ? ' ' + t('next_step') + ': ' + event.payload.next_step : '';
+                return '<strong>' + t('progress') + '</strong>: ' +
+                    escapeHtml(event.payload?.summary || event.message || '') + escapeHtml(next);
+            } else if (event.type === 'run_created' || event.type === 'run_started' || event.type === 'run_resumed') {
+                return escapeHtml(event.message);
+            }
+            return escapeHtml(event.message || event.type);
+        }
+
+        function renderArtifacts(state) {
+            const artifacts = [...(state.artifacts || [])].sort((a, b) => artifactRank(a) - artifactRank(b));
+            artifactSectionEl.innerHTML =
+                '<div class="section-head"><h2 class="section-title">' + t('artifacts') + '</h2></div>' +
+                (artifacts.length ? '<div class="artifact-list">' + artifacts.map(renderArtifactRow).join('') + '</div>' :
+                    '<div class="empty-state"><strong>' + t('no_artifacts') + '</strong><span>' +
+                    t('no_artifacts_hint') + '</span></div>');
+        }
+
+        function artifactRank(item) {
+            const ranks = { result: 0, report: 1, review: 2, problem_contract: 3, algorithm_design: 4, code: 8 };
+            return ranks[item.category] ?? 5;
+        }
+
+        function renderArtifactRow(item) {
+            const runId = item.run_id || currentState().runId;
+            const href = API_BASE + '/api/runs/' + encodeURIComponent(runId) +
+                '/artifacts/' + encodeURIComponent(item.artifact_id);
+            return '<div class="artifact-row"><div><div class="artifact-name">' + escapeHtml(item.relative_path) + '</div>' +
+                '<div class="artifact-meta">' + escapeHtml(item.category) + ' · ' + escapeHtml(formatBytes(item.size_bytes)) +
+                (item.description ? ' · ' + escapeHtml(item.description) : '') + '</div></div>' +
+                '<a class="download-link" href="' + href + '" target="_blank" rel="noreferrer">' + t('download') + '</a></div>';
+        }
+
+        function updateInputState(state) {
+            const status = state.record?.status || 'draft';
+            const busy = isStateBusy(state);
+            const clarifying = status === 'needs_clarification';
+            userInput.disabled = busy;
+            sendBtn.disabled = busy;
+            uploadBtn.disabled = busy || clarifying;
+            userInput.placeholder = clarifying ? t('reply_clarification') : t('describe_problem');
+        }
+
+        function renderAttachmentBar() {
+            attachmentBar.innerHTML = '';
+            attachmentBar.classList.toggle('visible', attachments.length > 0);
+            attachments.forEach((item, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'attachment-chip';
+                chip.innerHTML = '<span>' + escapeHtml(item.file.name) + '</span><button type="button" title="' +
+                    t('remove') + '" aria-label="' + t('remove') + '">×</button>';
+                chip.querySelector('button').addEventListener('click', () => {
+                    attachments.splice(index, 1);
+                    renderAttachmentBar();
+                });
+                attachmentBar.appendChild(chip);
+            });
+        }
+
+        function selectRun(runId) {
+            if (isPendingRunId(runId) && pendingRuns.has(runId)) {
+                selectedRunId = runId;
+                renderCurrent();
+                return;
+            }
+            selectedRunId = runId || null;
+            if (selectedRunId) localStorage.setItem(CURRENT_RUN_KEY, selectedRunId);
+            else localStorage.removeItem(CURRENT_RUN_KEY);
+            renderCurrent();
+            if (selectedRunId) loadRun(selectedRunId);
+        }
+
+        async function refreshServerRuns() {
+            try {
+                updateConnection('running', t('connecting'));
+                const response = await fetch(API_BASE + '/api/runs');
+                if (!response.ok) throw new Error(t('runs_read_failed'));
+                const data = await response.json();
+                runs = data.runs || [];
+                for (const record of runs) {
+                    const state = ensureRunState(record.run_id);
+                    state.record = record;
+                }
+                if (selectedRunId && !isPendingRunId(selectedRunId) && !runs.some(run => run.run_id === selectedRunId)) {
+                    selectedRunId = runs[0]?.run_id || null;
+                }
+                if (!selectedRunId && runs.length && !initialRunsLoaded) selectedRunId = runs[0].run_id;
+                initialRunsLoaded = true;
+                updateConnection('succeeded', t('connected'));
+                renderCurrent();
+                if (selectedRunId && !isPendingRunId(selectedRunId)) await loadRun(selectedRunId);
+            } catch (error) {
+                updateConnection('failed', t('connection_failed'));
+                resultSectionEl.innerHTML = '<div class="empty-state"><strong>' + t('cannot_connect') +
+                    '</strong><span>' + escapeHtml(error.message) + '</span></div>';
+            }
+        }
+
+        async function loadRun(runId) {
+            if (!runId || isPendingRunId(runId)) return;
+            const state = ensureRunState(runId);
+            state.loading = true;
+            renderCurrent();
+            try {
+                const [recordResponse, eventsResponse, artifactsResponse] = await Promise.all([
+                    fetch(API_BASE + '/api/runs/' + encodeURIComponent(runId)),
+                    fetch(API_BASE + '/api/runs/' + encodeURIComponent(runId) + '/events?view=' + DISPLAY_VIEW),
+                    fetch(API_BASE + '/api/runs/' + encodeURIComponent(runId) + '/artifacts'),
+                ]);
+                if (!recordResponse.ok) throw new Error(t('run_read_failed'));
+                const record = await recordResponse.json();
+                const eventsData = eventsResponse.ok ? await eventsResponse.json() : { events: [] };
+                const artifactsData = artifactsResponse.ok ? await artifactsResponse.json() : { artifacts: [] };
+                state.record = record;
+                state.events = (eventsData.events || []).filter(isDisplayEvent);
+                state.artifacts = artifactsData.artifacts || [];
+                state.resultDocs = await loadResultDocs(runId, state.artifacts);
+                syncRunListRecord(state.record);
+            } finally {
+                state.loading = false;
+                if (selectedRunId === runId) renderCurrent();
+            }
+        }
+
+        async function loadArtifacts(runId) {
+            const state = ensureRunState(runId);
+            const response = await fetch(API_BASE + '/api/runs/' + encodeURIComponent(runId) + '/artifacts');
+            if (!response.ok) return;
+            const data = await response.json();
+            state.artifacts = data.artifacts || [];
+            state.resultDocs = await loadResultDocs(runId, state.artifacts);
+            if (selectedRunId === runId) renderCurrent();
+        }
+
+        async function loadResultDocs(runId, artifacts) {
+            const docs = {};
+            const explanation = artifacts.find(item => item.relative_path === 'artifacts/result/explanation.json');
+            const solution = artifacts.find(item => item.relative_path === 'artifacts/result/solution.json');
+            const feasibilityReviews = artifacts.filter(
+                item => item.relative_path === 'artifacts/review/feasibility_review.json'
+            );
+            if (solution) docs.solution = await fetchArtifactJson(runId, solution);
+            if (explanation) docs.explanation = await fetchArtifactJson(runId, explanation);
+            if (feasibilityReviews.length) {
+                docs.feasibilityReview = await fetchArtifactJson(
+                    runId, feasibilityReviews[feasibilityReviews.length - 1]
+                );
+            }
+            return docs;
+        }
+
+        async function fetchArtifactJson(runId, metadata) {
+            const response = await fetch(API_BASE + '/api/runs/' + encodeURIComponent(runId) +
+                '/artifacts/' + encodeURIComponent(metadata.artifact_id));
+            if (!response.ok) return null;
+            const text = await response.text();
+            try {
+                return JSON.parse(text);
+            } catch (_) {
+                return { summary: text };
+            }
+        }
+
+        async function loadBenchmarkTasks() {
+            if (benchmarkTasksLoaded) return;
+            benchmarkTaskSelect.disabled = true;
+            benchmarkTaskSelect.innerHTML = '<option>' + t('loading_tasks') + '</option>';
+            const response = await fetch(API_BASE + '/api/benchmarks/frontieror/tasks');
+            if (!response.ok) throw new Error(t('tasks_read_failed'));
+            const data = await response.json();
+            const tasks = data.tasks || [];
+            benchmarkTaskSelect.innerHTML = tasks.map(task =>
+                '<option value="' + escapeHtml(task.task_id) + '">' +
+                escapeHtml(task.task_id + ' · ' + task.problem_class) + '</option>'
+            ).join('');
+            benchmarkTaskSelect.disabled = !tasks.length;
+            benchmarkStartBtn.disabled = !tasks.length;
+            benchmarkTasksLoaded = true;
+        }
+
+        async function openBenchmarkDialog() {
+            benchmarkDialog.showModal();
+            try {
+                await loadBenchmarkTasks();
+                if (currentBenchmarkId) await pollBenchmark();
+            } catch (error) {
+                benchmarkProgressEl.hidden = false;
+                benchmarkProgressEl.innerHTML = '<strong>' + t('benchmark_read_failed') + '</strong><div>' +
+                    escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        async function startBenchmark() {
+            const taskId = benchmarkTaskSelect.value;
+            if (!taskId || benchmarkStartBtn.disabled) return;
+            benchmarkStartBtn.disabled = true;
+            benchmarkProgressEl.hidden = false;
+            benchmarkProgressEl.innerHTML = '<strong>' + t('starting_evaluation') + '</strong>';
+            try {
+                const response = await fetch(API_BASE + '/api/benchmarks/frontieror', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        feasibility_review_enabled: benchmarkFeasibilityReviewEnabled.checked,
+                        task_ids: [taskId],
+                        limit: 1,
+                        jobs: 1,
+                    }),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.detail || t('benchmark_start_failed'));
+                currentBenchmarkId = data.benchmark_id;
+                renderBenchmarkJob(data);
+                scheduleBenchmarkPoll();
+            } catch (error) {
+                benchmarkStartBtn.disabled = false;
+                benchmarkProgressEl.innerHTML = '<strong>' + t('start_failed') + '</strong><div>' +
+                    escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        function scheduleBenchmarkPoll() {
+            if (benchmarkPollTimer) clearTimeout(benchmarkPollTimer);
+            benchmarkPollTimer = setTimeout(pollBenchmark, 1500);
+        }
+
+        async function pollBenchmark() {
+            if (!currentBenchmarkId) return;
+            try {
+                const response = await fetch(
+                    API_BASE + '/api/benchmarks/frontieror/' +
+                    encodeURIComponent(currentBenchmarkId)
+                );
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.detail || t('benchmark_status_failed'));
+                renderBenchmarkJob(data);
+                await refreshServerRuns();
+                if (['queued', 'running'].includes(data.status)) scheduleBenchmarkPoll();
+            } catch (error) {
+                benchmarkProgressEl.hidden = false;
+                benchmarkProgressEl.innerHTML = '<strong>' + t('status_read_failed') + '</strong><div>' +
+                    escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        function renderBenchmarkJob(job) {
+            const active = ['queued', 'running'].includes(job.status);
+            const statusClass = job.status === 'completed' ? 'succeeded' : job.status;
+            const summary = job.report?.summary || {};
+            const metrics = job.status === 'completed'
+                ? '<div class="metric-grid">' + [
+                    [t('feasible'), summary.feasible ?? 0],
+                    [t('direct_contract'), summary.direct_contract ?? 0],
+                    [t('feasibility_rate'), formatPercent(summary.feasibility_rate)],
+                    [t('median_gap'), summary.gap_median == null ? '—' : formatScalar(summary.gap_median)],
+                ].map(([label, value]) =>
+                    '<div class="metric-card"><span>' + escapeHtml(label) + '</span><strong>' +
+                    escapeHtml(value) + '</strong></div>'
+                ).join('') + '</div>'
+                : '';
+            const logs = (job.progress || []).slice(-8).map(line =>
+                '<div>' + escapeHtml(line) + '</div>'
+            ).join('');
+            const runButtons = (job.report?.tasks || []).filter(item => item.run_id).map(item =>
+                '<button class="text-button benchmark-run-link" type="button" data-run-id="' +
+                escapeHtml(item.run_id) + '">' + escapeHtml(item.task_id) + ' · ' + t('view_run') + '</button>'
+            ).join('');
+            benchmarkProgressEl.hidden = false;
+            benchmarkProgressEl.innerHTML =
+                '<div class="benchmark-progress-head"><strong>' +
+                escapeHtml(
+                    'Feasibility Review ' +
+                    (job.feasibility_review_enabled ? t('enabled') : t('disabled'))
+                ) +
+                '</strong><span class="status-pill status-' + escapeHtml(statusClass) + '">' +
+                escapeHtml(job.status) + '</span></div>' +
+                '<div class="run-meta">' + escapeHtml((job.completed || 0) + ' / ' + job.total) +
+                '</div>' + metrics +
+                (logs ? '<div class="benchmark-progress-log">' + logs + '</div>' : '') +
+                (job.error ? '<div class="activity-body error">' + escapeHtml(job.error) + '</div>' : '') +
+                (runButtons ? '<div class="benchmark-result-runs">' + runButtons + '</div>' : '');
+            benchmarkStartBtn.disabled = active;
+            benchmarkCancelBtn.hidden = !active;
+            benchmarkTaskSelect.disabled = active;
+            benchmarkFeasibilityReviewEnabled.disabled = active;
+            benchmarkProgressEl.querySelectorAll('.benchmark-run-link').forEach(button => {
+                button.addEventListener('click', () => {
+                    benchmarkDialog.close();
+                    selectRun(button.dataset.runId);
+                });
+            });
+        }
+
+        async function cancelBenchmark() {
+            if (!currentBenchmarkId) return;
+            benchmarkCancelBtn.disabled = true;
+            try {
+                const response = await fetch(
+                    API_BASE + '/api/benchmarks/frontieror/' +
+                    encodeURIComponent(currentBenchmarkId) + '/cancel',
+                    { method: 'POST' }
+                );
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.detail || t('benchmark_cancel_failed'));
+                renderBenchmarkJob(data);
+                await refreshServerRuns();
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                benchmarkCancelBtn.disabled = false;
+            }
+        }
+
+        async function consumeSse(response, pendingRunId = null) {
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.detail || 'HTTP ' + response.status);
+            }
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            while (true) {
+                const part = await reader.read();
+                if (part.done) break;
+                buffer += decoder.decode(part.value, { stream: true });
+                let boundary = buffer.indexOf('\n\n');
+                while (boundary >= 0) {
+                    const block = buffer.slice(0, boundary);
+                    buffer = buffer.slice(boundary + 2);
+                    const line = block.split(/\r?\n/).find(value => value.startsWith('data:'));
+                    if (line) await handleRunEvent(JSON.parse(line.slice(5).trim()), pendingRunId);
+                    boundary = buffer.indexOf('\n\n');
+                }
+            }
+        }
+
+        async function handleRunEvent(event, pendingRunId = null) {
+            if (!isDisplayEvent(event)) return;
+            let state = ensureRunState(event.run_id);
+            const pendingState = pendingRunId ? pendingRuns.get(pendingRunId) : null;
+            if (pendingState) {
+                pendingState.resolvedRunId = event.run_id;
+                state.record = { ...pendingState.record, run_id: event.run_id };
+                pendingRuns.delete(pendingRunId);
+                const controller = activeControllers.get(pendingRunId);
+                if (controller) {
+                    activeControllers.delete(pendingRunId);
+                    activeControllers.set(event.run_id, controller);
+                }
+                if (selectedRunId === pendingRunId) {
+                    selectedRunId = event.run_id;
+                    localStorage.setItem(CURRENT_RUN_KEY, event.run_id);
+                }
+            }
+            mergeEvent(state, event);
+
+            if (event.type === 'stage_started') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, status: 'running', updated_at: event.timestamp };
+            } else if (event.type === 'stage_finished') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, updated_at: event.timestamp };
+            } else if (event.type === 'assistant_message') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, updated_at: event.timestamp };
+            } else if (event.type === 'user_message') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, status: 'running', updated_at: event.timestamp };
+            } else if (event.type === 'artifact_created') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, updated_at: event.timestamp };
+                await loadArtifacts(event.run_id);
+            } else if (event.type === 'clarification_requested') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, status: 'needs_clarification', updated_at: event.timestamp };
+            } else if (event.type === 'error') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, status: 'failed', error_summary: event.message, updated_at: event.timestamp };
+            } else if (event.type === 'run_finished') {
+                state.record = { ...(state.record || {}), run_id: event.run_id, status: event.payload?.status || state.record?.status, updated_at: event.timestamp };
+                await loadArtifacts(event.run_id);
+            }
+
+            syncRunListRecord(state.record);
+            renderCurrent();
+        }
+
+        async function startRun(message, files) {
+            const pendingRunId = makePendingRunId();
+            const pendingState = newRunState(pendingRunId);
+            pendingState.record = {
+                run_id: pendingRunId,
+                status: 'running',
+                command: message.slice(0, 80) || t('new_run'),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                config: { source: 'web-display' },
+            };
+            pendingRuns.set(pendingRunId, pendingState);
+            selectedRunId = pendingRunId;
+            renderCurrent();
+            const controller = new AbortController();
+            activeControllers.set(pendingRunId, controller);
+            updateInputState(pendingState);
+            try {
+                const form = new FormData();
+                form.append('prompt', message);
+                form.append('title', message.slice(0, 80));
+                form.append('view', DISPLAY_VIEW);
+                files.forEach(item => form.append('files', item.file, item.file.name));
+                const response = await fetch(API_BASE + '/api/runs', {
+                    method: 'POST',
+                    body: form,
+                    signal: controller.signal,
+                });
+                await consumeSse(response, pendingRunId);
+                const runId = pendingState.resolvedRunId;
+                if (runId) {
+                    await loadRun(runId);
+                }
+                await refreshServerRuns();
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    if (!pendingState.resolvedRunId) {
+                        pendingState.record.status = 'failed';
+                        pendingState.record.updated_at = new Date().toISOString();
+                        pendingState.events.push({
+                            type: 'error',
+                            message: error.message,
+                            timestamp: new Date().toISOString(),
+                            sequence: 0,
+                        });
+                        pendingRuns.set(pendingRunId, pendingState);
+                    }
+                    renderCurrent();
+                }
+            } finally {
+                const runId = pendingState.resolvedRunId;
+                if (activeControllers.get(pendingRunId) === controller) activeControllers.delete(pendingRunId);
+                if (runId && activeControllers.get(runId) === controller) activeControllers.delete(runId);
+                renderCurrent();
+            }
+        }
+
+        async function continueRun(runId, message) {
+            if (isRunBusy(runId)) return;
+            const controller = new AbortController();
+            activeControllers.set(runId, controller);
+            updateInputState(currentState());
+            try {
+                const response = await fetch(API_BASE + '/api/runs/' + encodeURIComponent(runId) + '/continue?view=' + DISPLAY_VIEW, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message }),
+                    signal: controller.signal,
+                });
+                await consumeSse(response);
+                await loadRun(runId);
+                await refreshServerRuns();
+            } catch (error) {
+                if (error.name !== 'AbortError') alert(error.message);
+            } finally {
+                if (activeControllers.get(runId) === controller) activeControllers.delete(runId);
+                renderCurrent();
+            }
+        }
+
+        function submitClarification(questions) {
+            if (!selectedRunId || isPendingRunId(selectedRunId) || isRunBusy(selectedRunId)) return;
+            const form = document.getElementById('clarification-form');
+            const answers = questions.map((question, index) => {
+                const option = form.querySelector('input[name="q-' + index + '-option"]:checked')?.value || '';
+                const text = form.querySelector('textarea[name="q-' + index + '-text"]')?.value.trim() || '';
+                return text || option;
+            });
+            const missing = answers.findIndex(answer => !answer);
+            if (missing >= 0) {
+                form.querySelector('[data-question-index="' + missing + '"] textarea')?.focus();
+                return;
+            }
+            const message = formatClarificationAnswers(questions, answers);
+            form.querySelectorAll('input, textarea, button').forEach(control => {
+                control.disabled = true;
+            });
+            const submit = document.getElementById('clarification-submit');
+            if (submit) submit.textContent = t('submitting');
+            continueRun(selectedRunId, message);
+        }
+
+        function formatClarificationAnswers(questions, answers) {
+            if (!questions.length) return answers[0] || '';
+            const blocks = ['澄清回答：'];
+            questions.forEach((question, index) => {
+                const id = question.id || ('Q' + (index + 1));
+                const label = String(id).toLowerCase().startsWith('q') ? id : ('Q' + id);
+                const text = question.text || question.question || ('问题 ' + (index + 1));
+                blocks.push('[' + label + '] ' + text + '\n回答：' + answers[index]);
+            });
+            return blocks.join('\n\n');
+        }
+
+        async function cancelSelectedRun() {
+            const runId = selectedRunId;
+            const controller = activeControllers.get(runId);
+            if (controller) controller.abort();
+            if (!runId || isPendingRunId(runId)) return;
+            try {
+                await fetch(API_BASE + '/api/runs/' + encodeURIComponent(runId) + '/cancel', { method: 'POST' });
+                await loadRun(runId);
+                await refreshServerRuns();
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function sendMessage() {
+            const message = userInput.value.trim() ||
+                (attachments.length ? '请根据上传的数据进行优化建模与求解。' : '');
+            const state = currentState();
+            if (!message || isStateBusy(state)) return;
+            const files = attachments.slice();
+            attachments = [];
+            renderAttachmentBar();
+            userInput.value = '';
+            if (selectedRunId && !isPendingRunId(selectedRunId) && state.record?.status === 'needs_clarification') {
+                continueRun(selectedRunId, message);
+            } else {
+                startRun(message, files);
+            }
+        }
+
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', event => {
+            for (const file of event.target.files || []) {
+                if (ALLOWED_FILE.test(file.name)) attachments.push({ file });
+                else alert(t('unsupported_file') + file.name);
+            }
+            event.target.value = '';
+            renderAttachmentBar();
+        });
+        composeForm.addEventListener('submit', event => {
+            event.preventDefault();
+            sendMessage();
+        });
+        userInput.addEventListener('keydown', event => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+        userInput.addEventListener('input', () => {
+            userInput.style.height = 'auto';
+            userInput.style.height = Math.min(userInput.scrollHeight, 130) + 'px';
+        });
+        refreshRunsBtn.addEventListener('click', refreshServerRuns);
+        newRunBtn.addEventListener('click', () => {
+            selectedRunId = null;
+            localStorage.removeItem(CURRENT_RUN_KEY);
+            renderCurrent();
+            userInput.focus();
+        });
+        cancelRunBtn.addEventListener('click', cancelSelectedRun);
+        benchmarkOpenBtn.addEventListener('click', openBenchmarkDialog);
+        benchmarkCloseBtn.addEventListener('click', () => benchmarkDialog.close());
+        benchmarkStartBtn.addEventListener('click', startBenchmark);
+        benchmarkCancelBtn.addEventListener('click', cancelBenchmark);
+        languageSelect.addEventListener('change', event => setLanguage(event.target.value));
+
+        applyStaticTranslations();
+        renderAttachmentBar();
+        renderCurrent();
+        refreshServerRuns();
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "n": "<int> Number of entities (and positions) to be assigned in the one-to-one matching.",
+  "A": "<list[list[int]], shape [n][n]> First cost matrix where entry (i,j) represents the cost contribution from matrix A when entity i is assigned to position j.",
+  "B": "<list[list[int]], shape [n][n]> Second cost matrix where entry (i,j) represents the cost contribution from matrix B when entity i is assigned to position j.",
+  "C": "<list[list[int]], shape [n][n]> Linear cost matrix where entry (i,j) represents the linear cost incurred when entity i is assigned to position j."
+}

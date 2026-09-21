@@ -1,0 +1,16 @@
+{
+    "paper_id":  "barnhart2000",
+    "paper_title":  "Using Branch-and-Price-and-Cut to Solve Origin-Destination Integer Multicommodity Flow Problems",
+    "publication":  "Operations Research",
+    "year":  2000,
+    "direction":  "min",
+    "problem_class":  "Network Design \u0026 Flow",
+    "category":  "planning",
+    "formulation_type":  "IP",
+    "application_field":  "Transportation \u0026 Logistics",
+    "avg_num_var":  76635.0,
+    "avg_num_int_var":  76635.0,
+    "avg_num_constr":  29380.0,
+    "source_link":  "https://doi.org/10.1287/opre.48.2.318.12378",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

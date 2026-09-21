@@ -1,0 +1,16 @@
+{
+    "paper_id":  "bertsimas2024",
+    "paper_title":  "A Stochastic Benders Decomposition Scheme for Large-Scale Stochastic Network Design",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2024,
+    "direction":  "min",
+    "problem_class":  "Network Design \u0026 Flow",
+    "category":  "planning",
+    "formulation_type":  "Stochastic/Robust/DRO",
+    "application_field":  "Telecommunications \u0026 Networking",
+    "avg_num_var":  1170900.0,
+    "avg_num_int_var":  900.0,
+    "avg_num_constr":  322501.0,
+    "source_link":  "https://pubsonline.informs.org/doi/10.1287/ijoc.2023.0074",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

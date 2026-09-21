@@ -1,0 +1,57 @@
+{
+  "objective_value": "<float> Total cost equal to the sum of opened operating-room fixed costs, surgeon-hospital-day fixed costs, and overtime costs, minus the rewards earned from scheduled optional patients.",
+  "assignments": [
+    {
+      "patient_id": "<int> Identifier of the scheduled patient.",
+      "surgeon_id": "<int> Identifier of the surgeon assigned to perform this patient's surgery.",
+      "hospital_id": "<int> Identifier of the hospital where this patient's surgery is performed.",
+      "day": "<int> Day in the planning horizon on which this patient's surgery takes place.",
+      "or_id": "<int> Identifier of the operating room within the chosen hospital used for this patient.",
+      "is_mandatory": "<bool> Whether the scheduled patient is a mandatory case (true) or an optional case (false).",
+      "T_ps": "<float> Total operating-room occupation time for this patient with the assigned surgeon, equal to preparation time plus surgeon-specific surgical procedure time plus cleaning time.",
+      "finish_time": "<float> Clock time within the day at which the surgical procedure on this patient is completed.",
+      "surgery_start_time": "<float> Clock time within the day at which the surgeon begins the surgical procedure on this patient.",
+      "room_entry_time": "<float> Clock time within the day at which the patient enters the operating room and preparation begins.",
+      "room_exit_time": "<float> Clock time within the day at which the patient leaves the operating room after cleaning is finished."
+    }
+  ],
+  "opened_ors": [
+    {
+      "hospital_id": "<int> Identifier of the hospital containing the opened operating room.",
+      "day": "<int> Day in the planning horizon on which the operating room is opened.",
+      "or_id": "<int> Identifier of the operating room that is opened in the given hospital on the given day.",
+      "regular_time": "<int> Regular non-overtime session length available in this operating room on this day.",
+      "completion_time": "<float> Clock time at which the last surgery in this operating room finishes, including its subsequent cleaning.",
+      "overtime": "<float> Amount of overtime used in this operating room beyond its regular session length."
+    }
+  ],
+  "surgeon_assignments": [
+    {
+      "surgeon_id": "<int> Identifier of the surgeon deployed to a hospital on a given day.",
+      "hospital_id": "<int> Identifier of the hospital to which the surgeon is deployed on this day.",
+      "day": "<int> Day in the planning horizon on which the surgeon works at the assigned hospital.",
+      "start_time": "<float> Clock time at which the surgeon begins working at the assigned hospital on this day.",
+      "end_time": "<float> Clock time at which the surgeon finishes working at the assigned hospital on this day."
+    }
+  ],
+  "or_sequences": [
+    {
+      "hospital_id": "<int> Identifier of the hospital containing the operating room shared by the two patients.",
+      "day": "<int> Day in the planning horizon on which both patients are scheduled in the same operating room.",
+      "or_id": "<int> Identifier of the operating room in which both patients are scheduled on this day.",
+      "patient_p": "<int> Identifier of the first patient in the ordered pair sharing this operating room on this day.",
+      "patient_k": "<int> Identifier of the second patient in the ordered pair sharing this operating room on this day.",
+      "p_after_k": "<int> Equals 1 if patient_p is operated on after patient_k in this operating room, and 0 if patient_k is operated on after patient_p."
+    }
+  ],
+  "surgeon_sequences": [
+    {
+      "hospital_id": "<int> Identifier of the hospital where the two patients share the same surgeon on the given day.",
+      "day": "<int> Day in the planning horizon on which the surgeon operates on both patients.",
+      "surgeon_id": "<int> Identifier of the surgeon who performs both patients' surgeries at this hospital on this day.",
+      "patient_p": "<int> Identifier of the first patient in the ordered pair sharing this surgeon on this day.",
+      "patient_k": "<int> Identifier of the second patient in the ordered pair sharing this surgeon on this day.",
+      "p_after_k": "<int> Equals 1 if patient_p's surgery is performed after patient_k's by this surgeon, and 0 if patient_k's surgery is performed after patient_p's."
+    }
+  ]
+}

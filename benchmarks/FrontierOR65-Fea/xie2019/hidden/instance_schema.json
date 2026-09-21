@@ -1,0 +1,44 @@
+{
+    "num_vessels": "<int> Number of vessels to be served at the terminal.",
+    "num_berths": "<int> Number of discrete berths available at the terminal.",
+    "total_qc": "<int> Total number of quay cranes available across the terminal at each time step.",
+    "num_big_profiles": "<int> Number of QC profiles to generate for large vessels.",
+    "num_small_profiles": "<int> Number of QC profiles to generate for small vessels.",
+    "time_horizon_hours": "<int> Length of the planning horizon in hours.",
+    "num_shifts_per_step": "<int> Total number of working shifts spanning the planning horizon.",
+    "time_steps_per_shift": "<int> Number of equal-length time steps within each working shift.",
+    "total_time_steps": "<int> Total number of time steps in the planning horizon.",
+    "c1": "<int> Unit cost penalty for deviating from a vessel's least-cost berthing position.",
+    "c2": "<int> Unit cost penalty for deviating from a vessel's expected arrival time.",
+    "vessels": [
+        {
+            "id": "<int> Zero-based index identifying the vessel.",
+            "a": "<int> Earliest feasible time step at which the vessel can begin service.",
+            "b": "<int> Latest feasible time step at which the vessel can begin service.",
+            "k_bar": "<int> Least-cost berth index for the vessel, closest to its container yard block.",
+            "t_bar": "<int> Expected arrival time step agreed upon between the carrier and terminal.",
+            "duration_hours": "<int> Expected total handling duration of the vessel in hours."
+        }
+    ],
+    "berths": [
+        {
+            "id": "<int> Zero-based index identifying the berth.",
+            "a_k": "<int> First time step at which the berth is available for service.",
+            "b_k": "<int> Last time step at which the berth is available for service."
+        }
+    ],
+    "qc_profiles": {
+        "big": {
+            "min_qc": "<int> Minimum number of quay cranes per shift in a large-vessel profile.",
+            "max_qc": "<int> Maximum number of quay cranes per shift in a large-vessel profile.",
+            "min_handling_shifts": "<int> Minimum handling duration in shifts for a large-vessel profile.",
+            "max_handling_shifts": "<int> Maximum handling duration in shifts for a large-vessel profile."
+        },
+        "small": {
+            "min_qc": "<int> Minimum number of quay cranes per shift in a small-vessel profile.",
+            "max_qc": "<int> Maximum number of quay cranes per shift in a small-vessel profile.",
+            "min_handling_shifts": "<int> Minimum handling duration in shifts for a small-vessel profile.",
+            "max_handling_shifts": "<int> Maximum handling duration in shifts for a small-vessel profile."
+        }
+    }
+}

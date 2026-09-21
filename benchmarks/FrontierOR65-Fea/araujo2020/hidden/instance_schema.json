@@ -1,0 +1,41 @@
+{
+  "projects": [
+    {
+      "project_id": "<int> Unique identifier for the project.",
+      "release_date": "<int> Earliest time period at which any job in this project may start.",
+      "num_jobs": "<int> Total number of jobs in this project, including artificial source and sink jobs.",
+      "artificial_source_job_id": "<int> Job identifier of the zero-duration dummy job marking the project start.",
+      "artificial_sink_job_id": "<int> Job identifier of the zero-duration dummy job marking the project end."
+    }
+  ],
+  "resources": {
+    "renewable": [
+      {
+        "resource_id": "<int> Unique identifier for this renewable resource.",
+        "capacity": "<int> Maximum total consumption allowed across all jobs being processed simultaneously in any single time period."
+      }
+    ],
+    "nonrenewable": [
+      {
+        "resource_id": "<int> Unique identifier for this nonrenewable resource.",
+        "capacity": "<int> Maximum total consumption allowed across all jobs over the entire planning horizon."
+      }
+    ]
+  },
+  "jobs": [
+    {
+      "job_id": "<int> Unique identifier for this job.",
+      "project_id": "<int> Identifier of the project this job belongs to.",
+      "type": "<str> Role of the job: 'artificial_source' for the project start marker, 'artificial_sink' for the project end marker, or 'real' for an actual task.",
+      "successors": "<list[int]> Job identifiers that must not start before this job finishes.",
+      "modes": [
+        {
+          "mode_id": "<int> Unique identifier for this execution mode within the job.",
+          "duration": "<int> Number of time periods required to complete the job when executed in this mode.",
+          "renewable_consumption": "<list[int], length num_renewable_resources> Amount of each renewable resource consumed per time period while the job is being processed in this mode.",
+          "nonrenewable_consumption": "<list[int], length num_nonrenewable_resources> Amount of each nonrenewable resource consumed over the entire execution of the job in this mode."
+        }
+      ]
+    }
+  ]
+}

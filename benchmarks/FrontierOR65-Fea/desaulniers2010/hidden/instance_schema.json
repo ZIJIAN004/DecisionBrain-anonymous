@@ -1,0 +1,29 @@
+{
+  "num_customers": "<int> Number of customers to be served.",
+  "vehicle_capacity": "<int> Maximum total quantity a single vehicle can carry across all its deliveries.",
+  "num_vehicles_upper_bound": "<int> Maximum number of vehicles available in the fleet.",
+  "scheduling_horizon": "<int> End of the planning period within which all vehicles must depart from and return to the depot.",
+  "depot": {
+    "id": "<int> Identifier for the depot node.",
+    "x": "<int> Horizontal coordinate of the depot location.",
+    "y": "<int> Vertical coordinate of the depot location.",
+    "time_window": "<list[int], length 2> Earliest departure and latest return time for all vehicles at the depot.",
+    "service_time": "<int> Time spent at the depot before departing (always zero).",
+    "demand": "<int> Demand at the depot (always zero)."
+  },
+  "customers": [
+    {
+      "id": "<int> Unique identifier for the customer, numbered from 1 to num_customers.",
+      "x": "<int> Horizontal coordinate of the customer location.",
+      "y": "<int> Vertical coordinate of the customer location.",
+      "demand": "<int> Quantity of goods the customer requires to be delivered.",
+      "time_window": "<list[int], length 2> Earliest and latest time at which service may begin at this customer.",
+      "service_time": "<int> Time a vehicle spends at this customer regardless of the quantity delivered."
+    }
+  ],
+  "distance_matrix": "<list[list[float]], shape [num_customers+1][num_customers+1]> Travel distance between each pair of locations, where row and column 0 is the depot and 1 through num_customers are customers.",
+  "travel_time_equals_distance": "<bool> Whether the travel time between two locations equals the distance between them.",
+  "triangle_inequality": "<bool> Whether distances and travel times satisfy the triangle inequality.",
+  "split_deliveries_allowed": "<bool> Whether a customer's demand may be fulfilled by deliveries from multiple vehicles.",
+  "service_time_independent_of_quantity": "<bool> Whether the service time at a customer is the same regardless of the quantity delivered."
+}

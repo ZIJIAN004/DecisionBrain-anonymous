@@ -1,0 +1,16 @@
+{
+    "paper_id":  "muter2010",
+    "paper_title":  "Combination of Metaheuristic and Exact Algorithms for Solving Set Covering-Type Optimization Problems",
+    "publication":  "INFORMS Journal on Computing",
+    "year":  2010,
+    "direction":  "min",
+    "problem_class":  "Other (Set Covering / Partitioning)",
+    "category":  "operational",
+    "formulation_type":  "BIP",
+    "application_field":  "Transportation \u0026 Logistics",
+    "avg_num_var":  526526.0,
+    "avg_num_int_var":  526526.0,
+    "avg_num_constr":  33.0,
+    "source_link":  "https://pubsonline.informs.org/doi/10.1287/ijoc.1090.0376",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

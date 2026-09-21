@@ -1,0 +1,16 @@
+{
+    "paper_id":  "rahmaniani2020",
+    "paper_title":  "The Benders Dual Decomposition Method",
+    "publication":  "Operations Research",
+    "year":  2020,
+    "direction":  "min",
+    "problem_class":  "Stochastic / Robust / Bilevel Optimization",
+    "category":  "planning",
+    "formulation_type":  "Stochastic/Robust/DRO",
+    "application_field":  "Foundational / Theoretical",
+    "avg_num_var":  1750050.0,
+    "avg_num_int_var":  50.0,
+    "avg_num_constr":  52501.0,
+    "source_link":  "https://doi.org/10.1287/opre.2019.1892",
+    "origin":  "FrontierOR (SmartOR/FrontierOR, CC-BY-4.0)"
+}

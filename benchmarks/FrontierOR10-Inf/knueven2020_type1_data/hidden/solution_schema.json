@@ -1,0 +1,10 @@
+{
+  "objective_value": "<float> Total operating cost ($) over the planning horizon, comprising no-load costs, piecewise linear production costs, and startup costs.",
+  "schedule": {
+    "<generator_id>": {
+      "u": "<list[int], length num_time_periods> Whether the generator is on (1) or off (0) in each time period.",
+      "p": "<list[float], length num_time_periods> Power output (MW) of the generator in each time period.",
+      "pb": "<list[float], length num_time_periods> Maximum power (MW) available from the generator for reserve purposes in each time period."
+    }
+  }
+}

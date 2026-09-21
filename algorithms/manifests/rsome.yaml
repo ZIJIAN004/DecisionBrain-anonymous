@@ -1,0 +1,291 @@
+schema_version: "1.3"
+
+id: rsome
+display_name: RSOME
+status: experimental
+kind: python_library
+summary: >-
+  RSOME 1.3.1 models robust and distributionally robust optimization problems,
+  reformulates supported uncertainty sets, and delegates deterministic models to an explicit solver adapter.
+
+algorithm:
+  problem_families:
+    - robust_optimization
+    - distributionally_robust_optimization
+  method: robust_optimization_modeling
+  method_class: exact
+  optimality: exact_or_incumbent
+  supports_warm_start: false
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - robust_optimization
+    - distributionally_robust_optimization
+    - uncertainty_sets
+    - ambiguity_sets
+    - scenario_wise_ambiguity_sets
+    - linear_decision_rules
+    - robust_counterpart_reformulation
+    - deterministic_model_export
+    - multiple_solver_adapters
+  limitations:
+    - RSOME requires the Agent to formulate decisions, uncertainty, support sets, ambiguity sets, objectives, and constraints.
+    - RSOME does not implement arbitrary stochastic decomposition or automatically discover an ambiguity set from business data.
+    - Solver support for integer, conic, exponential-cone, and semidefinite models differs by adapter.
+    - A non-NaN result from model.optimal() is not by itself a portable proof-status interpretation across adapters.
+    - RSOME does not emit DecisionBrain's problem-specific solution schema directly.
+
+selection:
+  required_features:
+    - uncertain_parameters_and_their_support_are_explicit
+    - robust_or_distributionally_robust_semantics_are_required
+    - a_compatible_deterministic_solver_adapter_is_available
+  good_fit_when:
+    - Decisions must remain feasible over a declared uncertainty set.
+    - Worst-case expected performance is optimized over a declared ambiguity set.
+    - The supported RSOME reformulation maps to an installed deterministic solver.
+  reject_when:
+    - Uncertainty or ambiguity assumptions cannot be stated and justified.
+    - The required cone or variable type is unsupported by every available adapter.
+    - The task needs a decomposition algorithm that RSOME does not provide.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: Scale depends on reformulation growth, scenario count, cone structure, selected adapter, and runtime budget.
+
+distribution:
+  package: rsome
+  verified_version: 1.3.1
+  compatible_version_spec: ">=1.3.1,<1.4.0"
+  import_name: rsome
+  requires_python: ">=3.8"
+  license_spdx: GPL-3.0-only
+  homepage: https://xiongpengnus.github.io/rsome/
+  documentation: https://xiongpengnus.github.io/rsome/
+  source_repository: https://github.com/XiongPengNUS/rsome
+  native_extensions: false
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: py3-none-any
+    self_compiled: false
+    modules:
+      - rsome
+      - rsome.ro
+      - rsome.dro
+  verified_environment:
+    conda_environment: DecisionBrain/venv
+    python_version: "3.12"
+    platform: windows-amd64
+
+interface:
+  profile: rsome
+  preferred_api: modeling_suite
+  imports:
+    - from rsome import ro
+    - from rsome import dro
+  solvers:
+    - id: robust_optimization
+      method: robust_optimization
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from rsome import ro
+      constructor: rsome.ro.Model(name=None)
+      model_builder:
+        constructor: ro.Model(name=None)
+        methods:
+          - model.dvar
+          - model.rvar
+          - model.ldr
+          - model.min
+          - model.max
+          - model.minmax
+          - model.maxmin
+          - model.st
+          - constraint.forall
+          - model.do_math
+        alternative_inputs:
+          - RSOME expressions and uncertainty-set constraints
+      call: model.solve(solver=None, display=True, log=False, params={})
+      supports_warm_start: false
+      supports_random_seed: true
+      supports_time_limit: true
+      stopping_criteria:
+        - name: selected_adapter_parameters
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_deterministic_counterpart_solve
+          caveat: RSOME passes params to the selected adapter; parameter names and support are adapter-specific.
+      important_parameters:
+        solver: Imported RSOME solver adapter module; None uses the SciPy default solver.
+        params: Adapter-specific parameter dictionary; verify the chosen adapter accepts the intended limit and seed.
+      result:
+        type: rsome.lp.Solution
+        fields:
+          objective: model.get()
+          variable_value: variable.get()
+          available_result: model.optimal()
+          solver: model.solution.solver
+          status: model.solution.status
+          runtime_seconds: model.solution.time
+        warning: Interpret status according to the selected adapter; model.optimal() checks result availability rather than a universal proof enum.
+    - id: distributionally_robust_optimization
+      method: distributionally_robust_optimization
+      method_class: exact
+      optimality: exact_or_incumbent
+      imports:
+        - from rsome import dro
+      constructor: rsome.dro.Model(scens=1, name=None)
+      model_builder:
+        constructor: dro.Model(scens=number_or_labels, name=None)
+        methods:
+          - model.dvar
+          - model.rvar
+          - model.ambiguity
+          - ambiguity_set.suppset
+          - ambiguity_set.exptset
+          - ambiguity_set.probset
+          - model.minsup
+          - model.maxinf
+          - model.st
+          - model.do_math
+        alternative_inputs:
+          - scenario labels and event-wise ambiguity-set constraints
+      call: model.solve(solver=None, display=True, log=False, params={})
+      supports_warm_start: false
+      supports_random_seed: true
+      supports_time_limit: true
+      stopping_criteria:
+        - name: selected_adapter_parameters
+          budget_unit: wall_clock_seconds
+          workload_stable: false
+          environment_sensitive: true
+          recommended_uses:
+            - bounded_dro_counterpart_solve
+          caveat: RSOME passes params to the selected adapter; parameter names and support are adapter-specific.
+      important_parameters:
+        scens: Scenario count or labels used by event-wise decisions and ambiguity sets.
+        solver: Imported RSOME solver adapter module; None uses the SciPy default solver.
+        params: Adapter-specific parameter dictionary.
+      result:
+        type: rsome.lp.Solution
+        fields:
+          objective: model.get()
+          variable_value: variable.get()
+          available_result: model.optimal()
+          solver: model.solution.solver
+          status: model.solution.status
+          runtime_seconds: model.solution.time
+        warning: A solved deterministic reformulation is only as valid as the declared support, probability, and expectation sets.
+  solver_adapters:
+    - id: clp
+      module: rsome.clp_solver
+      dependency: cylp
+      installed: false
+      guarantee_boundary: Supports linear and mixed-integer linear deterministic counterparts through CyLP/CBC.
+    - id: copt
+      module: rsome.cpt_solver
+      dependency: coptpy
+      installed: false
+      guarantee_boundary: Requires a separately installed and licensed COPT runtime.
+    - id: cplex
+      module: rsome.cpx_solver
+      dependency: cplex
+      installed: false
+      guarantee_boundary: Requires a separately installed and licensed CPLEX runtime.
+    - id: ecos
+      module: rsome.eco_solver
+      dependency: ecos
+      installed: false
+      guarantee_boundary: Cone and integer support is limited to what the ECOS adapter and ECOS_BB provide.
+    - id: gurobi
+      module: rsome.grb_solver
+      dependency: gurobipy
+      installed: true
+      guarantee_boundary: Requires a usable Gurobi license and supports only structures translated by this adapter.
+    - id: mosek
+      module: rsome.msk_solver
+      dependency: mosek
+      installed: false
+      guarantee_boundary: Requires a separately installed and licensed MOSEK runtime.
+    - id: ortools
+      module: rsome.ort_solver
+      dependency: ortools
+      installed: true
+      guarantee_boundary: This adapter targets linear and mixed-integer linear deterministic counterparts.
+    - id: scipy
+      module: rsome.lpg_solver
+      dependency: scipy
+      installed: true
+      guarantee_boundary: Default backend uses scipy.optimize linprog or milp and ignores unsupported cone structures with warnings.
+  facts:
+    default_solver: scipy
+    reformulation_boundary: >-
+      RSOME reformulates only structures represented by its modeling API; the deterministic solver proves facts about that reformulation, not unencoded business semantics.
+    optimal_flag_boundary: >-
+      model.optimal() returns true when the stored solution objective is not NaN and must not be treated as a cross-adapter proof-status enum.
+    ambiguity_set_boundary: >-
+      DRO validity depends on explicitly defining justified support, expectation, and probability sets for the scenario events used by the model.
+
+solver_documentation:
+  - id: robust_optimization
+    summary: Build and solve robust optimization models whose constraints must hold over an uncertainty set.
+    minimal_call_example: |
+      from rsome import ro
+      model = ro.Model()
+      x = model.dvar()
+      z = model.rvar()
+      model.min(x)
+      model.st((x >= 1 + z).forall(z >= -1, z <= 1))
+      model.solve(display=False)
+  - id: distributionally_robust_optimization
+    summary: Build and solve distributionally robust models over ambiguity sets of probability distributions.
+    minimal_call_example: |
+      from rsome import dro
+      model = dro.Model(scens=2)
+      x = model.dvar()
+      z = model.rvar()
+      ambiguity = model.ambiguity()
+      ambiguity.suppset(z >= 0, z <= 1)
+      model.minsup(x, ambiguity)
+      model.st((x >= z).forall(ambiguity))
+      model.solve(display=False)
+
+agent_guidance:
+  algorithm_design:
+    - Select robust_optimization or distributionally_robust_optimization explicitly and provide a complete formulation.
+    - State every uncertainty source, support set, ambiguity assumption, decision stage, and adaptivity rule.
+    - Select an installed adapter whose supported variable and cone structure covers the deterministic reformulation.
+  solving:
+    - Import only the selected model API and solver adapter after its dependency check succeeds.
+    - Record reformulation size, adapter, adapter status, objective, and runtime.
+    - Map RSOME variable arrays back to business IDs and run feasibility_checker.py on the business solution.
+  minimal_call_example: |
+    from rsome import ro
+
+    model = ro.Model("robust-bound")
+    x = model.dvar()
+    z = model.rvar()
+    model.min(x)
+    model.st((x >= z).forall(z >= 0, z <= 1))
+    model.solve(display=False)
+    if not model.optimal():
+        raise RuntimeError("RSOME returned no usable solution")
+    objective = model.get()
+    value = float(x.get())
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; from rsome import ro, dro;
+      assert version('rsome') == '1.3.1'; print(version('rsome'))"
+    expected_version: 1.3.1
+  acceptance_requirements:
+    - Both ro.Model and dro.Model import in Python 3.12.
+    - A minimal robust model solves through the default SciPy adapter.
+    - The selected optional solver adapter imports before a production solve.
+    - The generated solution conforms to solution_schema.json and passes feasibility_checker.py.
+    - solver_result.json records model id, RSOME version, adapter, status, objective, and runtime.
+  benchmark_status: not_benchmarked

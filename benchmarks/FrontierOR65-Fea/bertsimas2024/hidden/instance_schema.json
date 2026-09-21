@@ -1,0 +1,16 @@
+{
+  "num_nodes": "<int> Total number of nodes in the directed network.",
+  "num_commodities": "<int> Total number of distinct commodities to be shipped through the network.",
+  "num_scenarios": "<int> Total number of equally likely demand scenarios.",
+  "num_edges": "<int> Total number of directed edges (arcs) in the network.",
+  "gamma": "<float> Regularization parameter controlling the strength of the quadratic congestion penalty on edge flows.",
+  "c_0": "<int> Maximum number of edges that may be activated (constructed) across the entire network.",
+  "node_positions": "<list[list[float]], shape [num_nodes][2]> Two-dimensional coordinates of each node in the unit square.",
+  "edges": "<list[list[int]], shape [num_edges][2]> Ordered pair of origin and destination node indices for each directed edge.",
+  "construction_costs": "<list[float], length num_edges> Fixed cost incurred for activating (constructing) each edge.",
+  "flow_costs": "<list[float], length num_edges> Per-unit transportation cost for shipping one unit of any commodity along each edge.",
+  "edge_lengths": "<list[float], length num_edges> Euclidean distance between the endpoints of each edge.",
+  "capacities": "<list[float], length num_edges> Maximum total flow of all commodities combined that each edge can carry in any scenario.",
+  "commodity_destinations": "<list[int], length num_commodities> Index of the single destination (sink) node for each commodity.",
+  "demands": "<list[list[list[float]]], shape [num_scenarios][num_commodities][num_nodes]> Net supply (positive) or demand (negative) at each node for each commodity in each scenario, where each commodity's values sum to zero across all nodes."
+}

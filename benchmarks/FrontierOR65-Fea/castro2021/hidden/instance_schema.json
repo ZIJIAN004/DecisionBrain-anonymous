@@ -1,0 +1,18 @@
+{
+  "n": "<int> Number of suppliers in the transportation network.",
+  "m": "<int> Number of customers in the transportation network.",
+  "num_arcs": "<int> Total number of shipping arcs in the bipartite network, equal to n times m.",
+  "num_variables": "<int> Total number of flow variables in the model, equal to n times m plus n.",
+  "num_constraints": "<int> Total number of constraints in the model, equal to m plus n.",
+  "cost_type": "<str> Type of arc cost function used: 'linear_integer', 'linear_fractional', or 'quadratic'.",
+  "relative_demand_slack": "<float> Ratio of excess total supply beyond total demand to total supply.",
+  "total_supply": "<int> Sum of all supplier capacities.",
+  "total_demand": "<int> Sum of all customer demands.",
+  "arc_capacity": "<int> Upper bound on the flow that can be shipped on any single arc.",
+  "supplier_locations": "<list[list[float]], shape [n][2]> Two-dimensional spatial coordinates for each supplier.",
+  "customer_locations": "<list[list[float]], shape [m][2]> Two-dimensional spatial coordinates for each customer.",
+  "supplies": "<list[int], length n> Maximum total flow that each supplier can ship across all its outgoing arcs.",
+  "demands": "<list[int], length m> Quantity of flow that must arrive at each customer from all suppliers combined.",
+  "linear_costs": "<list[list[int|float]], shape [n][m]> Per-unit shipping cost on the arc from each supplier to each customer.",
+  "quadratic_costs": "<list[list[int|float]], shape [n][m]> Quadratic cost coefficient on the arc from each supplier to each customer, applied to the square of the flow."
+}

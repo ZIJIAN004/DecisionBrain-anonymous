@@ -1,0 +1,53 @@
+{
+  "parameters": {
+    "n_trips": "<int> Total number of trips to be scheduled.",
+    "m_depots": "<int> Number of depots from which vehicles are dispatched.",
+    "class_type": "<str> Depot placement class governing how depot locations are chosen within the service area.",
+    "square_size": "<float> Side length of the square service area in which relief points and depots are located.",
+    "n_relief_points": "<int> Number of distinct relief points where drivers can start or end trips."
+  },
+  "relief_points": "<list[list[float]], shape [n_relief_points][2]> Two-dimensional coordinates of each relief point within the service area.",
+  "depots": "<list[list[float]], shape [m_depots][2]> Two-dimensional coordinates of each depot within the service area.",
+  "vehicle_capacities": "<list[int], length m_depots> Maximum number of vehicles available at each depot.",
+  "trips": [
+    {
+      "trip_id": "<int> Unique identifier for the trip (1-indexed).",
+      "trip_type": "<str> Whether the trip is 'short' (non-circular) or 'long' (circular, returning to its starting relief point).",
+      "start_relief_point_index": "<int> Index into the relief_points array for the location where this trip begins (0-indexed).",
+      "end_relief_point_index": "<int> Index into the relief_points array for the location where this trip ends (0-indexed).",
+      "start_time": "<int> Scheduled departure time of the trip in minutes from midnight.",
+      "end_time": "<int> Scheduled arrival time of the trip in minutes from midnight.",
+      "travel_time_within_trip": "<float> Euclidean distance between the starting and ending relief points of this trip."
+    }
+  ],
+  "compatible_arcs": [
+    {
+      "from_trip": "<int> Trip identifier of the preceding trip in a consecutive pairing (1-indexed).",
+      "to_trip": "<int> Trip identifier of the following trip in a consecutive pairing (1-indexed).",
+      "travel_time": "<float> Euclidean distance from the ending relief point of the preceding trip to the starting relief point of the following trip.",
+      "cost": "<int> Cost of assigning these two trips consecutively to the same vehicle, combining travel and idle time."
+    }
+  ],
+  "depot_to_trip_costs": [
+    {
+      "depot": "<int> Depot identifier (1-indexed).",
+      "trip": "<int> Trip identifier (1-indexed).",
+      "distance": "<float> Euclidean distance from the depot to the trip's starting relief point.",
+      "cost": "<int> Cost for a vehicle to depart from the depot to begin this trip, including a fixed vehicle usage charge."
+    }
+  ],
+  "trip_to_depot_costs": [
+    {
+      "trip": "<int> Trip identifier (1-indexed).",
+      "depot": "<int> Depot identifier (1-indexed).",
+      "distance": "<float> Euclidean distance from the trip's ending relief point to the depot.",
+      "cost": "<int> Cost for a vehicle to return from this trip to the depot, including a fixed vehicle usage charge."
+    }
+  ],
+  "summary": {
+    "total_vehicles_available": "<int> Total number of vehicles available across all depots.",
+    "n_compatible_arcs": "<int> Number of feasible consecutive trip pairings where a vehicle can transition from one trip to another.",
+    "n_short_trips": "<int> Number of short (non-circular) trips in the instance.",
+    "n_long_trips": "<int> Number of long (circular) trips in the instance."
+  }
+}

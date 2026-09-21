@@ -1,0 +1,5 @@
+{
+  "objective_value": "<float> Normalized sum of squared workload deviations across all machines.",
+  "assignment": "<dict, key: '{machine}'> List of job indices (into processing_times) assigned to each machine.",
+  "machine_completion_times": "<dict, key: '{machine}'> Total processing time of all jobs assigned to each machine."
+}

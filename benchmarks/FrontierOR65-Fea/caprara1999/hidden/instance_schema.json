@@ -1,0 +1,7 @@
+{
+  "n": "<int> Number of items available for packing into the knapsack.",
+  "density_percent": "<int> Percentage of entries in the profit matrix that are nonzero.",
+  "capacity": "<int> Maximum total weight the knapsack can hold.",
+  "weights": "<list[int], length n> Weight of each item.",
+  "profit_matrix": "<list[list[int]], shape [n][n]> Symmetric matrix where each diagonal entry gives the individual profit for selecting that item and each off-diagonal entry gives the additional joint profit earned when both items in the pair are selected together."
+}

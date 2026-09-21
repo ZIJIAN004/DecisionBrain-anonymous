@@ -1,0 +1,7 @@
+{
+  "n": "<int> Number of risky assets available for investment.",
+  "k": "<int> Maximum number of assets that may receive a nonzero weight in the portfolio.",
+  "b": "<float> Minimum acceptable weighted average return that the portfolio must achieve.",
+  "r": "<list[float], length n> Expected return of each asset.",
+  "Q": "<list[list[float]], shape [n][n]> Covariance between the returns of each pair of assets."
+}

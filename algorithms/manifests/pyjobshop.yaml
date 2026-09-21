@@ -1,0 +1,254 @@
+schema_version: "1.3"
+
+id: pyjobshop
+display_name: PyJobShop
+status: experimental
+kind: python_library
+summary: >-
+  Complete PyJobShop 0.0.9 Python package integration. It provides a high-level
+  scheduling model builder for machine and project scheduling, with OR-Tools
+  installed as the executable backend and CP Optimizer recorded as optional.
+
+algorithm:
+  problem_families:
+    - resource_scheduling
+  method: constraint_programming
+  method_class: exact
+  optimality: exact_or_incumbent
+  supports_warm_start: true
+  supports_random_seed: true
+  supports_time_limit: true
+  capabilities:
+    - single_machine
+    - parallel_machine
+    - flow_shop
+    - hybrid_flow_shop
+    - open_shop
+    - job_shop
+    - flexible_job_shop
+    - distributed_shop
+    - renewable_resources
+    - consumable_resources
+    - release_dates
+    - deadlines
+    - due_dates
+    - optional_tasks
+    - multiple_processing_modes
+    - sequence_dependent_setup_times
+    - no_wait
+    - no_idle
+    - resource_breaks
+    - weighted_makespan
+    - weighted_tardy_jobs
+    - weighted_flow_time
+    - weighted_tardiness
+    - weighted_earliness
+    - weighted_setup_time
+  limitations:
+    - It does not accept arbitrary constraints outside the PyJobShop modeling API.
+    - CP Optimizer requires a separate CPLEX installation and is not installed by DecisionBrain.
+    - It does not model vehicle routing, packing, workforce law, or crew pairing semantics.
+    - Solver proof statuses apply only to the faithfully encoded scheduling model.
+    - It does not emit DecisionBrain's problem-specific solution schema directly.
+
+selection:
+  required_features:
+    - primary_decisions_are_task_times_modes_or_resource_assignments
+    - all_hard_constraints_map_to_declared_pyjobshop_capabilities
+    - time_and_duration_values_can_be_represented_as_integers
+  good_fit_when:
+    - The task is a machine-shop, parallel-machine, flow-shop, or project schedule.
+    - A structured scheduling API is preferable to generating a low-level model.
+    - An incumbent, lower bound, and proof-aware termination status are useful.
+  reject_when:
+    - A hard scheduling rule cannot be represented by the declared package capabilities.
+    - The task requires workforce qualifications, labor law, or crew pairing semantics.
+    - The primary decision is routing rather than scheduling.
+  scale_profile:
+    confidence: unknown
+    hard_limit: null
+    note: >-
+      No DecisionBrain scale envelope has been benchmarked. Use measured evidence and
+      reserve time for solution mapping and independent validation.
+
+distribution:
+  package: pyjobshop
+  verified_version: 0.0.9
+  compatible_version_spec: ">=0.0.9,<0.1.0"
+  import_name: pyjobshop
+  requires_python: ">=3.10"
+  license_spdx: MIT
+  homepage: https://pyjobshop.org/
+  documentation: https://pyjobshop.org/stable/
+  source_repository: https://github.com/PyJobShop/PyJobShop
+  native_extensions: false
+  installed_artifact:
+    origin: binary_wheel
+    wheel_tag: py3-none-any
+    self_compiled: false
+    modules:
+      - pyjobshop
+  verified_environment:
+    conda_environment: DecisionBrain/venv
+    python_version: "3.12"
+    platform: windows-amd64
+
+interface:
+  profile: pyjobshop
+  preferred_api: model_builder
+  imports:
+    - from pyjobshop import Model, ProblemData, Solution, SolveStatus, solve
+  model_builder:
+    constructor: pyjobshop.Model()
+    methods:
+      - add_job
+      - add_machine
+      - add_renewable
+      - add_consumable
+      - add_task
+      - add_mode
+      - add_start_before_start
+      - add_start_before_end
+      - add_end_before_start
+      - add_end_before_end
+      - add_start_at_start
+      - add_start_at_end
+      - add_end_at_start
+      - add_end_at_end
+      - add_identical_resources
+      - add_different_resources
+      - add_consecutive
+      - add_same_sequence
+      - add_setup_time
+      - add_mode_dependency
+      - add_select_all_or_none
+      - add_select_at_least_one
+      - add_select_exactly_one
+      - set_objective
+    alternative_inputs:
+      - pyjobshop.ProblemData
+      - pyjobshop.Model.from_data(problem_data)
+      - pyjobshop.solve(problem_data, ...)
+  solve:
+    call: model.solve(solver="ortools", time_limit=seconds, display=False, num_workers=workers, initial_solution=solution_or_none, random_seed=seed)
+    stopping_criteria:
+      - name: time_limit
+        budget_unit: wall_clock_seconds
+        workload_stable: false
+        environment_sensitive: true
+        recommended_uses:
+          - bounded_exact_search
+          - final_solution_search
+        caveat: >-
+          A time limit can return an incumbent without a proof and is not strictly
+          reproducible across machines or worker counts.
+    important_parameters:
+      solver: Use ortools in the DecisionBrain runtime; cpoptimizer is optional and unavailable.
+      time_limit: Wall-clock solve limit in seconds.
+      display: Print solver output; use false for normal Agent runs.
+      num_workers: Worker count; use one when deterministic behavior matters more than speed.
+      random_seed: Integer backend seed passed through Model.solve keyword arguments.
+      initial_solution: Optional pyjobshop.Solution warm start.
+  result:
+    type: pyjobshop.Result
+    fields:
+      status: result.status
+      objective: result.objective
+      lower_bound: result.lower_bound
+      runtime_seconds: result.runtime
+      best_solution: result.best
+      scheduled_tasks: result.best.tasks
+      scheduled_jobs: result.best.jobs
+    warning: >-
+      OPTIMAL or INFEASIBLE is a proof only for the encoded model. FEASIBLE and
+      TIME_LIMIT provide no proof of global optimality.
+  backends:
+    - id: ortools
+      method: constraint_programming
+      method_class: exact
+      optimality: exact_or_incumbent
+      installed: true
+      dependency: ortools==9.12.4544
+      call: model.solve(solver="ortools", ...)
+      guarantee_boundary: Returns proof-aware statuses for the encoded CP-SAT model.
+    - id: cpoptimizer
+      method: constraint_programming
+      method_class: exact
+      optimality: exact_or_incumbent
+      installed: false
+      dependency: IBM ILOG CPLEX Optimization Studio with Python bindings
+      call: model.solve(solver="cpoptimizer", ...)
+      guarantee_boundary: Optional upstream backend; do not select unless separately installed and verified.
+  facts:
+    warm_start:
+      supported: true
+      parameter: initial_solution
+      value_type: pyjobshop.Solution
+    proof_status:
+      optimal: SolveStatus.OPTIMAL
+      infeasible: SolveStatus.INFEASIBLE
+      incumbent: SolveStatus.FEASIBLE
+      budget_exhausted: SolveStatus.TIME_LIMIT
+    numeric_inputs:
+      representation: integer
+      guidance: Scale non-integer durations, dates, and costs explicitly before modeling.
+    solution_mapping:
+      source: result.best.tasks
+      guidance: Map each ScheduledTask through the original task, mode, job, and resource indices.
+
+solver_documentation:
+  - id: constraint_programming
+    summary: Model rich scheduling constraints and solve the resulting constraint-programming problem.
+    minimal_call_example: |
+      from pyjobshop import Model, SolveStatus
+      model = Model()
+      machine = model.add_machine()
+      task = model.add_task()
+      model.add_mode(task, machine, duration=1)
+      result = model.solve(time_limit=10, display=False)
+      if result.status not in {SolveStatus.OPTIMAL, SolveStatus.FEASIBLE}:
+          raise RuntimeError(result.status)
+
+agent_guidance:
+  algorithm_design:
+    - Select this package only when every hard rule maps to a listed PyJobShop capability.
+    - Use the installed OR-Tools backend; never assume CP Optimizer is available.
+    - Distinguish encoded-model proof status from DecisionBrain end-to-end acceptance.
+  solving:
+    - Read input_schema.json, solution_schema.json, and feasibility_checker.py first.
+    - Preserve explicit maps from business IDs to jobs, tasks, modes, and resources.
+    - Add precedence and setup constraints explicitly; do not infer them from names or ordering.
+    - Check result.status before reading an incumbent and always run feasibility_checker.py.
+  minimal_call_example: |
+    from pyjobshop import Model, SolveStatus
+
+    model = Model()
+    machine = model.add_machine(name="machine-1")
+    first = model.add_task(name="first")
+    second = model.add_task(name="second")
+    model.add_mode(first, machine, duration=2)
+    model.add_mode(second, machine, duration=1)
+    model.add_end_before_start(first, second)
+
+    result = model.solve(
+        solver="ortools",
+        time_limit=10,
+        display=False,
+        num_workers=1,
+        random_seed=0,
+    )
+    if result.status not in {SolveStatus.OPTIMAL, SolveStatus.FEASIBLE}:
+        raise RuntimeError(f"PyJobShop returned {result.status}")
+    starts = [task.start for task in result.best.tasks]
+
+validation:
+  availability_check:
+    command: >-
+      python -c "from importlib.metadata import version; import pyjobshop;
+      assert version('pyjobshop') == '0.0.9'; print(version('pyjobshop'))"
+    expected_version: 0.0.9
+  acceptance_requirements:
+    - The generated solution conforms to solution_schema.json.
+    - feasibility_checker.py reports schema_valid=true and feasible=true.
+    - solver_result.json records package id, backend, package version, status, runtime, objective, and lower bound.
+  benchmark_status: not_benchmarked

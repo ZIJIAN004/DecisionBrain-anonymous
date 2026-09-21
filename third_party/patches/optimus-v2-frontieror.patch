@@ -1,0 +1,3189 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000000000000000000000000000000000000..c9d7d6e7533268d11e9fade397f65b1f25e6c882
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,6 @@
++__pycache__/
++*.pyc
++data/frontieror/*/data.json
++adapter-report.jsonl
++adapter-logs/
++runs/
+diff --git a/adapters/__init__.py b/adapters/__init__.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/adapters/frontieror/__init__.py b/adapters/frontieror/__init__.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..04dd211f9b0db13cacbd7c36f9e762e2eeaeea17
+--- /dev/null
++++ b/adapters/frontieror/__init__.py
+@@ -0,0 +1 @@
++"""FrontierOR input adapter for OptiMUS."""
+diff --git a/adapters/frontieror/config.py b/adapters/frontieror/config.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..553d30f27bf5e10f7459dc987d82faf7bd2c9cf0
+--- /dev/null
++++ b/adapters/frontieror/config.py
+@@ -0,0 +1,122 @@
++"""Paths and resource budget for the FrontierOR -> OptiMUS input adapter.
++
++Every value here is a deliberate part of the evaluation setup and is released
++alongside the frozen artifacts, so changing one changes the reported numbers.
++"""
++
++from __future__ import annotations
++
++import os
++import sys
++from pathlib import Path
++
++# --- repository layout -------------------------------------------------------
++# run.py resolves data paths relative to the current working directory
++# (run.py:111 and run.py:138), so the repo root is also the required cwd.
++REPO_ROOT = Path(__file__).resolve().parents[2]
++DATA_ROOT = REPO_ROOT / "data" / "frontieror"
++
++# Everything a run produces lives under one directory inside the baseline repo,
++# so every baseline's results sit together under one parent and nothing a run
++# produces is mixed into the checkout. Frozen conversions stay in DATA_ROOT:
++# they outlive any single run.
++RUNS_ROOT = Path(os.environ.get("ADAPTER_RUNS_ROOT", REPO_ROOT / "runs"))
++
++
++def new_run_dir(tag: str = "frontieror") -> Path:
++    """RUNS_ROOT/<tag>-<UTC timestamp>/ with report.jsonl and logs/ inside it."""
++    import time
++
++    run_dir = RUNS_ROOT / f"{tag}-{time.strftime('%Y%m%d-%H%M%SZ', time.gmtime())}"
++    (run_dir / "logs").mkdir(parents=True, exist_ok=True)
++    return run_dir
++
++
++# --- FrontierOR sources ------------------------------------------------------
++# These portable defaults describe a local external-data layout. Evaluation
++# hosts may point each path at an existing dataset checkout through the matching
++# environment variable.
++EXTERNAL_ROOT = REPO_ROOT / "external"
++INDEX_JSON = Path(
++    os.environ.get(
++        "FRONTIEROR_INDEX",
++        EXTERNAL_ROOT / "FrontierOR65-Fea" / "index.json",
++    )
++)
++INSTANCE_ROOT = Path(
++    os.environ.get(
++        "FRONTIEROR_INSTANCE_ROOT",
++        EXTERNAL_ROOT / "FrontierOR65-Fea" / "dataset",
++    )
++)
++PROBLEM_ROOT = Path(
++    os.environ.get(
++        "FRONTIEROR_PROBLEM_ROOT",
++        EXTERNAL_ROOT / "FrontierOR65-Fea" / "contracts",
++    )
++)
++
++# --- resource budget ---------------------------------------------------------
++TOTAL_MEM_GB = 100
++LOGICAL_CPUS = 32
++PHYSICAL_CORES = 24
++JOBS = int(os.environ.get("ADAPTER_JOBS", "1"))
++CGROUP_SLICE = os.environ.get("ADAPTER_CGROUP_SLICE", "")
++BASELINE_PYTHON_ENV = Path(os.environ.get("ADAPTER_PYTHON_ENV", sys.prefix))
++_gurobi_home = os.environ.get("GUROBI_HOME")
++GUROBI_HOME = Path(_gurobi_home) if _gurobi_home else None
++
++
++def solver_threads(jobs: int) -> int:
++    if jobs < 1:
++        raise ValueError("jobs must be at least 1")
++    return max(1, LOGICAL_CPUS // jobs)
++
++
++def process_cpu_cores(jobs: int) -> int:
++    if jobs < 1:
++        raise ValueError("jobs must be at least 1")
++    if jobs > PHYSICAL_CORES:
++        raise ValueError(f"jobs cannot exceed {PHYSICAL_CORES} physical cores")
++    return PHYSICAL_CORES // jobs
++
++
++# The outer deadline covers the complete Agent workflow. The shorter solver
++# deadline leaves time to preserve and format the best incumbent.
++TASK_TIMEOUT_SECONDS = int(os.environ.get("ADAPTER_TASK_TIMEOUT", "7200"))
++SOLVER_TIMEOUT_SECONDS = int(os.environ.get("ADAPTER_SOLVER_TIMEOUT", "30"))
++if SOLVER_TIMEOUT_SECONDS < 1:
++    raise ValueError("ADAPTER_SOLVER_TIMEOUT must be a positive integer")
++
++# Generation loop budget.
++MAX_GENERATION_ROUNDS = int(os.environ.get("ADAPTER_MAX_ROUNDS", "8"))
++# Fixed converter; deliberately not one of the models under evaluation, so
++# every evaluated model receives byte-identical input.
++CONVERTER_MODEL = os.environ.get("ADAPTER_CONVERTER_MODEL", "deepseek-v4-flash")
++
++
++def instance_path(paper_id: str, instance_index: int) -> Path:
++    return (
++        INSTANCE_ROOT / paper_id / "instance" / f"large_instance_{instance_index}.json"
++    )
++
++
++def problem_md_path(paper_id: str) -> Path:
++    return PROBLEM_ROOT / paper_id / "input" / "problem.md"
++
++
++def solution_schema_path(paper_id: str) -> Path:
++    return PROBLEM_ROOT / paper_id / "hidden" / "solution_schema.json"
++
++
++def task_dir(paper_id: str) -> Path:
++    """OptiMUS expects one flat directory per problem; paper_id is already unique
++    across the 65 selected cases, so no compound id is needed."""
++    return DATA_ROOT / paper_id
++
++
++def load_cases() -> dict:
++    import json
++
++    with INDEX_JSON.open(encoding="utf-8") as handle:
++        return json.load(handle)["cases"]
+diff --git a/adapters/frontieror/converter.py b/adapters/frontieror/converter.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..d7c5d5def4435674636f719b5c43c53d0d469670
+--- /dev/null
++++ b/adapters/frontieror/converter.py
+@@ -0,0 +1,141 @@
++"""The fixed converter model and the exchange protocol with it.
++
++One model prepares the input for every evaluated model, once, offline. Its
++answers are frozen and released, so what OptiMUS receives is a constant of the
++experiment rather than something each evaluated model produced for itself.
++
++The converter is deliberately not one of the models under evaluation.
++"""
++
++from __future__ import annotations
++
++import json
++import os
++import re
++from pathlib import Path
++
++import openai
++
++from . import config, prompts
++
++# DeepSeek's API is OpenAI-compatible. The exact model id is configurable because
++# it is a released detail of the setup, not an implementation choice.
++DEFAULT_BASE_URL = "https://api.deepseek.com/v1"
++DEFAULT_MODEL = "deepseek-v4-flash"
++
++MAX_EXCHANGES = int(os.environ.get("ADAPTER_MAX_EXCHANGES", "12"))
++
++_BLOCK = re.compile(r"```(?P<tag>[\w./-]+)\s*\n(?P<body>.*?)```", re.DOTALL)
++ANSWER_FILES = ("transform.py", "parameters.json", "targets.json")
++
++
++class ProtocolError(Exception):
++    """The converter replied with something that is neither an exploration nor a
++    complete answer."""
++
++
++def model_id() -> str:
++    return config.CONVERTER_MODEL or os.environ.get("ADAPTER_CONVERTER_MODEL") or DEFAULT_MODEL
++
++
++def base_url() -> str:
++    """Accept either an OpenAI-style base or a full chat-completions endpoint.
++
++    DecisionBrain's .env stores the latter (LLM_MODEL_URL), and the OpenAI SDK
++    appends the path itself, so the suffix is trimmed rather than duplicated.
++    """
++    url = os.environ.get("ADAPTER_BASE_URL") or os.environ.get("LLM_MODEL_URL") or DEFAULT_BASE_URL
++    return url.removesuffix("/chat/completions").rstrip("/")
++
++
++def client() -> openai.OpenAI:
++    """Resolve the key without ever committing one.
++
++    LLM_API_KEY is the name DecisionBrain already uses on this host, so sourcing
++    its .env is enough to run the converter.
++    """
++    key = (
++        os.environ.get("ADAPTER_API_KEY")
++        or os.environ.get("LLM_API_KEY")
++        or os.environ.get("DEEPSEEK_API_KEY")
++        or ""
++    )
++    config_path = config.REPO_ROOT / "config.json"
++    if not key and config_path.is_file():
++        key = json.loads(config_path.read_text(encoding="utf-8")).get("converter_api_key", "")
++    if len(key) < 10:
++        raise RuntimeError(
++            "No converter API key. Set ADAPTER_API_KEY or LLM_API_KEY, or add "
++            "converter_api_key to config.json."
++        )
++    return openai.OpenAI(api_key=key, base_url=base_url())
++
++
++def parse_reply(text: str) -> tuple[str | None, dict[str, str] | None]:
++    """Split a reply into either an exploration snippet or a complete answer.
++
++    A reply that is neither -- a partial answer, prose only, both phases at once
++    -- is a protocol error and is sent back for correction rather than guessed at.
++    """
++    blocks = {m.group("tag"): m.group("body") for m in _BLOCK.finditer(text)}
++    explore = blocks.get("explore")
++    files = {name: blocks[name] for name in ANSWER_FILES if name in blocks}
++
++    if explore is not None and not files:
++        return explore, None
++    if files and explore is None:
++        missing = [name for name in ANSWER_FILES if name not in files]
++        if missing:
++            raise ProtocolError(
++                f"Your answer is incomplete: missing {missing}. Reply with all "
++                "three blocks, or with a single ```explore block if you still "
++                "need to inspect the instance."
++            )
++        return None, files
++    if explore is not None and files:
++        raise ProtocolError(
++            "You mixed both phases in one reply. Send either one ```explore "
++            "block, or the three answer blocks -- never both."
++        )
++    raise ProtocolError(
++        "No recognised block found. Reply with one ```explore block, or with "
++        "```transform.py, ```parameters.json and ```targets.json."
++    )
++
++
++def converse(problem_md: str, explore_fn, feedback: list[str]) -> dict[str, str]:
++    """Run the exchange until the converter produces a complete answer.
++
++    `explore_fn(snippet) -> str` executes inspection code against the instance
++    and returns its stdout. `feedback` carries verbatim rejections from earlier
++    attempts, so the converter sees exactly what the checker said.
++    """
++    api = client()
++    messages = [
++        {"role": "system", "content": prompts.SYSTEM},
++        {"role": "user", "content": prompts.initial(problem_md)},
++    ]
++    for rejection in feedback:
++        messages.append({"role": "user", "content": prompts.rejection(rejection)})
++
++    for _ in range(MAX_EXCHANGES):
++        reply = api.chat.completions.create(
++            model=model_id(), messages=messages, temperature=0
++        ).choices[0].message.content or ""
++        messages.append({"role": "assistant", "content": reply})
++
++        try:
++            snippet, files = parse_reply(reply)
++        except ProtocolError as exc:
++            messages.append({"role": "user", "content": str(exc)})
++            continue
++
++        if files is not None:
++            return files
++        messages.append(
++            {"role": "user", "content": f"Output of your code:\n\n-----\n{explore_fn(snippet)}\n-----"}
++        )
++
++    raise ProtocolError(
++        f"Converter did not produce a complete answer within {MAX_EXCHANGES} exchanges."
++    )
+diff --git a/adapters/frontieror/generate.py b/adapters/frontieror/generate.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c99c8ef456e7e767069dd73242a47aa0786d7db
+--- /dev/null
++++ b/adapters/frontieror/generate.py
+@@ -0,0 +1,248 @@
++"""Generate one task's frozen conversion.
++
++The converter never receives the instance data. It receives problem.md and a
++read-only Python interface it can use to inspect the instance itself, and it
++answers with code:
++
++    transform.py       instance.json -> data.json  (renamed keys, real shapes,
++                                                    padded arrays plus masks)
++    parameters.json    [{symbol, shape, definition, source_key, role?}]
++    targets.json       {background, constraints[], objective}
++
++Everything is then checked mechanically. Rejections are fed back verbatim and
++the converter tries again, up to MAX_GENERATION_ROUNDS.
++
++The converter model is fixed and is not one of the models under evaluation, and
++the artifacts are frozen and released, so every evaluated model sees the same
++input.
++"""
++
++from __future__ import annotations
++
++import json
++import subprocess
++import sys
++import tempfile
++import time
++from pathlib import Path
++
++from . import config, converter, manifest, validate
++from .validate import ValidationError
++
++EXPLORE_TIMEOUT_S = 900
++TRANSFORM_TIMEOUT_S = 3600
++
++
++class ConversionFailed(Exception):
++    """The converter did not produce an accepted conversion within its budget."""
++
++
++def explore(snippet: str, instance_path: Path) -> str:
++    """Execute converter-written inspection code against the instance.
++
++    The snippet is handed the parsed instance as ``data`` and may print whatever
++    it wants; only its stdout comes back. Reading the instance this way, rather
++    than through a schema summary we wrote, keeps the description of the data in
++    the converter's own terms.
++    """
++    driver = (
++        "import json, sys\n"
++        f"data = json.load(open({str(instance_path)!r}, encoding='utf-8'))\n" + snippet
++    )
++    with tempfile.NamedTemporaryFile(
++        "w", suffix=".py", delete=False, encoding="utf-8"
++    ) as handle:
++        handle.write(driver)
++        script = Path(handle.name)
++    try:
++        proc = subprocess.run(
++            [
++                sys.executable,
++                "-m",
++                "adapters.frontieror.wrapper",
++                "--cpu-cores",
++                str(config.process_cpu_cores(config.JOBS)),
++                "--cgroup-slice",
++                config.CGROUP_SLICE,
++                "--timeout",
++                str(EXPLORE_TIMEOUT_S),
++                "--cwd",
++                str(config.REPO_ROOT),
++                "--log",
++                str(script.with_suffix(".log")),
++                "--",
++                sys.executable,
++                str(script),
++            ],
++            cwd=str(config.REPO_ROOT),
++            capture_output=True,
++            text=True,
++            check=False,
++        )
++        log = script.with_suffix(".log")
++        output = (
++            log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
++        )
++        try:
++            record = json.loads(proc.stdout.strip().splitlines()[-1])
++        except (ValueError, IndexError) as exc:
++            raise RuntimeError(
++                "Explore wrapper did not return its JSON status "
++                f"(returncode={proc.returncode}).\n"
++                f"wrapper stderr:\n{proc.stderr[-4000:]}\n"
++                f"explore log:\n{output[-4000:]}"
++            ) from exc
++        if record["outcome"] != "completed":
++            output += f"\n[interrupted: {record['outcome']}]"
++        return output[-20000:]
++    finally:
++        script.unlink(missing_ok=True)
++        script.with_suffix(".log").unlink(missing_ok=True)
++
++
++def run_transform(staging: Path, instance_path: Path) -> None:
++    """Execute the converter's transform.py to produce data.json."""
++    proc = subprocess.run(
++        [
++            sys.executable,
++            "-m",
++            "adapters.frontieror.wrapper",
++            "--cpu-cores",
++            str(config.process_cpu_cores(config.JOBS)),
++            "--cgroup-slice",
++            config.CGROUP_SLICE,
++            "--timeout",
++            str(TRANSFORM_TIMEOUT_S),
++            "--cwd",
++            str(staging),
++            "--log",
++            str(staging / "transform.log"),
++            "--",
++            sys.executable,
++            str(staging / "transform.py"),
++            "--instance",
++            str(instance_path),
++            "--out",
++            str(staging / "data.json"),
++        ],
++        cwd=str(config.REPO_ROOT),
++        capture_output=True,
++        text=True,
++        check=False,
++    )
++    try:
++        record = json.loads(proc.stdout.strip().splitlines()[-1])
++    except (ValueError, IndexError):
++        raise ValidationError(
++            f"Could not run transform.py: {proc.stderr[-2000:]}"
++        ) from None
++    if record["outcome"] != "completed":
++        log = (staging / "transform.log").read_text(encoding="utf-8", errors="replace")
++        raise ValidationError(
++            f"transform.py did not finish ({record['outcome']}):\n{log[-4000:]}"
++        )
++
++
++def build_input_targets(staging: Path) -> None:
++    """Assemble what run.py:111 reads, from the converter's two answers.
++
++    run.py expects `objective` as a single string and `constraints` as a list of
++    strings; it wraps them into work items itself.
++    """
++    targets = json.loads((staging / "targets.json").read_text(encoding="utf-8"))
++    params = json.loads((staging / "parameters.json").read_text(encoding="utf-8"))
++    for required in ("background", "constraints", "objective"):
++        if required not in targets:
++            raise ValidationError(f"targets.json is missing '{required}'.")
++    payload = {
++        "background": targets["background"],
++        "constraints": targets["constraints"],
++        "objective": targets["objective"],
++        # OptiMUS only reads symbol/shape/definition; source_key and role are
++        # ours and are ignored downstream. Entries marked role=metadata stay in
++        # parameters.json -- the record of what was judged non-modelling -- but
++        # are not part of what OptiMUS is asked to model.
++        "parameters": validate.modelling(params),
++    }
++    (staging / "input_targets.json").write_text(
++        json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
++    )
++
++
++def propose(problem_md: str, instance_path: Path, feedback: list[str]) -> dict:
++    """Ask the fixed converter model for transform.py / parameters.json / targets.json.
++
++    The converter inspects the instance through `explore` -- code it writes, run
++    by us -- so its description of the data is its own rather than a summary we
++    chose to show it.
++    """
++    return converter.converse(
++        problem_md,
++        lambda snippet: explore(snippet, instance_path),
++        feedback,
++    )
++
++
++def generate(paper_id: str, case: dict) -> dict:
++    instance_path = config.instance_path(paper_id, case["instance_index"])
++    problem_md = config.problem_md_path(paper_id).read_text(encoding="utf-8")
++    # Parsed once and reused by every assertion; the largest case measured
++    # 9.7 GB resident, well inside the per-task cap.
++    with instance_path.open(encoding="utf-8") as handle:
++        instance = json.load(handle)
++
++    feedback: list[str] = []
++    staging_root = config.DATA_ROOT
++    staging_root.mkdir(parents=True, exist_ok=True)
++
++    for attempt in range(1, config.MAX_GENERATION_ROUNDS + 1):
++        staging = Path(
++            tempfile.mkdtemp(dir=staging_root, prefix=f".staging-{paper_id}-")
++        )
++        try:
++            answer = propose(problem_md, instance_path, feedback)
++            for name, text in answer.items():
++                (staging / name).write_text(text, encoding="utf-8")
++
++            run_transform(staging, instance_path)
++            build_input_targets(staging)
++            report, coverage = validate.validate(
++                staging, instance, lambda: run_transform(staging, instance_path)
++            )
++        except ValidationError as exc:
++            feedback.append(str(exc))
++            _discard(staging)
++            continue
++        except Exception:
++            _discard(staging)
++            raise
++
++        manifest.commit(
++            config.task_dir(paper_id),
++            staging,
++            manifest.Manifest(
++                paper_id=paper_id,
++                instance_index=case["instance_index"],
++                instance_sha256=manifest.sha256_file(instance_path),
++                transform_sha256=manifest.sha256_file(staging / "transform.py"),
++                targets_sha256=manifest.sha256_file(staging / "input_targets.json"),
++                converter_model=converter.model_id(),
++                generation_rounds=attempt,
++                sanity_check_passed=True,
++                assertions=report,
++                shape_coverage=coverage,
++                generated_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
++            ),
++        )
++        return {"rounds": attempt, "shape_coverage": coverage}
++
++    raise ConversionFailed(
++        f"{paper_id}: no accepted conversion after {config.MAX_GENERATION_ROUNDS} rounds. "
++        f"Last rejection:\n{feedback[-1] if feedback else '(none)'}"
++    )
++
++
++def _discard(staging: Path) -> None:
++    import shutil
++
++    shutil.rmtree(staging, ignore_errors=True)
+diff --git a/adapters/frontieror/manifest.py b/adapters/frontieror/manifest.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..9584c1788c4655281eb3c06c051b1d7c7394391e
+--- /dev/null
++++ b/adapters/frontieror/manifest.py
+@@ -0,0 +1,89 @@
++"""Freeze record for one converted task.
++
++A task counts as converted only when a manifest exists whose recorded hashes
++still match what is on disk.  Presence of the files alone is never enough: a
++half-written or stale artifact would otherwise be reused silently.
++"""
++
++from __future__ import annotations
++
++import hashlib
++import json
++import os
++import shutil
++import tempfile
++from dataclasses import asdict, dataclass, field
++from pathlib import Path
++from typing import Any
++
++MANIFEST_NAME = "manifest.json"
++_CHUNK = 8 << 20
++
++
++def sha256_file(path: Path) -> str:
++    digest = hashlib.sha256()
++    with path.open("rb") as handle:
++        for chunk in iter(lambda: handle.read(_CHUNK), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++@dataclass
++class Manifest:
++    paper_id: str
++    instance_index: int
++    instance_sha256: str
++    transform_sha256: str
++    targets_sha256: str
++    converter_model: str
++    generation_rounds: int
++    sanity_check_passed: bool
++    assertions: dict[str, Any] = field(default_factory=dict)
++    shape_coverage: dict[str, Any] = field(default_factory=dict)
++    generated_at: str = ""
++
++    def to_json(self) -> str:
++        return json.dumps(asdict(self), indent=2, ensure_ascii=False)
++
++
++def read(task_dir: Path) -> Manifest | None:
++    path = task_dir / MANIFEST_NAME
++    if not path.is_file():
++        return None
++    try:
++        raw = json.loads(path.read_text(encoding="utf-8"))
++        return Manifest(**raw)
++    except (json.JSONDecodeError, TypeError):
++        return None
++
++
++def is_fresh(task_dir: Path, instance_path: Path) -> bool:
++    """True only if the frozen artifacts still describe this exact instance."""
++    manifest = read(task_dir)
++    if manifest is None or not manifest.sanity_check_passed:
++        return False
++    transform = task_dir / "transform.py"
++    targets = task_dir / "input_targets.json"
++    if not (transform.is_file() and targets.is_file() and instance_path.is_file()):
++        return False
++    return (
++        sha256_file(instance_path) == manifest.instance_sha256
++        and sha256_file(transform) == manifest.transform_sha256
++        and sha256_file(targets) == manifest.targets_sha256
++    )
++
++
++def commit(task_dir: Path, staging: Path, manifest: Manifest) -> None:
++    """Move a fully validated staging directory into place atomically.
++
++    The manifest is written inside staging first, so a crash at any point leaves
++    either the previous state or nothing -- never a directory that looks valid
++    but is not.
++    """
++    (staging / MANIFEST_NAME).write_text(manifest.to_json(), encoding="utf-8")
++    task_dir.parent.mkdir(parents=True, exist_ok=True)
++    if task_dir.exists():
++        doomed = Path(tempfile.mkdtemp(dir=task_dir.parent, prefix=".old-"))
++        os.replace(task_dir, doomed / "prev")
++        shutil.rmtree(doomed, ignore_errors=True)
++    os.replace(staging, task_dir)
+diff --git a/adapters/frontieror/prompts.py b/adapters/frontieror/prompts.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f591f957be79fdcaee6f4bab3331489c2266758
+--- /dev/null
++++ b/adapters/frontieror/prompts.py
+@@ -0,0 +1,168 @@
++"""Instructions given to the converter model.
++
++The rules below are the same ones validate.py enforces mechanically. Stating
++them here does not make them true -- every answer is checked -- but a converter
++that knows the rules needs fewer rounds.
++
++The constraint-extraction rules in TARGETS_RULES are OptiMUS's own, taken from
++utils/target_extractor.py (prompt_templates[0]), so the way a problem statement
++is decomposed stays the baseline authors' decision rather than ours.
++"""
++
++SYSTEM = """You convert an optimization problem into the two inputs OptiMUS reads: \
++a structured description of the model and a numeric data file.
++
++You never see the instance data directly. It may be gigabytes. To inspect it you \
++write Python and it is executed for you against the parsed instance.
++
++Work in two phases.
++
++PHASE 1 -- INSPECT. Reply with exactly one block:
++
++```explore
++# `data` is the parsed instance.json. Print whatever you need.
++print(sorted(data.keys()))
++```
++
++Only its stdout comes back to you (truncated to the last 20000 characters), so \
++print summaries, not raw data. You may explore over several turns.
++
++PHASE 2 -- ANSWER. When you understand the instance, reply with exactly three \
++blocks and no other text:
++
++```transform.py
++...
++```
++```parameters.json
++...
++```
++```targets.json
++...
++```
++
++Never mix the two phases in one reply."""
++
++
++TRANSFORM_RULES = """`transform.py` is a standalone script:
++
++    python transform.py --instance <path to instance.json> --out <path to data.json>
++
++It reads the instance, restructures it, and writes data.json. Requirements:
++
++- Plain `json.load` is fine. The largest instance in this benchmark parses in
++  about 15 seconds using 9.7 GB, and you are given a much larger cap.
++- Deterministic. Iterate dicts in sorted key order; never iterate a set; never
++  read the clock or a random seed. The same instance must produce a
++  byte-identical data.json every run -- this is checked by running it twice.
++- Lossless. Every top-level key of the instance must survive into data.json in
++  some form, unless you declare it role=metadata in parameters.json. You may rename, flatten a dict of records into arrays, or split one
++  key into several. You may NOT drop a key you judge irrelevant, merge two keys,
++  or pre-aggregate values. Deciding what matters is the modelling step, and that
++  belongs to the solver team, not to you.
++- Every dimension you name must exist in data.json as its own integer entry,
++  and must also be declared as a parameter. If you declare a parameter with
++  shape ["numRows", "numCols"], then data["numRows"] and data["numCols"] must
++  be integers equal to the actual array dimensions, and both names must appear
++  in parameters.json with shape [].
++- Ragged arrays must be padded to a rectangle with 0, and each padded key must
++  also produce a mask array of the same shape: 1 where the cell is real, 0 where
++  it is padding. Pad with 0 and nothing else. Do not pad with a value chosen to
++  make constraints fall away on their own (+inf, -1, a large number) -- that
++  decides how the model should treat padding, which is not your decision. The
++  mask states the facts and lets the solver team decide."""
++
++
++PARAMETERS_RULES = """`parameters.json` is a JSON list. One entry per quantity:
++
++    {
++      "symbol":      "linearCost",
++      "shape":       ["numSuppliers", "numCustomers"],
++      "definition":  "unit shipping cost from supplier i to customer j, indexed by supplier then customer",
++      "source_key":  "linear_costs"
++    }
++
++- `symbol` must be camelCase and must contain NO underscore and NO index letters.
++  Write `linearCost`, never `linearCost_ij` and never `linear_cost`. The indices
++  live in `shape` and nowhere else. This is not a style preference: the modelling
++  agents write the symbol back as \\textup{linearCost}_{i,j} and OptiMUS matches
++  the part inside \\textup{} against your `symbol` by exact string equality, so
++  any suffix makes the symbol unresolvable and the run dies.
++- `symbol` must be spelled identically to a top-level key of data.json, because
++  the generated code reaches the data as data["linearCost"].
++- `shape` lists dimension names, or [] for a genuine scalar. A value that is a
++  list or a dict in the instance is NOT a scalar and must carry its real
++  dimensions. Encoding structure away as [] is rejected.
++- EVERY name you use in a `shape` must itself appear in this list as its own
++  entry with shape [] -- an integer parameter holding that dimension. Only
++  parameters are loaded into the namespace the generated code runs in, so a
++  dimension that is merely present in data.json but not declared here is not a
++  defined name and the code that indexes with it raises NameError.
++- `definition` is the only thing the modelling agents ever see about this
++  quantity -- they never see a single number. Say what it means and how it is
++  laid out, in one sentence. "cost matrix" is not enough; "unit shipping cost
++  from supplier i to customer j, indexed by supplier then customer" is.
++- `source_key` is the top-level key of the original instance this came from.
++  Every top-level key must appear as some entry's `source_key`.
++- A mask array adds `"role": "mask"` and keeps the `source_key` of the array it
++  masks. Masks are ordinary parameters otherwise: bare symbol, real shape, and
++  their dimensions declared like any other.
++- A key that carries no modelling content -- a free-text description, an
++  instance id, a provenance record -- gets `"role": "metadata"`, shape [], and no
++  entry in data.json. It stays in this list so nothing is silently dropped and so
++  the record shows what you judged non-modelling, but it is not handed to the
++  modelling agents. Use this only for values that cannot enter any formulation;
++  never for a number, and never for something merely inconvenient to encode. Do
++  NOT encode a string as an array of character codes."""
++
++
++TARGETS_RULES = """`targets.json` describes the model in words:
++
++    {"background": "...", "constraints": ["...", "..."], "objective": "..."}
++
++Follow these rules exactly:
++
++1. Define the background and context of the problem.
++2. List all constraints, including implicit ones such as non-negativity.
++3. State the single primary objective.
++4. Preferences are not constraints. Do not include them.
++5. Statements that simply define exact values of parameters are not constraints
++   (e.g. "The cost of producing an X is Y", "Each X has a size of Y").
++6. Statements that define bounds are constraints (e.g. "The cost of producing an
++   X is at most Y", "Each X has a size of at least Y").
++7. Keep each constraint separate and explicit. Do not merge different
++   constraints into a single entry.
++8. Refer to quantities by exactly the `symbol` you gave them in
++   parameters.json -- bare, with no index suffix. Write `linearCost`, not
++   `linearCost_ij`. Do the same in `background`.
++9. Do not refer to anything you marked role=metadata; the modelling agents
++   never see it.
++
++Do not invent a constraint that the problem statement does not state, and do not
++leave one out because it looks hard to model."""
++
++
++def initial(problem_md: str) -> str:
++    return f"""Here is the problem statement.
++
++-----
++{problem_md}
++-----
++
++{TRANSFORM_RULES}
++
++{PARAMETERS_RULES}
++
++{TARGETS_RULES}
++
++Begin with PHASE 1: inspect the instance."""
++
++
++def rejection(feedback: str) -> str:
++    return f"""Your conversion was rejected by the mechanical checker:
++
++-----
++{feedback}
++-----
++
++Fix it. You may inspect the instance again first if you need to. Then reply with
++the three blocks."""
+diff --git a/adapters/frontieror/run.sh b/adapters/frontieror/run.sh
+new file mode 100755
+index 0000000000000000000000000000000000000000..e7645ba45c60812fff8d7f5e9dbdde1c22ec63c6
+--- /dev/null
++++ b/adapters/frontieror/run.sh
+@@ -0,0 +1,79 @@
++#!/usr/bin/env bash
++# Launch the FrontierOR adapter detached, with everything one run produces kept
++# together in one directory outside the repo: the report, the per-task OptiMUS
++# logs, the console output, and a record of what was run.
++#
++#   ./adapters/frontieror/run.sh --only delage2022
++#   JOBS=4 ./adapters/frontieror/run.sh
++#
++# The converted inputs are NOT run output -- they stay in data/frontieror/ under
++# version control, because they are the frozen artifact every evaluated model
++# reads.
++set -euo pipefail
++
++SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
++REPO="${REPO:-$(cd -- "${SCRIPT_DIR}/../.." && pwd)}"
++RUNS_ROOT="${RUNS_ROOT:-${REPO}/runs}"
++ENV_FILE="${ENV_FILE:-${REPO}/.env}"
++PYTHON="${PYTHON:-python}"
++JOBS="${JOBS:-1}"
++
++case "$JOBS" in
++    ''|*[!0-9]*) echo "JOBS must be an integer from 1 to 24" >&2; exit 1 ;;
++esac
++if [ "$JOBS" -lt 1 ] || [ "$JOBS" -gt 24 ]; then
++    echo "JOBS must be an integer from 1 to 24" >&2
++    exit 1
++fi
++
++for path in "$REPO" "$ENV_FILE"; do
++    [ -e "$path" ] || { echo "missing: $path" >&2; exit 1; }
++done
++command -v "$PYTHON" >/dev/null || { echo "missing Python command: $PYTHON" >&2; exit 1; }
++
++RUN_ID="${RUN_ID:-$(date +%Y%m%d-%H%M%S)}"
++RUN_DIR="$RUNS_ROOT/$RUN_ID"
++mkdir -p "$RUN_DIR"
++
++cd "$REPO"
++set -a; . "$ENV_FILE"; set +a
++export ADAPTER_JOBS="$JOBS"
++CGROUP_SLICE="optimus-${RUN_ID}.slice"
++export ADAPTER_CGROUP_SLICE="$CGROUP_SLICE"
++systemctl --user set-property --runtime "$CGROUP_SLICE" \
++    MemoryMax=100G MemorySwapMax=0
++
++# What produced these numbers, written next to them. A report without the commit
++# and the model that made it cannot be compared against anything later.
++{
++    echo "commit     $(git rev-parse --short HEAD)"
++    echo "started    $(date -Is)"
++    echo "host       $(hostname)"
++    echo "python     $PYTHON"
++    echo "jobs       $JOBS"
++    echo "memory_gb  100 shared parent cgroup"
++    echo "cgroup     $CGROUP_SLICE"
++    echo "solver_llm ${LLM_CHAT_MODEL:-unset}"
++    echo "converter  ${ADAPTER_CONVERTER_MODEL:-deepseek-v4-flash}"
++    echo "args       $*"
++} > "$RUN_DIR/run.info"
++
++# -u so console.log is readable while the run is still going.
++nohup systemd-run --user --scope -q \
++    --slice "${CGROUP_SLICE%.slice}" \
++    "$PYTHON" -u -m adapters.frontieror.schedule \
++    --jobs "$JOBS" \
++    --run-dir "$RUN_DIR" \
++    "$@" \
++    > "$RUN_DIR/console.log" 2>&1 &
++
++echo $! > "$RUN_DIR/pid"
++ln -sfn "$RUN_DIR" "$RUNS_ROOT/latest"
++
++cat "$RUN_DIR/run.info"
++echo
++echo "run dir : $RUN_DIR   (also $RUNS_ROOT/latest)"
++echo "pid     : $(cat "$RUN_DIR/pid")"
++echo
++echo "  tail -f $RUNS_ROOT/latest/console.log"
++echo "  cat     $RUNS_ROOT/latest/report.jsonl"
+diff --git a/adapters/frontieror/sandbox.py b/adapters/frontieror/sandbox.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..5c589401d26e9abb1da585d665a475e8891b9028
+--- /dev/null
++++ b/adapters/frontieror/sandbox.py
+@@ -0,0 +1,219 @@
++"""Build the bubblewrap boundary for one evaluated OptiMUS case."""
++
++from __future__ import annotations
++
++import os
++try:  # grp/pwd are Linux-only; sandbox construction is unit-tested on Windows.
++    import grp
++    import pwd
++except ImportError:  # pragma: no cover - exercised only on non-POSIX hosts
++    grp = pwd = None
++from pathlib import Path, PurePosixPath
++
++
++class SandboxConfigurationError(ValueError):
++    pass
++
++
++def build_scope_command(
++    command: list[str], cpu_cores: int, cgroup_slice: str
++) -> list[str]:
++    if not cgroup_slice.endswith(".slice"):
++        raise SandboxConfigurationError("cgroup slice must end with .slice")
++    return [
++        "systemd-run",
++        "--user",
++        "--scope",
++        "-q",
++        "--slice",
++        cgroup_slice.removesuffix(".slice"),
++        "-p",
++        f"CPUQuota={cpu_cores * 100}%",
++        *command,
++    ]
++
++
++def _required(path: str | Path, label: str) -> Path:
++    resolved = Path(path).resolve()
++    if not resolved.exists():
++        raise SandboxConfigurationError(f"missing {label}: {resolved}")
++    return resolved
++
++
++def _home_parent_dirs(paths: list[Path]) -> list[str]:
++    directories: set[str] = set()
++    for path in paths:
++        current = PurePosixPath(path.as_posix()).parent
++        while str(current) not in {"/", "."}:
++            directories.add(str(current))
++            current = current.parent
++    return sorted(directories, key=lambda value: (value.count("/"), value))
++
++
++def _sandbox_identity(repo_path: Path) -> tuple[Path, Path]:
++    directory = repo_path / ".sandbox-etc"
++    directory.mkdir(parents=True, exist_ok=True)
++    uid = getattr(os, "getuid", lambda: 1000)()
++    gid = getattr(os, "getgid", lambda: 1000)()
++    try:
++        user = pwd.getpwuid(uid) if pwd is not None else None
++        if user is None:
++            raise KeyError(uid)
++        name, home, shell = user.pw_name, user.pw_dir, user.pw_shell
++    except KeyError:
++        name, home, shell = "sandbox", "/tmp", "/bin/sh"
++    try:
++        group_name = grp.getgrgid(gid).gr_name if grp is not None else name
++    except KeyError:
++        group_name = name
++    passwd = directory / "passwd"
++    group = directory / "group"
++    passwd.write_text(f"{name}:x:{uid}:{gid}:sandbox:{home}:{shell}\n", encoding="utf-8")
++    group.write_text(f"{group_name}:x:{gid}:{name}\n", encoding="utf-8")
++    return passwd, group
++
++
++def build_command(
++    command: list[str],
++    *,
++    repo: str | Path,
++    python_env: str | Path,
++    output_dir: str | Path,
++    task_data: str | Path,
++    problem: str | Path,
++    solution_schema: str | Path,
++    instance: str | Path,
++    license_file: str | Path,
++    gurobi_home: str | Path | None = None,
++) -> list[str]:
++    repo_path = _required(repo, "repository")
++    python_path = _required(python_env, "Python environment")
++    output_path = _required(output_dir, "output directory")
++    task_data_path = _required(task_data, "current task data")
++    problem_path = _required(problem, "problem statement")
++    schema_path = _required(solution_schema, "solution schema")
++    instance_path = _required(instance, "instance")
++    license_path = _required(license_file, "Gurobi license")
++    gurobi_path = _required(gurobi_home, "Gurobi home") if gurobi_home else None
++    passwd_path, group_path = _sandbox_identity(repo_path)
++
++    home_paths = [repo_path, python_path, output_path, license_path]
++    if gurobi_path is not None:
++        home_paths.append(gurobi_path)
++
++    argv = [
++        "bwrap",
++        "--die-with-parent",
++        "--new-session",
++        "--unshare-user",
++        "--unshare-pid",
++        "--unshare-ipc",
++        "--unshare-uts",
++    ]
++    for directory in _home_parent_dirs(home_paths):
++        argv.extend(["--dir", directory])
++    argv.extend([
++        "--dir", "/etc",
++        "--ro-bind", str(passwd_path), "/etc/passwd",
++        "--ro-bind", str(group_path), "/etc/group",
++    ])
++
++    for source in ("/usr", "/bin", "/lib", "/lib64"):
++        if Path(source).exists():
++            argv.extend(["--ro-bind", source, source])
++    for source in (
++        "/etc/hosts",
++        "/etc/resolv.conf",
++        "/etc/nsswitch.conf",
++        "/etc/localtime",
++        "/etc/machine-id",
++        "/etc/ssl",
++        "/etc/ca-certificates",
++    ):
++        if Path(source).exists():
++            argv.extend(["--ro-bind", source, source])
++
++    argv.extend(
++        [
++            "--proc",
++            "/proc",
++            "--dev",
++            "/dev",
++            "--ro-bind",
++            "/sys",
++            "/sys",
++            "--tmpfs",
++            "/tmp",
++            "--ro-bind",
++            str(repo_path),
++            str(repo_path),
++            "--ro-bind",
++            str(python_path),
++            str(python_path),
++            "--bind",
++            str(output_path),
++            str(output_path),
++            "--ro-bind",
++            str(license_path),
++            str(license_path),
++        ]
++    )
++    if gurobi_path is not None:
++        argv.extend(["--ro-bind", str(gurobi_path), str(gurobi_path)])
++
++    for relative in ("data", "logs", "runs", ".git"):
++        target = repo_path / relative
++        if target.exists():
++            argv.extend(["--tmpfs", str(target)])
++    for relative in (".env", "config.json"):
++        target = repo_path / relative
++        if target.exists():
++            argv.extend(["--ro-bind", "/dev/null", str(target)])
++
++    task_target = repo_path / "data" / "frontieror" / task_data_path.name
++    argv.extend(
++        [
++            "--dir",
++            str(repo_path / "data" / "frontieror"),
++            "--ro-bind",
++            str(task_data_path),
++            str(task_target),
++            "--dir",
++            "/input",
++            "--ro-bind",
++            str(problem_path),
++            "/input/problem.md",
++            "--ro-bind",
++            str(schema_path),
++            "/input/solution_schema.json",
++            "--ro-bind",
++            str(instance_path),
++            "/input/instance.json",
++            "--setenv",
++            "HOME",
++            str(output_path),
++            "--setenv",
++            "TMPDIR",
++            "/tmp",
++            "--setenv",
++            "PYTHONDONTWRITEBYTECODE",
++            "1",
++            "--setenv",
++            "PATH",
++            f"{python_path / 'bin'}:/usr/bin:/bin",
++            "--chdir",
++            str(repo_path),
++            "--",
++            *command,
++        ]
++    )
++    return argv
++
++
++def configured_license_file() -> Path:
++    value = os.environ.get("GRB_LICENSE_FILE")
++    if not value:
++        raise SandboxConfigurationError(
++            "GRB_LICENSE_FILE must be set before sandbox launch"
++        )
++    return Path(value)
+diff --git a/adapters/frontieror/schedule.py b/adapters/frontieror/schedule.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..cb3937846e7836311bf70a7d9b74b64489ec7bb6
+--- /dev/null
++++ b/adapters/frontieror/schedule.py
+@@ -0,0 +1,229 @@
++"""Run OptiMUS over the 65 FrontierOR cases.
++
++One code path: a task whose frozen conversion is missing or stale is converted
++first, then run. Conversion happens once; afterwards the manifest hashes match
++and it is skipped.
++
++Conversion failures are recorded as ``adapter_failed`` and kept out of the
++baseline's own success statistics -- they are ours, not OptiMUS's.
++"""
++
++from __future__ import annotations
++
++import argparse
++import concurrent.futures
++import json
++import os
++import subprocess
++import sys
++import time
++import traceback
++from pathlib import Path
++
++from . import config, manifest
++
++
++def _run_wrapper(
++    command: list[str],
++    cpu_cores: int,
++    timeout_s: int,
++    log_path: Path,
++    sandbox: dict | None = None,
++) -> dict:
++    """Spawn wrapper.py so this task's resource usage is measured on its own."""
++    argv = [
++        sys.executable,
++        "-m",
++        "adapters.frontieror.wrapper",
++        "--cpu-cores",
++        str(cpu_cores),
++        "--cgroup-slice",
++        config.CGROUP_SLICE,
++        "--timeout",
++        str(timeout_s),
++        "--cwd",
++        str(config.REPO_ROOT),
++        "--log",
++        str(log_path),
++    ]
++    if sandbox is not None:
++        argv.extend(
++            [
++                "--sandbox",
++                "--sandbox-python-env",
++                str(sandbox["python_env"]),
++                "--sandbox-output",
++                str(sandbox["output_dir"]),
++                "--sandbox-task-data",
++                str(sandbox["task_data"]),
++                "--sandbox-problem",
++                str(sandbox["problem"]),
++                "--sandbox-solution-schema",
++                str(sandbox["solution_schema"]),
++                "--sandbox-instance",
++                str(sandbox["instance"]),
++                "--sandbox-gurobi-home",
++                str(sandbox["gurobi_home"]),
++            ]
++        )
++    argv.extend(["--", *command])
++    proc = subprocess.run(
++        argv, cwd=str(config.REPO_ROOT), capture_output=True, text=True, check=False
++    )
++    try:
++        return json.loads(proc.stdout.strip().splitlines()[-1])
++    except (ValueError, IndexError):
++        return {
++            "outcome": "wrapper_failed",
++            "returncode": proc.returncode,
++            "stderr": proc.stderr[-2000:],
++        }
++
++
++def process_case(
++    paper_id: str,
++    case: dict,
++    cpu_cores: int,
++    solver_threads: int,
++    log_dir: Path,
++) -> dict:
++    instance_path = config.instance_path(paper_id, case["instance_index"])
++    task_dir = config.task_dir(paper_id)
++    record: dict = {
++        "paper_id": paper_id,
++        "instance_bytes": case["instance_bytes"],
++        "formulation_type": case["formulation_type"],
++        "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
++    }
++
++    if not manifest.is_fresh(task_dir, instance_path):
++        from .generate import generate  # imported late: only this path needs an LLM
++
++        try:
++            record["conversion"] = generate(paper_id, case)
++        except Exception as exc:  # noqa: BLE001
++            record["outcome"] = "adapter_failed"
++            record["error"] = f"{type(exc).__name__}: {exc}"
++            record["traceback"] = traceback.format_exc()
++            return record
++    else:
++        record["conversion"] = "cached"
++
++    artifact_dir = log_dir / f"{paper_id}-artifacts"
++    artifact_dir.mkdir(parents=True, exist_ok=True)
++    result = _run_wrapper(
++        [
++            "python",
++            "run.py",
++            "--dataset",
++            "frontieror",
++            "--problem",
++            paper_id,
++            "--log_dir",
++            str(artifact_dir),
++            "--problem_path",
++            "/input/problem.md",
++            "--solution_schema",
++            "/input/solution_schema.json",
++            "--instance_path",
++            "/input/instance.json",
++            "--solver_threads",
++            str(solver_threads),
++            "--solver_time_limit",
++            str(config.SOLVER_TIMEOUT_SECONDS),
++        ],
++        cpu_cores=cpu_cores,
++        timeout_s=config.TASK_TIMEOUT_SECONDS,
++        log_path=log_dir / f"{paper_id}.log",
++        sandbox={
++            "python_env": config.BASELINE_PYTHON_ENV,
++            "output_dir": artifact_dir,
++            "task_data": task_dir,
++            "problem": config.problem_md_path(paper_id),
++            "solution_schema": config.solution_schema_path(paper_id),
++            "instance": instance_path,
++            "gurobi_home": config.GUROBI_HOME,
++        },
++    )
++    record.update(result)
++    raw_solution = artifact_dir / "raw_solution.json"
++    solution = artifact_dir / "solution.json"
++    record["raw_candidate_available"] = raw_solution.is_file()
++    record["solution_available"] = solution.is_file()
++    if raw_solution.is_file():
++        record["raw_solution_path"] = str(raw_solution)
++    if solution.is_file():
++        record["solution_path"] = str(solution)
++    return record
++
++
++def main() -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--jobs", type=int, default=config.JOBS)
++    parser.add_argument("--only", nargs="*", help="restrict to these paper_ids")
++    parser.add_argument(
++        "--run-dir", type=Path, default=None, help="defaults to a new runs/ folder"
++    )
++    args = parser.parse_args()
++
++    if not config.CGROUP_SLICE:
++        raise ValueError("ADAPTER_CGROUP_SLICE is required; launch through run.sh")
++    solver_threads = config.solver_threads(args.jobs)
++    cpu_cores = config.process_cpu_cores(args.jobs)
++    for variable in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
++        os.environ[variable] = str(solver_threads)
++
++    cases = config.load_cases()
++    if args.only:
++        cases = {k: v for k, v in cases.items() if k in set(args.only)}
++    # Largest last: the two instances above 100 MB are the ones most likely to
++    # hit the cap, and finishing the cheap cases first makes partial runs useful.
++    ordered = sorted(cases.items(), key=lambda kv: kv[1]["instance_bytes"])
++
++    print(
++        f"{len(ordered)} cases | jobs={args.jobs} | {config.TOTAL_MEM_GB} GB shared "
++        f"| {solver_threads} solver threads per task "
++        f"| {cpu_cores} cgroup CPU cores per task "
++        f"| {config.SOLVER_TIMEOUT_SECONDS}s solver "
++        f"| {config.TASK_TIMEOUT_SECONDS}s wall",
++        flush=True,
++    )
++
++    run_dir = args.run_dir or config.new_run_dir()
++    log_dir = run_dir / "logs"
++    log_dir.mkdir(parents=True, exist_ok=True)
++    report_path = run_dir / "report.jsonl"
++    print(f"run dir: {run_dir}", flush=True)
++
++    with report_path.open("w", encoding="utf-8") as out:
++        with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
++            futures = {
++                pool.submit(
++                    process_case,
++                    pid,
++                    case,
++                    cpu_cores,
++                    solver_threads,
++                    log_dir,
++                ): pid
++                for pid, case in ordered
++            }
++            for future in concurrent.futures.as_completed(futures):
++                paper_id = futures[future]
++                try:
++                    record = future.result()
++                except Exception as exc:  # noqa: BLE001
++                    record = {
++                        "paper_id": paper_id,
++                        "outcome": "scheduler_failed",
++                        "error": f"{type(exc).__name__}: {exc}",
++                    }
++                out.write(json.dumps(record, ensure_ascii=False) + "\n")
++                out.flush()
++                print(f"  {paper_id:<20} {record.get('outcome', '?')}", flush=True)
++
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/adapters/frontieror/test_result_pipeline.py b/adapters/frontieror/test_result_pipeline.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..cf4e1deefad4fd2a9683aa462677067980d06791
+--- /dev/null
++++ b/adapters/frontieror/test_result_pipeline.py
+@@ -0,0 +1,204 @@
++"""Focused tests for incumbent capture and fixed result formatting."""
++
++import json
++import tempfile
++from pathlib import Path
++from unittest.mock import patch
++
++from agents.evaluator import Evaluator
++from agents.programmer import Programmer
++from agents.result_formatter import ResultFormatter
++from adapters.frontieror import config, schedule
++
++
++class FakeClient:
++    def __init__(self, replies):
++        self.replies = iter(replies)
++        self.chat = self
++        self.completions = self
++
++    def create(self, **kwargs):
++        source = next(self.replies)
++        function = type(
++            "Function",
++            (),
++            {"name": "submit_formatter", "arguments": json.dumps({"source": source})},
++        )()
++        call = type("ToolCall", (), {"id": "call-1", "function": function})()
++        message = type("Message", (), {"content": None, "tool_calls": [call]})()
++        choice = type("Choice", (), {"message": message})()
++        return type("Completion", (), {"choices": [choice]})()
++
++
++def test_formatter_corrects_schema_error_in_one_tool_session():
++    root = Path(tempfile.mkdtemp())
++    raw = root / "raw.json"
++    data = root / "data.json"
++    schema = root / "schema.json"
++    problem = root / "problem.md"
++    raw.write_text(
++        json.dumps(
++            {
++                "objective_value": 4.0,
++                "variables": {"x[0]": 1.0, "x[1]": 0.0},
++            }
++        ),
++        encoding="utf-8",
++    )
++    data.write_text(json.dumps({"n": 2}), encoding="utf-8")
++    schema.write_text(
++        json.dumps({"objective_value": "<float>", "selected": "<list[int]>"}),
++        encoding="utf-8",
++    )
++    problem.write_text("Select items.", encoding="utf-8")
++    client = FakeClient(
++        [
++            (
++                "def build_solution(raw_solution, data, instance):\n"
++                "    return {'wrong': 1}\n"
++            ),
++            (
++                "def build_solution(raw_solution, data, instance):\n"
++                "    return {'objective_value': raw_solution['objective_value'], "
++                "'selected': [0]}\n"
++            ),
++        ]
++    )
++    formatter = ResultFormatter(client=client, llm="fake")
++    assert formatter.max_tool_rounds == 10
++    state = {
++        "raw_solution_path": str(raw),
++        "target_solution_schema_path": str(schema),
++        "data_json_path": str(data),
++        "problem_path": str(problem),
++        "log_folder": str(root),
++        "objective": [],
++        "variables": [],
++        "constraint": [],
++    }
++
++    _, result = formatter.generate_reply("format", state, sender=None)
++
++    assert result["solution_export_status"] == "completed"
++    assert result["solution_export_tool_rounds"] == 2
++    assert json.loads((root / "solution.json").read_text()) == {
++        "objective_value": 4.0,
++        "selected": [0],
++    }
++
++
++def test_template_validation_rejects_missing_fields():
++    try:
++        ResultFormatter._validate_template({}, {"objective_value": "<float>"})
++    except ValueError as exc:
++        assert "missing required keys" in str(exc)
++    else:
++        raise AssertionError("missing target fields were accepted")
++
++
++def test_evaluator_defaults_to_600_seconds():
++    evaluator = Evaluator(client=FakeClient([]))
++    assert evaluator.solver_time_limit == 600
++    assert evaluator.solver_threads == 32
++
++
++def test_programmer_prompt_uses_configured_solver_time_limit():
++    programmer = Programmer(client=FakeClient([]), solver_time_limit=17)
++    captured = {}
++
++    def fake_llm_call(*, messages, seed):
++        captured["prompt"] = messages[1]["content"]
++        return "=====\nx = model.addVar(name='x')\n====="
++
++    programmer.llm_call = fake_llm_call
++    state = {
++        "variables": [
++            {
++                "symbol": "x",
++                "definition": "decision variable",
++                "shape": [],
++                "status": "formulated",
++            }
++        ],
++        "constraint": [],
++        "objective": [],
++    }
++
++    programmer._generate_code_from_formulation(state)
++
++    assert "17-second time limit" in captured["prompt"]
++
++
++def test_frontieror_schedule_passes_configured_solver_time_limit():
++    root = Path(tempfile.mkdtemp())
++    captured = {}
++
++    def fake_run_wrapper(command, **kwargs):
++        captured["command"] = command
++        return {"outcome": "completed"}
++
++    case = {
++        "instance_index": 1,
++        "instance_bytes": 1,
++        "formulation_type": "test",
++    }
++    with (
++        patch.object(schedule.manifest, "is_fresh", return_value=True),
++        patch.object(schedule, "_run_wrapper", side_effect=fake_run_wrapper),
++        patch.object(config, "SOLVER_TIMEOUT_SECONDS", 17),
++    ):
++        schedule.process_case("example", case, 1, 2, root)
++
++    option_index = captured["command"].index("--solver_time_limit")
++    assert captured["command"][option_index + 1] == "17"
++
++
++def test_evaluator_captures_time_limit_incumbent():
++    root = Path(tempfile.mkdtemp())
++    data = root / "data.json"
++    data.write_text("{}", encoding="utf-8")
++    evaluator = Evaluator(client=FakeClient([]), solver_threads=8)
++    evaluator.get_solver_prep_code = lambda: (
++        """
++class GRB:
++    OPTIMAL=2; INFEASIBLE=3; INF_OR_UNBD=4; UNBOUNDED=5
++    TIME_LIMIT=9; INTERRUPTED=11; SUBOPTIMAL=13
++class GP: pass
++gp = GP(); gp.GRB = GRB
++class Variable:
++    VarName='x[0]'; X=1.0
++class Model:
++    status=9; SolCount=1; ObjVal=7.5
++    params = {}
++    def setParam(self, name, value): self.params[name] = value
++    def optimize(self):
++        assert self.params == {'TimeLimit': 600, 'Threads': 8}
++    def getVars(self): return [Variable()]
++model = Model()
++"""
++    )
++    state = {
++        "data_json_path": str(data),
++        "log_folder": str(root),
++        "parameters": [],
++        "variables": [],
++        "constraint": [],
++        "objective": [{"code": "# objective already defined"}],
++    }
++
++    result = evaluator._run_code(state)
++
++    assert result["status_name"] == "time_limit"
++    assert result["obj_val"] == 7.5
++    saved = json.loads((root / "raw_solution.json").read_text())
++    assert saved["variables"] == {"x[0]": 1.0}
++
++
++if __name__ == "__main__":
++    test_formatter_corrects_schema_error_in_one_tool_session()
++    test_template_validation_rejects_missing_fields()
++    test_evaluator_defaults_to_600_seconds()
++    test_programmer_prompt_uses_configured_solver_time_limit()
++    test_frontieror_schedule_passes_configured_solver_time_limit()
++    test_evaluator_captures_time_limit_incumbent()
++    print("6/6 as expected")
+diff --git a/adapters/frontieror/test_sandbox.py b/adapters/frontieror/test_sandbox.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..f69f73bb87c9baf24ba210a1d3f4eac1defafb74
+--- /dev/null
++++ b/adapters/frontieror/test_sandbox.py
+@@ -0,0 +1,75 @@
++"""Structural checks for the per-case bubblewrap boundary."""
++
++import os
++import tempfile
++from pathlib import Path
++
++from adapters.frontieror import config
++from adapters.frontieror.sandbox import build_command, build_scope_command
++
++
++def test_sandbox_exposes_only_current_case_inputs():
++    assert config.TOTAL_MEM_GB == 100
++    assert config.solver_threads(1) == 32
++    assert config.solver_threads(4) == 8
++    assert config.solver_threads(5) == 6
++    assert config.process_cpu_cores(1) == 24
++    assert config.process_cpu_cores(4) == 6
++    assert config.process_cpu_cores(5) == 4
++    scope = build_scope_command(
++        ["python", "run.py"], cpu_cores=6, cgroup_slice="optimus-test.slice"
++    )
++    assert "CPUQuota=600%" in scope
++    assert "optimus-test" in scope
++    assert not any("MemoryMax" in item for item in scope)
++    root = Path(tempfile.mkdtemp())
++    repo = root / "repo"
++    python_env = root / "python-env"
++    output = root / "output"
++    task_data = repo / "data" / "frontieror" / "case-a"
++    gurobi_home = root / "gurobi"
++    for directory in (repo, python_env, output, task_data, gurobi_home):
++        directory.mkdir(parents=True, exist_ok=True)
++    (repo / ".git").mkdir()
++    (repo / "logs").mkdir()
++    (repo / "config.json").write_text("secret", encoding="utf-8")
++    problem = root / "problem.md"
++    schema = root / "schema.json"
++    instance = root / "instance.json"
++    license_file = root / "gurobi.lic"
++    for path in (problem, schema, instance, license_file):
++        path.write_text("{}", encoding="utf-8")
++
++    command = build_command(
++        ["python", "run.py"],
++        repo=repo,
++        python_env=python_env,
++        output_dir=output,
++        task_data=task_data,
++        problem=problem,
++        solution_schema=schema,
++        instance=instance,
++        license_file=license_file,
++        gurobi_home=gurobi_home,
++    )
++    rendered = "\n".join(command)
++
++    assert "--unshare-pid" in command
++    assert "--unshare-net" not in command
++    assert f"{os.sep}Decision Brain" not in rendered
++    assert "feasibility_check.py" not in rendered
++    assert "reference_solution" not in rendered
++    assert str(repo / ".git") in rendered
++    assert str(repo / "config.json") in rendered
++    assert "/input/problem.md" in command
++    assert "/input/solution_schema.json" in command
++    assert "/input/instance.json" in command
++    assert not any(
++        command[index : index + 3] == ["--ro-bind", "/", "/"]
++        for index in range(len(command) - 2)
++    )
++
++
++if __name__ == "__main__":
++    test_sandbox_exposes_only_current_case_inputs()
++    print("1/1 as expected")
+diff --git a/adapters/frontieror/test_validate.py b/adapters/frontieror/test_validate.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..b112c08fd89bbc77db0bcd2d39f326c1f4baa212
+--- /dev/null
++++ b/adapters/frontieror/test_validate.py
+@@ -0,0 +1,157 @@
++"""Exercise validate.py against synthetic conversions.
++
++Each case pins one clause of the input contract, next to the line in OptiMUS that
++enforces it. Run it directly:
++
++    python -m adapters.frontieror.test_validate
++
++The cases that matter most are the ones OptiMUS's own sanity_check accepts and
++the agents then reject -- index suffixes and undeclared dimensions. Those two
++cost a real run before they were checked here.
++"""
++import json, sys, shutil, tempfile
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
++from adapters.frontieror import validate
++from adapters.frontieror.validate import ValidationError
++
++def stage(data, params, targets=True):
++    d = Path(tempfile.mkdtemp())
++    (d / "data.json").write_text(json.dumps(data), encoding="utf-8")
++    (d / "parameters.json").write_text(json.dumps(params), encoding="utf-8")
++    if targets:
++        (d / "input_targets.json").write_text("{}", encoding="utf-8")
++    return d
++
++def run(name, instance, data, params, expect):
++    d = stage(data, params)
++    try:
++        rep, cov = validate.validate(d, instance, lambda: None)
++        got = "PASS"
++        detail = cov
++    except ValidationError as e:
++        got = "REJECT"
++        detail = str(e).split("\n")[0][:110]
++    finally:
++        shutil.rmtree(d, ignore_errors=True)
++    ok = "OK " if got == expect else "FAIL"
++    print(f"[{ok}] {name:<34} -> {got:<6} {detail}")
++    return got == expect
++
++results = []
++
++# 1. good: real shapes, dim names present in data.json
++inst = {"n": 2, "m": 3, "cost": [[1,2,3],[4,5,6]], "cap": 7}
++data = {"n": 2, "m": 3, "cost": [[1,2,3],[4,5,6]], "cap": 7}
++params = [
++    {"symbol":"n","shape":[],"definition":"rows","source_key":"n"},
++    {"symbol":"m","shape":[],"definition":"cols","source_key":"m"},
++    {"symbol":"cost","shape":["n","m"],"definition":"unit cost","source_key":"cost"},
++    {"symbol":"cap","shape":[],"definition":"capacity","source_key":"cap"},
++]
++results.append(run("well-formed shaped encoding", inst, data, params, "PASS"))
++
++# 2. degenerate shape:[] on a real array -> must be rejected by OUR assertion
++bad = [dict(p) for p in params]
++bad[2]["shape"] = []
++results.append(run("array encoded as shape:[]", inst, data, bad, "REJECT"))
++
++# 3. dropped key
++results.append(run("instance key not covered", inst, data, params[:3], "REJECT"))
++
++# 4. ragged without mask
++inst4 = {"n": 2, "routes": [[1,2,3],[4,5]]}
++data4 = {"n": 2, "routes": [[1,2,3],[4,5,0]], "R": 3}
++p4 = [
++    {"symbol":"n","shape":[],"definition":"n","source_key":"n"},
++    {"symbol":"routes","shape":["n","R"],"definition":"routes","source_key":"routes"},
++]
++results.append(run("ragged padded without mask", inst4, data4, p4, "REJECT"))
++# note: p4 also leaves dim R undeclared, which the symbol contract rejects too
++
++# 5. ragged with mask -> passes (note: R must also be a data.json key)
++p5 = p4 + [{"symbol":"routesMask","shape":["n","R"],"definition":"1 = real cell",
++            "source_key":"routes","role":"mask"},
++           {"symbol":"R","shape":[],"definition":"padded route length","source_key":"routes"}]
++data5 = dict(data4); data5["routesMask"] = [[1,1,1],[1,1,0]]
++results.append(run("ragged padded with mask", inst4, data5, p5, "PASS"))
++
++# 6. dimension mismatch -> caught by OptiMUS's own sanity_check
++data6 = {"n": 5, "m": 3, "cost": [[1,2,3],[4,5,6]], "cap": 7}
++results.append(run("wrong dim value (OptiMUS check)", inst, data6, params, "REJECT"))
++
++# 7. symbol with two underscores -> OptiMUS camelCase rule
++p7 = [dict(p) for p in params]; p7[2]["symbol"] = "unit_cost_matrix"
++data7 = dict(data); data7["unit"] = [[1,2,3],[4,5,6]]
++inst7 = dict(inst)
++results.append(run("symbol with 2 underscores", inst7, data7, p7, "REJECT"))
++
++# --- symbol contract (the half sanity_check does not enforce) -----------------
++
++# 8. index suffix on a symbol: legal for sanity_check (one underscore), fatal at
++#    agents/formulator.py:414 because 	extup{cost} != "cost_ij"
++p8 = [dict(x) for x in params]; p8[2]["symbol"] = "cost_ij"
++results.append(run("symbol with index suffix", inst, data, p8, "REJECT"))
++
++# 9. dimension present in data.json but not declared as a parameter: legal for
++#    sanity_check (utils/misc.py:222), NameError at agents/evaluator.py:105
++p9 = [x for x in params if x["symbol"] != "m"]
++p9 = p9 + [{"symbol":"numCols","shape":[],"definition":"cols","source_key":"m"}]
++results.append(run("dim not declared as parameter", inst, data, p9, "REJECT"))
++
++# 10. dimension declared, but as an array rather than a scalar
++p10 = [dict(x) for x in params]; p10[1]["shape"] = ["n"]
++data10 = dict(data); data10["m"] = [3, 3]
++inst10 = dict(inst); inst10["m"] = [3, 3]
++results.append(run("dim declared with a shape", inst10, data10, p10, "REJECT"))
++
++# 11. symbol shadowing a name the harness binds (evaluator.py prep_code)
++inst11 = {"n": 2, "model": 4}
++data11 = {"n": 2, "model": 4}
++p11 = [{"symbol":"n","shape":[],"definition":"n","source_key":"n"},
++       {"symbol":"model","shape":[],"definition":"clashes with gp.Model","source_key":"model"}]
++results.append(run("symbol shadows exec namespace", inst11, data11, p11, "REJECT"))
++
++# --- metadata role ------------------------------------------------------------
++
++inst12 = {"n": 2, "m": 3, "cost": [[1,2,3],[4,5,6]], "cap": 7, "instance_id": "delage2022_3"}
++p12 = params + [{"symbol":"instanceId","shape":[],"definition":"provenance only",
++                 "source_key":"instance_id","role":"metadata"}]
++# 12. a free-text key declared metadata: no data.json entry, no char-code array
++results.append(run("metadata key, absent from data.json", inst12, data, p12, "PASS"))
++
++# 13. metadata is still not an escape hatch for dropping a key entirely
++results.append(run("metadata key left uncovered", inst12, data, params, "REJECT"))
++
++# 14. metadata may not carry a shape
++p14 = [dict(x) for x in p12]; p14[-1]["shape"] = ["n"]
++results.append(run("metadata declaring a shape", inst12, data, p14, "REJECT"))
++
++# 15. a ragged key declared metadata needs no mask (it never reaches data.json)
++inst15 = {"n": 2, "generation_info": [[1,2],[3]]}
++data15 = {"n": 2}
++p15 = [{"symbol":"n","shape":[],"definition":"n","source_key":"n"},
++       {"symbol":"generationInfo","shape":[],"definition":"provenance only",
++        "source_key":"generation_info","role":"metadata"}]
++results.append(run("ragged metadata needs no mask", inst15, data15, p15, "PASS"))
++
++# 16. a Python keyword as a symbol -> SyntaxError when evaluator.py execs it
++inst16 = {"n": 2, "class": 4}
++p16 = [{"symbol":"n","shape":[],"definition":"n","source_key":"n"},
++       {"symbol":"class","shape":[],"definition":"kw","source_key":"class"}]
++results.append(run("symbol is a Python keyword", inst16, dict(inst16), p16, "REJECT"))
++
++# 17. a symbol shadowing a builtin the generated code calls
++inst17 = {"n": 2, "sum": 4}
++p17 = [{"symbol":"n","shape":[],"definition":"n","source_key":"n"},
++       {"symbol":"sum","shape":[],"definition":"shadows sum()","source_key":"sum"}]
++results.append(run("symbol shadows a builtin", inst17, dict(inst17), p17, "REJECT"))
++
++# 18. a parameter with no symbol at all -> feedback, not a raw KeyError
++inst18 = {"n": 2}
++p18 = [{"shape":[],"definition":"nameless","source_key":"n"}]
++results.append(run("parameter without a symbol", inst18, dict(inst18), p18, "REJECT"))
++
++print("\n%d/%d as expected" % (sum(results), len(results)))
++sys.exit(0 if all(results) else 1)
+diff --git a/adapters/frontieror/validate.py b/adapters/frontieror/validate.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..6a7ef34cc750072abbdc15af1fb18b0b4cc15dae
+--- /dev/null
++++ b/adapters/frontieror/validate.py
+@@ -0,0 +1,343 @@
++"""Validation oracle for a generated conversion.
++
++Two layers:
++
++1. OptiMUS's own ``prep_problem_json`` and ``sanity_check`` (utils/misc.py),
++   loaded from source so the check that runs is the baseline's, not a copy.
++2. Five extra assertions. ``sanity_check`` is not the whole input contract:
++   half of what OptiMUS requires of a parameter list is enforced nowhere but
++   inside the agents, by string comparison (agents/formulator.py:373,
++   agents/programmer.py:557, agents/evaluator.py:105). A conversion can pass
++   ``sanity_check`` and still be unusable, so those rules are checked here too,
++   alongside the ones about faithfulness to the instance.
++"""
++
++from __future__ import annotations
++
++import importlib.util
++import json
++import keyword
++import sys
++import types
++from pathlib import Path
++from typing import Any
++
++from . import config
++
++
++class ValidationError(Exception):
++    """Raised when a generated conversion is rejected. Carries text that is fed
++    back to the converter verbatim."""
++
++
++def _load_optimus_misc() -> types.ModuleType:
++    """Import utils/misc.py without pulling in its optional LLM clients.
++
++    misc.py imports mistralai at module level purely for other functions in the
++    file; stubbing it keeps prep_problem_json and sanity_check byte-identical to
++    upstream while removing an irrelevant dependency.
++    """
++    if "mistralai" not in sys.modules:
++        stub = types.ModuleType("mistralai")
++        client = types.ModuleType("mistralai.client")
++        client.MistralClient = object
++        stub.client = client
++        sys.modules["mistralai"] = stub
++        sys.modules["mistralai.client"] = client
++
++    path = config.REPO_ROOT / "utils" / "misc.py"
++    spec = importlib.util.spec_from_file_location("_optimus_misc", path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++# --- shape classification of raw instance values -----------------------------
++
++def _is_scalar(value: Any) -> bool:
++    return isinstance(value, (int, float, bool, str)) or value is None
++
++
++def _is_ragged(value: Any) -> bool:
++    """A nested list whose sibling elements disagree on length."""
++    if not isinstance(value, list) or not value:
++        return False
++    lengths = {len(v) for v in value if isinstance(v, list)}
++    if len(lengths) > 1:
++        return True
++    return any(_is_ragged(v) for v in value if isinstance(v, list))
++
++
++# --- roles -------------------------------------------------------------------
++
++def _is_metadata(param: dict) -> bool:
++    return param.get("role") == "metadata"
++
++
++def modelling(params: list[dict]) -> list[dict]:
++    """The parameters OptiMUS actually receives.
++
++    Keys declared role=metadata stay in parameters.json -- so the record shows
++    what was judged non-modelling, and key coverage still accounts for them --
++    but they are not handed to the modelling agents.
++    """
++    return [p for p in params if not _is_metadata(p)]
++
++
++# Names bound by the harness around the generated code: agents/evaluator.py
++# prep_code (:14-24), get_solver_prep_code (:180) and post_code (:27-42). A
++# parameter with one of these names would overwrite the model or the data.
++RESERVED_NAMES = frozenset({"json", "np", "math", "gp", "model", "data", "f", "status", "obj_val"})
++
++# Builtins the generated gurobipy code routinely calls. Shadowing one of these
++# with a parameter is silent until the line that calls it.
++SHADOWED_BUILTINS = frozenset(
++    {"sum", "min", "max", "range", "len", "abs", "round", "int", "float", "list", "dict", "set", "str"}
++)
++
++
++# --- the five assertions ------------------------------------------------------
++
++def _assert_symbol_contract(params: list[dict]) -> dict:
++    """The half of the input contract that sanity_check does not check.
++
++    utils/misc.py:205 tolerates one underscore in a symbol and utils/misc.py:222
++    is satisfied by a dimension that merely exists in data.json. Neither is
++    enough:
++
++    * agents/formulator.py:373-374 matches the text inside \\textup{} against
++      ``symbol`` by exact equality and raises on anything unmatched (:414), and
++      agents/programmer.py:557 selects a constraint's parameters the same way.
++      The formulator is instructed to write indices outside the symbol
++      (formulator.py:101), so a symbol carrying its own index suffix can never
++      match.
++    * agents/evaluator.py:105-110 executes the ``code`` line of each *parameter*
++      and nothing else, so a dimension that is not itself a parameter is simply
++      not a defined name in the namespace the generated code runs in.
++    """
++    malformed = [p for p in params if not isinstance(p.get("symbol"), str) or not p["symbol"]]
++    if malformed:
++        raise ValidationError(
++            f"{len(malformed)} entries in parameters.json have no usable `symbol`. "
++            "Every entry needs a symbol, a shape and a definition."
++        )
++
++    real = modelling(params)
++    declared = {p["symbol"] for p in real}
++    scalars = {p["symbol"] for p in real if not p.get("shape")}
++
++    suffixed = sorted(p["symbol"] for p in real if "_" in p["symbol"])
++    if suffixed:
++        raise ValidationError(
++            f"These symbols carry an index suffix: {suffixed}. A symbol must be "
++            "bare -- write `linearCost`, not `linearCost_ij`. OptiMUS matches the "
++            "name inside \\textup{...} against the symbol by exact string "
++            "equality, so a suffixed symbol can never be resolved. Move the "
++            "indices into `shape`, and rename the matching data.json keys so each "
++            "symbol is still spelled exactly like its key."
++        )
++
++    forbidden = RESERVED_NAMES | SHADOWED_BUILTINS
++    unusable = sorted(
++        p["symbol"] for p in real
++        if not p["symbol"].isidentifier()
++        or keyword.iskeyword(p["symbol"])
++        or p["symbol"] in forbidden
++    )
++    if unusable:
++        raise ValidationError(
++            f"These symbols cannot be used as Python names: {unusable}. A symbol "
++            "must be a valid identifier, must not be a Python keyword, and must "
++            f"not be one of {sorted(forbidden)} -- names the generated code "
++            "already binds or calls. Rename the symbol and its data.json key "
++            "together so the two still match."
++        )
++
++    undeclared = sorted(
++        {d for p in real for d in p.get("shape", [])} - declared
++    )
++    if undeclared:
++        raise ValidationError(
++            f"These dimension names are used in a shape but are not parameters: "
++            f"{undeclared}. Being present in data.json is not enough -- only "
++            "parameters are loaded into the namespace the generated code runs in, "
++            "so indexing with one of these raises NameError. Add each as its own "
++            'entry with shape [] and the same name, and keep its integer value in '
++            "data.json."
++        )
++
++    non_scalar_dims = sorted(
++        {d for p in real for d in p.get("shape", [])} & declared - scalars
++    )
++    if non_scalar_dims:
++        raise ValidationError(
++            f"These names are used as dimensions but are declared with a non-empty "
++            f"shape: {non_scalar_dims}. A dimension must be a scalar integer "
++            "parameter (shape [])."
++        )
++
++    bad_metadata = sorted(
++        p["symbol"] for p in params if _is_metadata(p) and p.get("shape")
++    )
++    if bad_metadata:
++        raise ValidationError(
++            f"These parameters are role=metadata but declare a shape: "
++            f"{bad_metadata}. Metadata carries no modelling content, so it has "
++            "shape [] and no entry in data.json."
++        )
++
++    return {
++        "modelling": len(real),
++        "metadata": len(params) - len(real),
++        "dimensions": len({d for p in real for d in p.get("shape", [])}),
++    }
++
++
++def _assert_no_scalarization(params: list[dict], instance: dict) -> dict:
++    """A key that carries structure must keep it. shape == [] is legal in
++    sanity_check (utils/misc.py:220 skips the dimension check entirely when the
++    shape is empty), which is exactly the degenerate encoding we refuse.
++
++    Dimension parameters are exempt. A padded array's width is a genuine scalar
++    even though the key it comes from is a list, so flagging it would make the
++    padding rule and this rule contradict each other.
++    """
++    real = modelling(params)
++    dimension_names = {d for p in real for d in p.get("shape", [])}
++    offenders = []
++    for param in real:
++        key = param.get("source_key")
++        if key is None or param.get("role") == "mask":
++            continue
++        if param["symbol"] in dimension_names:
++            continue
++        if not _is_scalar(instance.get(key)) and not param.get("shape"):
++            offenders.append(param["symbol"])
++    if offenders:
++        raise ValidationError(
++            "These parameters are not scalars in the instance but were encoded "
++            f"with shape []: {offenders}. Give each one its real dimensions, and "
++            "declare every dimension name as its own integer entry in data.json."
++        )
++    return {"checked": len(real), "offenders": 0}
++
++
++def _assert_key_coverage(params: list[dict], instance: dict) -> dict:
++    """Nothing may be dropped, merged, or pre-aggregated: deciding a field is
++    irrelevant is a modelling decision that belongs to OptiMUS, not to us."""
++    covered = {p.get("source_key") for p in params}
++    missing = sorted(set(instance) - covered)
++    if missing:
++        raise ValidationError(
++            "These top-level keys of the instance are not represented by any "
++            f"parameter: {missing}. Every key must appear; none may be dropped "
++            "or folded into another."
++        )
++    unknown = sorted(covered - set(instance) - {None})
++    if unknown:
++        raise ValidationError(
++            f"These source_key values do not exist in the instance: {unknown}."
++        )
++    return {"instance_keys": len(instance), "missing": 0}
++
++
++def _assert_ragged_has_mask(params: list[dict], instance: dict) -> dict:
++    """Padding a ragged array to a rectangle needs a fill value. Padding with 0
++    and publishing a mask states which cells are real without deciding what the
++    model should do about them; padding with a semantically neutral value (+inf,
++    -1) would make that decision for OptiMUS."""
++    masked = {p.get("source_key") for p in params if p.get("role") == "mask"}
++    as_metadata = {p.get("source_key") for p in params if _is_metadata(p)}
++    ragged = {k for k, v in instance.items() if _is_ragged(v)}
++    unmasked = sorted(ragged - masked - as_metadata)
++    if unmasked:
++        raise ValidationError(
++            "These keys are ragged in the instance and were padded without a "
++            f"companion mask: {unmasked}. Pad with 0 and emit, for each one, a "
++            "second parameter of the same shape marked role=mask whose entries "
++            "are 1 for real cells and 0 for padding."
++        )
++    return {"ragged_keys": len(ragged), "unmasked": 0}
++
++
++def _assert_determinism(task_staging: Path, run_transform) -> dict:
++    """Same instance in, same data.json out -- otherwise the frozen artifact does
++    not describe a reproducible run."""
++    from .manifest import sha256_file
++
++    data_json = task_staging / "data.json"
++    first = sha256_file(data_json)
++    run_transform()
++    second = sha256_file(data_json)
++    if first != second:
++        raise ValidationError(
++            "transform.py produced a different data.json on a second run. Remove "
++            "every source of nondeterminism: iterate dicts in sorted key order, "
++            "do not use set iteration order, and do not seed anything from time."
++        )
++    return {"sha256": first}
++
++
++# --- entry point -------------------------------------------------------------
++
++def validate(task_staging: Path, instance: dict, run_transform) -> tuple[dict, dict]:
++    """Run both layers against a staged conversion.
++
++    ``instance`` is the already-parsed instance.json; ``run_transform`` re-runs
++    transform.py in place. Raises ValidationError with feedback text on failure.
++    Returns (assertion report, shape coverage report).
++    """
++    misc = _load_optimus_misc()
++
++    params_path = task_staging / "parameters.json"
++    for path in (task_staging / "input_targets.json", params_path, task_staging / "data.json"):
++        if not path.is_file():
++            raise ValidationError(f"Missing required artifact: {path.name}")
++
++    params = json.loads(params_path.read_text(encoding="utf-8"))
++    if not isinstance(params, list) or not params:
++        raise ValidationError("parameters.json must be a non-empty list.")
++    if not modelling(params):
++        raise ValidationError(
++            "Every parameter is marked role=metadata, so OptiMUS would receive "
++            "nothing to model. Metadata is for values that cannot enter any "
++            "formulation, not for the instance as a whole."
++        )
++
++    report = {
++        "symbol_contract": _assert_symbol_contract(params),
++        "no_scalarization": _assert_no_scalarization(params, instance),
++        "key_coverage": _assert_key_coverage(params, instance),
++        "ragged_has_mask": _assert_ragged_has_mask(params, instance),
++    }
++
++    # OptiMUS's own checks. prep_problem_json fills in the `code` field that
++    # sanity_check then requires, so the order matters.
++    state = {
++        # Metadata never reaches OptiMUS, so it is not what sanity_check should
++        # be given either -- input_targets.json carries the modelling half only.
++        "parameters": [dict(p) for p in modelling(params)],
++        "data_json_path": str(task_staging / "data.json"),
++    }
++    try:
++        # prep_problem_json is a staticmethod on NLParamParser; sanity_check is
++        # module level. run.py calls them in exactly this order (run.py:120, :143).
++        state = misc.NLParamParser.prep_problem_json(state)
++        misc.sanity_check(state)
++    except Exception as exc:  # noqa: BLE001 - text is fed back to the converter
++        raise ValidationError(
++            f"OptiMUS sanity_check rejected the conversion:\n{type(exc).__name__}: {exc}"
++        ) from exc
++
++    report["determinism"] = _assert_determinism(task_staging, run_transform)
++
++    real = modelling(params)
++    shaped = sum(1 for p in real if p.get("shape"))
++    coverage = {
++        "parameters": len(real),
++        "shaped": shaped,
++        "scalar": len(real) - shaped,
++        "mask_parameters": sum(1 for p in real if p.get("role") == "mask"),
++        "metadata_parameters": len(params) - len(real),
++    }
++    return report, coverage
+diff --git a/adapters/frontieror/wrapper.py b/adapters/frontieror/wrapper.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..678db6d61d8f436339f3ae59a24a1e6a3a99ce04
+--- /dev/null
++++ b/adapters/frontieror/wrapper.py
+@@ -0,0 +1,145 @@
++"""Run one command under a memory cap and a wall clock, then report what it cost.
++
++Invoked as a subprocess, one per task. Running it in its own process is what
++makes the accounting per-task: getrusage(RUSAGE_CHILDREN) reports a high-water
++mark across *all* children of the calling process, so a single scheduler process
++supervising several tasks at once could only report their maximum, not each
++task's own peak.
++
++Prints one JSON object on stdout. Everything the supervised command writes goes
++to the log file, not here.
++"""
++
++from __future__ import annotations
++
++import argparse
++import json
++import resource
++import subprocess
++import sys
++import time
++from pathlib import Path
++
++from .sandbox import build_command, build_scope_command, configured_license_file
++
++# Every task scope joins the run-level parent slice. The parent owns the shared
++# MemoryMax, while this scope owns only the per-task CPU quota.
++def run_capped(
++    command: list[str],
++    cpu_cores: int,
++    cgroup_slice: str,
++    timeout_s: int,
++    cwd: Path,
++    log_path: Path,
++    sandbox: dict | None = None,
++) -> dict:
++    supervised = (
++        build_command(
++            command,
++            repo=cwd,
++            license_file=configured_license_file(),
++            **sandbox,
++        )
++        if sandbox is not None
++        else command
++    )
++    argv = build_scope_command(supervised, cpu_cores, cgroup_slice)
++    started = time.time()
++    timed_out = False
++    log_path.parent.mkdir(parents=True, exist_ok=True)
++    with log_path.open("wb") as log:
++        proc = subprocess.Popen(
++            argv, cwd=str(cwd), stdout=log, stderr=subprocess.STDOUT
++        )
++        try:
++            returncode = proc.wait(timeout=timeout_s)
++        except subprocess.TimeoutExpired:
++            timed_out = True
++            proc.kill()
++            returncode = proc.wait()
++    usage = resource.getrusage(resource.RUSAGE_CHILDREN)
++
++    return {
++        "returncode": returncode,
++        "outcome": classify(returncode, timed_out),
++        "peak_rss_gb": round(usage.ru_maxrss / 1e6, 3),
++        "cpu_user_s": round(usage.ru_utime, 1),
++        "cpu_sys_s": round(usage.ru_stime, 1),
++        "wall_s": round(time.time() - started, 1),
++        "memory_pool_gb": 100,
++        "memory_cgroup_slice": cgroup_slice,
++        "cpu_cap_cores": cpu_cores,
++        "timeout_s": timeout_s,
++        "log": str(log_path),
++    }
++
++
++def classify(returncode: int, timed_out: bool) -> str:
++    """Separate resource limits from the baseline's own failures, so that a task
++    killed by our budget is never scored as OptiMUS getting the answer wrong."""
++    if timed_out:
++        return "task_timeout"
++    if returncode == -9:
++        return "memory_exceeded"
++    if returncode == 0:
++        return "completed"
++    return "optimus_failed"
++
++
++def main() -> int:
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--cpu-cores", type=int, required=True)
++    parser.add_argument("--cgroup-slice", required=True)
++    parser.add_argument("--timeout", type=int, required=True)
++    parser.add_argument("--cwd", type=Path, required=True)
++    parser.add_argument("--log", type=Path, required=True)
++    parser.add_argument("--sandbox", action="store_true")
++    parser.add_argument("--sandbox-python-env", type=Path)
++    parser.add_argument("--sandbox-output", type=Path)
++    parser.add_argument("--sandbox-task-data", type=Path)
++    parser.add_argument("--sandbox-problem", type=Path)
++    parser.add_argument("--sandbox-solution-schema", type=Path)
++    parser.add_argument("--sandbox-instance", type=Path)
++    parser.add_argument("--sandbox-gurobi-home", type=Path)
++    parser.add_argument("command", nargs=argparse.REMAINDER)
++    args = parser.parse_args()
++
++    command = args.command[1:] if args.command[:1] == ["--"] else args.command
++    if not command:
++        parser.error("no command given")
++
++    sandbox = None
++    if args.sandbox:
++        required = {
++            "python_env": args.sandbox_python_env,
++            "output_dir": args.sandbox_output,
++            "task_data": args.sandbox_task_data,
++            "problem": args.sandbox_problem,
++            "solution_schema": args.sandbox_solution_schema,
++            "instance": args.sandbox_instance,
++            "gurobi_home": args.sandbox_gurobi_home,
++        }
++        missing = [
++            name
++            for name, value in required.items()
++            if value is None and name != "gurobi_home"
++        ]
++        if missing:
++            parser.error(f"sandbox requires: {', '.join(missing)}")
++        sandbox = required
++    record = run_capped(
++        command,
++        args.cpu_cores,
++        args.cgroup_slice,
++        args.timeout,
++        args.cwd,
++        args.log,
++        sandbox=sandbox,
++    )
++    json.dump(record, sys.stdout)
++    sys.stdout.write("\n")
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/agents/agent.py b/agents/agent.py
+index be7cb94d1930baf296398d00808964aa3b7f0292..1a48844dc53fd3593d65176a9e31d91a55ff6977 100644
+--- a/agents/agent.py
++++ b/agents/agent.py
+@@ -1,7 +1,11 @@
+ from typing import Dict, Optional, Union, List
++import openai
+ from openai import Client, OpenAI
+-from mistralai.client import MistralClient
+-from mistralai.models.chat_completion import ChatMessage
++
++# Every agent now shares one OpenAI-compatible client (utils/misc.py:
++# get_llm_client), so the Mistral branch that used to live in llm_call is gone
++# along with its SDK import -- keeping it would make the whole pipeline depend
++# on a package it no longer calls.
+ 
+ 
+ class Agent:
+@@ -36,26 +40,23 @@ class Agent:
+                 {"role": "user", "content": prompt},
+             ]
+ 
+-        if type(self.client) in [OpenAI, Client]:
++        try:
+             completion = self.client.chat.completions.create(
+                 model=model,
+                 messages=messages,
+                 seed=seed,
+             )
+-            content = completion.choices[0].message.content
+-
+-        elif type(self.client) == MistralClient:
+-            messages = [
+-                ChatMessage(role=message["role"], content=message["content"])
+-                for message in messages
+-            ]
+-            completion = self.client.chat(
++        except (TypeError, openai.BadRequestError):
++            # Not every OpenAI-compatible endpoint accepts `seed`. Losing it
++            # costs reproducibility of individual replies, so it is dropped only
++            # when the endpoint refuses it, never pre-emptively. A 400 raised for
++            # any other reason will simply raise again on this second attempt.
++            completion = self.client.chat.completions.create(
+                 model=model,
+                 messages=messages,
+             )
+-            content = completion.choices[0].message.content
+ 
+-        return content
++        return completion.choices[0].message.content
+ 
+     def generate_reply(
+         self,
+diff --git a/agents/evaluator.py b/agents/evaluator.py
+index 1c9cc46f21fa36ff5f4991c81ce71df4ce9c2faf..53cfd228cfecdbe7bd942be95267b1d9cda4366c 100644
+--- a/agents/evaluator.py
++++ b/agents/evaluator.py
+@@ -2,6 +2,8 @@ from typing import Dict
+ from agents.agent import Agent
+ import json
+ import openai
++import os
++import tempfile
+ import traceback
+ 
+ main_prompt_templates = [
+@@ -18,7 +20,7 @@ import math
+ 
+ {solver_prep_code}
+ 
+-with open("{data_json_path}", "r") as f:
++with open({data_json_path!r}, "r") as f:
+     data = json.load(f)
+ 
+ """
+@@ -39,11 +41,20 @@ elif status == gp.GRB.UNBOUNDED:
+     obj_val = "unbounded"
+ elif status == gp.GRB.OPTIMAL:
+     obj_val = model.objVal
++elif status == gp.GRB.TIME_LIMIT and model.SolCount > 0:
++    obj_val = model.ObjVal
+ """
+ 
+ 
+ class Evaluator(Agent):
+-    def __init__(self, client: openai.Client, solver="gurobipy", **kwargs):
++    def __init__(
++        self,
++        client: openai.Client,
++        solver="gurobipy",
++        solver_time_limit=600,
++        solver_threads=32,
++        **kwargs,
++    ):
+         super().__init__(
+             name="Evaluator",
+             description="This is an evaluator agent that is an expert in running optimization codes, identifying the bugs and errors, ane evaluating the performance and correctness of the code.",
+@@ -51,6 +62,8 @@ class Evaluator(Agent):
+             **kwargs,
+         )
+         self.solver = solver
++        self.solver_time_limit = solver_time_limit
++        self.solver_threads = solver_threads
+ 
+     def generate_reply(self, task: str, state: Dict, sender: Agent) -> (str, Dict):
+         print("- Evaluator agent is called!")
+@@ -77,11 +90,31 @@ class Evaluator(Agent):
+             )
+ 
+         else:
+-            state["solution_status"] = "solved"
++            has_candidate = res["solution_count"] > 0
++            state["solution_status"] = (
++                "solved"
++                if res["status_name"] == "optimal"
++                else "candidate"
++                if has_candidate
++                else "no_solution"
++            )
+             state["solver_output_status"] = res["status"]
++            state["solver_output_status_name"] = res["status_name"]
+             state["obj_val"] = res["obj_val"]
+             state["code"] = res["code"]
+-            return ("Evaluation Done! The problem is solved.", state)
++            state["solution_count"] = res["solution_count"]
++            if res["raw_solution_path"] is not None:
++                state["raw_solution_path"] = res["raw_solution_path"]
++                state["solution_export_status"] = "pending"
++                return (
++                    f"Evaluation done with {res['status_name']}; a candidate solution was saved. "
++                    "The fixed post-processing stage will format it after this workflow finishes.",
++                    state,
++                )
++            return (
++                f"Evaluation done with {res['status_name']}; no candidate solution is available.",
++                state,
++            )
+ 
+     def _run_code(self, state: Dict):
+         local_env = {}
+@@ -131,10 +164,38 @@ class Evaluator(Agent):
+             exec(last_line, local_env, local_env)
+ 
+             bogus_context = "OPTIMIZATION CALL"
+-            last_line = f"\n# Optimize model\nmodel.optimize()\n"
++            last_line = (
++                "\n# Optimize model with the evaluation-wide hard limit\n"
++                f"model.setParam('TimeLimit', {self.solver_time_limit})\n"
++                f"model.setParam('Threads', {self.solver_threads})\n"
++                "model.optimize()\n"
++            )
+             code += last_line + "\n"
+             exec(last_line, local_env, local_env)
+ 
++            model = local_env["model"]
++            solution_count = int(model.SolCount)
++            status_name = self._status_name(model.status, local_env["gp"])
++            raw_solution_path = None
++            if solution_count > 0:
++                local_env["obj_val"] = float(model.ObjVal)
++                raw_solution_path = os.path.join(
++                    state["log_folder"], "raw_solution.json"
++                )
++                self._atomic_write_json(
++                    raw_solution_path,
++                    {
++                        "solver_status": status_name,
++                        "solver_status_code": int(model.status),
++                        "solution_count": solution_count,
++                        "objective_value": float(model.ObjVal),
++                        "variables": {
++                            variable.VarName: float(variable.X)
++                            for variable in model.getVars()
++                        },
++                    },
++                )
++
+             bogus_context = None
+             last_line = post_code
+             code += last_line + "\n"
+@@ -146,6 +207,9 @@ class Evaluator(Agent):
+                 "code": code,
+                 "obj_val": local_env["obj_val"],
+                 "status": local_env["status"],
++                "status_name": status_name,
++                "solution_count": solution_count,
++                "raw_solution_path": raw_solution_path,
+                 "error_message": None,
+             }
+ 
+@@ -171,6 +235,9 @@ class Evaluator(Agent):
+                 "code": code,
+                 "obj_val": None,
+                 "status": None,
++                "status_name": "runtime_error",
++                "solution_count": 0,
++                "raw_solution_path": None,
+                 "error_message": error_msg,
+                 "bogus_context": bogus_context,
+             }
+@@ -180,3 +247,36 @@ class Evaluator(Agent):
+             return "import gurobipy as gp\n\n # Define model\nmodel = gp.Model('model')"
+         else:
+             raise Exception(f"Solver {self.solver} is not supported yet!")
++
++    @staticmethod
++    def _status_name(status, gp):
++        names = {
++            gp.GRB.OPTIMAL: "optimal",
++            gp.GRB.TIME_LIMIT: "time_limit",
++            gp.GRB.INFEASIBLE: "infeasible",
++            gp.GRB.INF_OR_UNBD: "infeasible_or_unbounded",
++            gp.GRB.UNBOUNDED: "unbounded",
++            gp.GRB.INTERRUPTED: "interrupted",
++            gp.GRB.SUBOPTIMAL: "suboptimal",
++        }
++        return names.get(status, f"status_{status}")
++
++    @staticmethod
++    def _atomic_write_json(path, payload):
++        directory = os.path.dirname(path)
++        os.makedirs(directory, exist_ok=True)
++        fd, temporary = tempfile.mkstemp(
++            prefix=".raw-solution-", suffix=".json", dir=directory
++        )
++        try:
++            with os.fdopen(fd, "w", encoding="utf-8") as handle:
++                json.dump(payload, handle, ensure_ascii=False)
++                handle.flush()
++                os.fsync(handle.fileno())
++            os.replace(temporary, path)
++        except Exception:
++            try:
++                os.unlink(temporary)
++            except OSError:
++                pass
++            raise
+diff --git a/agents/programmer.py b/agents/programmer.py
+index 85e31ac4e5046d91861d49469f95e8e191b6e37f..198decd5ed5524423e694dc92a3123acec7d69f4 100644
+--- a/agents/programmer.py
++++ b/agents/programmer.py
+@@ -35,6 +35,11 @@ buy = model.addVars(I, M, vtype=gp.GRB.CONTINUOUS, name="buy")
+ - Note that the indices in symbol (what comes after _) are not a part of the variable name in code.
+ - Use model.addVar instead of model.addVars if the variable is a scalar.
+ 
++Every evaluated Gurobi solve has a hard {solver_time_limit}-second time limit.
++Write ordinary Gurobi model code; the Evaluator will apply that limit and
++preserve the best incumbent when Gurobi returns TIME_LIMIT. Do not assume
++unlimited optimization.
++
+ """,
+ ]
+ 
+@@ -56,6 +61,9 @@ Here's a constraint we need you to write the code for, along with the list of re
+ - If there is no code needed, just generate the comment line (using # ) enclosed in ===== lines explaining why.
+ - Variables should become before parameters when defining inequality constraints in gurobipy (because of the gurobi parsing order syntax)
+ 
++The evaluated solve is limited to {solver_time_limit} seconds; the system
++captures the best incumbent returned at TIME_LIMIT.
++
+ Here's an example:
+ 
+ 
+@@ -260,6 +268,9 @@ otherwise, fix the last part code and generate a json file with the following fo
+ - Do not generate any text after the json file. 
+ - Variables should become before parameters when defining inequality constraints in gurobipy (because of the gurobi parsing order syntax)
+ 
++The evaluated solve is limited to {solver_time_limit} seconds; the system
++captures the best incumbent returned at TIME_LIMIT.
++
+ Take a deep breath and solve the problem step by step.
+ 
+ """
+@@ -312,7 +323,12 @@ Take a deep breath and solve the problem step by step.
+ 
+ class Programmer(Agent):
+     def __init__(
+-        self, client: openai.Client, solver="gurobipy", debugger_on=True, **kwargs
++        self,
++        client: openai.Client,
++        solver="gurobipy",
++        debugger_on=True,
++        solver_time_limit=600,
++        **kwargs,
+     ):
+         super().__init__(
+             name="Programmer",
+@@ -323,6 +339,7 @@ class Programmer(Agent):
+ 
+         self._debugger_on = debugger_on
+         self.solver = solver
++        self.solver_time_limit = solver_time_limit
+ 
+     def generate_reply(self, task: str, state: Dict, sender: Agent) -> (str, Dict):
+         # add some lines and characters around it to make the input interface nicer
+@@ -394,6 +411,7 @@ class Programmer(Agent):
+                 prep_code=prep_code,
+                 error_line=error_line,
+                 error_message=error_message,
++                solver_time_limit=self.solver_time_limit,
+             )
+ 
+         elif "definition" in bogus_context:
+@@ -497,6 +515,7 @@ class Programmer(Agent):
+                         "role": "user",
+                         "content": variable_definition_prompt_templates[1].format(
+                             variable=context,
++                            solver_time_limit=self.solver_time_limit,
+                         ),
+                     },
+                 ]
+@@ -585,6 +604,7 @@ class Programmer(Agent):
+                             "role": "user",
+                             "content": main_prompt_templates[target][1].format(
+                                 context=json.dumps(context, indent=4),
++                                solver_time_limit=self.solver_time_limit,
+                             ),
+                         },
+                     ]
+diff --git a/agents/result_formatter.py b/agents/result_formatter.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..2ff473a7cbd818a1265f2122738322eebb28da8c
+--- /dev/null
++++ b/agents/result_formatter.py
+@@ -0,0 +1,328 @@
++import json
++import os
++import re
++import tempfile
++from collections import defaultdict
++
++import openai
++
++from agents.agent import Agent
++
++
++FORMATTER_PROMPT = """
++You convert a saved Gurobi incumbent into the required benchmark solution JSON.
++Call the `submit_formatter` tool with Python code defining:
++
++    build_solution(raw_solution, data, instance) -> dict
++
++`raw_solution` contains objective_value and a flat `variables` mapping from exact
++Gurobi VarName strings to numeric values. `data` is the normalized OptiMUS data,
++and `instance` is the original benchmark instance.
++Use variable names, indices, the formulation context, and the target template to
++construct the most complete candidate possible. Do not run a solver, read files,
++use subprocesses, or invent decision values absent from the incumbent. Preserve
++the exact top-level keys requested by the target template.
++
++Problem:
++{problem}
++
++Target solution template:
++{schema}
++
++Formulation context:
++{formulation}
++
++Normalized data structure:
++{data_summary}
++
++Original instance structure:
++{instance_summary}
++
++Available incumbent variable families and samples:
++{families}
++
++"""
++
++FORMATTER_TOOLS = [
++    {
++        "type": "function",
++        "function": {
++            "name": "submit_formatter",
++            "description": (
++                "Execute candidate-only conversion code and validate its result "
++                "against the required solution schema."
++            ),
++            "parameters": {
++                "type": "object",
++                "properties": {
++                    "source": {
++                        "type": "string",
++                        "description": (
++                            "Python code defining build_solution(raw_solution, data, instance)"
++                        ),
++                    }
++                },
++                "required": ["source"],
++                "additionalProperties": False,
++            },
++        },
++    }
++]
++
++
++class ResultFormatter(Agent):
++    def __init__(self, client: openai.Client, **kwargs):
++        super().__init__(
++            name="ResultFormatter",
++            description=(
++                "Converts a saved Gurobi incumbent into the required target solution.json. "
++                "Call this agent whenever solution_export_status is pending."
++            ),
++            client=client,
++            **kwargs,
++        )
++        self.max_tool_rounds = 10
++
++    def generate_reply(self, task: str, state: dict, sender: Agent) -> tuple[str, dict]:
++        raw_path = state.get("raw_solution_path")
++        schema_path = state.get("target_solution_schema_path")
++        if not raw_path or not os.path.isfile(raw_path):
++            state["solution_export_status"] = "failed"
++            return "No saved incumbent is available to format.", state
++        if not schema_path or not os.path.isfile(schema_path):
++            state["solution_export_status"] = "failed"
++            return (
++                "No target solution schema is available to format the incumbent.",
++                state,
++            )
++
++        with open(raw_path, encoding="utf-8") as handle:
++            raw = json.load(handle)
++        with open(schema_path, encoding="utf-8") as handle:
++            schema = json.load(handle)
++        with open(state["data_json_path"], encoding="utf-8") as handle:
++            data = json.load(handle)
++        instance = data
++        instance_path = state.get("instance_path")
++        if instance_path and os.path.isfile(instance_path):
++            with open(instance_path, encoding="utf-8") as handle:
++                instance = json.load(handle)
++        problem = ""
++        problem_path = state.get("problem_path")
++        if problem_path and os.path.isfile(problem_path):
++            with open(problem_path, encoding="utf-8") as handle:
++                problem = handle.read()
++
++        prompt = FORMATTER_PROMPT.format(
++            problem=problem,
++            schema=json.dumps(schema, ensure_ascii=False, indent=2),
++            formulation=self._formulation_context(state),
++            data_summary=json.dumps(
++                self._structure_summary(data), ensure_ascii=False, indent=2
++            ),
++            instance_summary=json.dumps(
++                self._structure_summary(instance), ensure_ascii=False, indent=2
++            ),
++            families=json.dumps(
++                self._variable_families(raw), ensure_ascii=False, indent=2
++            ),
++        )
++        messages = [
++            {"role": "system", "content": self.system_prompt},
++            {"role": "user", "content": prompt},
++        ]
++        last_error = "ResultFormatter did not submit valid conversion code."
++        for tool_round in range(1, self.max_tool_rounds + 1):
++            calls = []
++            try:
++                completion = self.client.chat.completions.create(
++                    model=self.llm,
++                    messages=messages,
++                    tools=FORMATTER_TOOLS,
++                    tool_choice="auto",
++                )
++                message = completion.choices[0].message
++                calls = message.tool_calls or []
++                if not calls:
++                    last_error = "ValueError: call submit_formatter with complete conversion code"
++                    messages.extend(
++                        [
++                            {"role": "assistant", "content": message.content or ""},
++                            {"role": "user", "content": last_error},
++                        ]
++                    )
++                    continue
++                call = calls[0]
++                messages.append(
++                    {
++                        "role": "assistant",
++                        "content": message.content,
++                        "tool_calls": [
++                            {
++                                "id": call.id,
++                                "type": "function",
++                                "function": {
++                                    "name": call.function.name,
++                                    "arguments": call.function.arguments,
++                                },
++                            }
++                        ],
++                    }
++                )
++                if call.function.name != "submit_formatter":
++                    raise ValueError(f"unknown tool: {call.function.name}")
++                arguments = json.loads(call.function.arguments)
++                source = arguments["source"]
++                namespace = {"json": json, "re": re}
++                exec(
++                    compile(source, "<solution_formatter>", "exec"),
++                    namespace,
++                    namespace,
++                )
++                builder = namespace.get("build_solution")
++                if not callable(builder):
++                    raise TypeError(
++                        "code did not define build_solution(raw_solution, data, instance)"
++                    )
++                solution = builder(raw, data, instance)
++                self._validate_template(solution, schema)
++                output_path = os.path.join(state["log_folder"], "solution.json")
++                self._atomic_write_json(output_path, solution)
++                formatter_path = os.path.join(
++                    state["log_folder"], "solution_formatter.py"
++                )
++                with open(formatter_path, "w", encoding="utf-8") as handle:
++                    handle.write(source)
++                state["solution_path"] = output_path
++                state["solution_export_status"] = "completed"
++                state["solution_export_tool_rounds"] = tool_round
++                return "Candidate incumbent was converted to solution.json.", state
++            except Exception as exc:
++                last_error = f"{type(exc).__name__}: {exc}"
++                feedback = json.dumps(
++                    {
++                        "ok": False,
++                        "error": last_error,
++                        "instruction": "Correct the code and call submit_formatter again.",
++                    },
++                    ensure_ascii=False,
++                )
++                messages.append(
++                    (
++                        {
++                            "role": "tool",
++                            "tool_call_id": calls[0].id,
++                            "content": feedback,
++                        }
++                        if calls
++                        else {"role": "user", "content": feedback}
++                    )
++                )
++
++        state["solution_export_status"] = "failed"
++        state["solution_export_tool_rounds"] = self.max_tool_rounds
++        state["solution_export_error"] = last_error
++        return (
++            "The raw incumbent was preserved, but solution.json conversion failed.",
++            state,
++        )
++
++    @staticmethod
++    def _formulation_context(state):
++        context = {
++            "objective": state.get("objective"),
++            "parameters": state.get("parameters"),
++            "variables": state.get("variables"),
++            "constraints": state.get("constraint"),
++        }
++        text = json.dumps(context, ensure_ascii=False)
++        return text[:60000]
++
++    @staticmethod
++    def _variable_families(raw):
++        families = defaultdict(list)
++        for name, value in raw.get("variables", {}).items():
++            family = name.split("[", 1)[0]
++            if len(families[family]) < 8:
++                families[family].append({"name": name, "value": value})
++        counts = defaultdict(int)
++        for name in raw.get("variables", {}):
++            counts[name.split("[", 1)[0]] += 1
++        return {
++            name: {"count": counts[name], "samples": samples}
++            for name, samples in families.items()
++        }
++
++    @classmethod
++    def _structure_summary(cls, value, depth=0):
++        if depth >= 3:
++            return {"type": type(value).__name__}
++        if isinstance(value, dict):
++            keys = list(value)[:40]
++            return {
++                "type": "object",
++                "key_count": len(value),
++                "fields": {
++                    str(key): cls._structure_summary(value[key], depth + 1)
++                    for key in keys
++                },
++            }
++        if isinstance(value, list):
++            return {
++                "type": "array",
++                "length": len(value),
++                "samples": [
++                    cls._structure_summary(item, depth + 1) for item in value[:2]
++                ],
++            }
++        if isinstance(value, str):
++            return {"type": "string", "sample": value[:120]}
++        return {"type": type(value).__name__, "sample": value}
++
++    @classmethod
++    def _validate_template(cls, value, template, path="$"):
++        if isinstance(template, dict):
++            if not isinstance(value, dict):
++                raise ValueError(f"{path} must be an object")
++            missing = [key for key in template if key not in value]
++            if missing:
++                raise ValueError(f"{path} is missing required keys: {missing}")
++            for key, child in template.items():
++                cls._validate_template(value[key], child, f"{path}.{key}")
++        elif isinstance(template, list):
++            if not isinstance(value, list):
++                raise ValueError(f"{path} must be an array")
++            if template:
++                for index, child in enumerate(value):
++                    cls._validate_template(child, template[0], f"{path}[{index}]")
++        elif isinstance(template, str) and template.startswith("<"):
++            expected = template[1:].split(">", 1)[0].lower()
++            if expected.startswith("list") and not isinstance(value, list):
++                raise ValueError(f"{path} must be an array")
++            if expected.startswith("dict") and not isinstance(value, dict):
++                raise ValueError(f"{path} must be an object")
++            if expected.startswith("float") and not isinstance(value, (int, float)):
++                raise ValueError(f"{path} must be numeric")
++            if expected.startswith("int") and not isinstance(value, int):
++                raise ValueError(f"{path} must be an integer")
++            if expected.startswith("str") and not isinstance(value, str):
++                raise ValueError(f"{path} must be a string")
++
++    @staticmethod
++    def _atomic_write_json(path, payload):
++        directory = os.path.dirname(path)
++        fd, temporary = tempfile.mkstemp(
++            prefix=".solution-", suffix=".json", dir=directory
++        )
++        try:
++            with os.fdopen(fd, "w", encoding="utf-8") as handle:
++                json.dump(payload, handle, ensure_ascii=False, indent=2)
++                handle.flush()
++                os.fsync(handle.fileno())
++            os.replace(temporary, path)
++        except Exception:
++            try:
++                os.unlink(temporary)
++            except OSError:
++                pass
++            raise
+diff --git a/run.py b/run.py
+index a067aff951356412efe1fcad90c2ddbb02019a32..0f8f6c797747acd1105b9ace98556ec43384b4d2 100644
+--- a/run.py
++++ b/run.py
+@@ -11,6 +11,7 @@ from agents.user_proxy import UserProxy
+ from agents.formulator import Formulator
+ from agents.programmer import Programmer
+ from agents.evaluator import Evaluator
++from agents.result_formatter import ResultFormatter
+ 
+ 
+ def main():
+@@ -25,10 +26,26 @@ def main():
+     parser.add_argument(
+         "--model",
+         type=str,
+-        default="gpt-4-1106-preview",
++        default="deepseek-v4-flash",
+         help="Base large language model",
+     )
+     parser.add_argument("--log_dir", type=str, help="Log directory")
++    parser.add_argument(
++        "--problem_path", type=str, help="Natural-language problem file"
++    )
++    parser.add_argument(
++        "--solution_schema", type=str, help="Target solution template JSON"
++    )
++    parser.add_argument(
++        "--instance_path", type=str, help="Original structured instance"
++    )
++    parser.add_argument("--solver_threads", type=int, default=32)
++    parser.add_argument(
++        "--solver_time_limit",
++        type=int,
++        default=600,
++        help="Hard Gurobi time limit in seconds for each evaluated solve",
++    )
+ 
+     parser.add_argument(
+         "--max_selections",
+@@ -38,16 +55,10 @@ def main():
+     )
+     args = parser.parse_args()
+ 
+-    if not args.model in [
+-        "gpt-4-1106-preview",
+-        "gpt-3.5-turbo",
+-        "mistralai/Mixtral-8x7B-Instruct-v0.1",
+-        "mistral-medium",
+-    ]:
+-        print(
+-            "Invalid model name! Please choose from 'gpt-4-1106-preview', 'gpt-3.5-turbo', 'mistralai/Mixtral-8x7B-Instruct-v0.1', 'mistral-medium'"
+-        )
+-        exit(0)
++    # Upstream whitelists four hosted models and routes each to its own vendor
++    # client. This evaluation runs every model through one OpenAI-compatible
++    # endpoint, so the name is passed through and the endpoint decides whether
++    # it is valid.
+ 
+     dataset = args.dataset.lower()
+     problem = args.problem
+@@ -71,29 +82,26 @@ def main():
+     if not os.path.exists(log_dir):
+         os.makedirs(log_dir)
+ 
+-    openai_client = get_openai_client()
+-    tai_client = get_tai_client()
+-    mistral_client = get_mistral_client()
+-
+-    openai_client = get_openai_client()
+-    tai_client = get_tai_client()
+-    mistral_client = get_mistral_client()
+-
+-    if args.model.startswith("gpt"):
+-        client = openai_client
+-    elif args.model.startswith("mistral-medium"):
+-        client = mistral_client
+-    else:
+-        client = tai_client
++    client = get_llm_client()
+ 
+     formulator = Formulator(
+         client=client,
+         llm=args.model,
+     )
+ 
+-    programmer = Programmer(client=client, llm=args.model)
++    programmer = Programmer(
++        client=client,
++        llm=args.model,
++        solver_time_limit=args.solver_time_limit,
++    )
+ 
+-    evaluator = Evaluator(client=client, llm=args.model)
++    evaluator = Evaluator(
++        client=client,
++        llm=args.model,
++        solver_time_limit=args.solver_time_limit,
++        solver_threads=args.solver_threads,
++    )
++    result_formatter = ResultFormatter(client=client, llm=args.model)
+ 
+     manager = GroupChatManager(
+         client=client,
+@@ -136,14 +144,24 @@ def main():
+         "obj_val": None,
+         "log_folder": log_dir,
+         "data_json_path": f"data/{dataset}/{problem}/data.json",
++        "problem_path": args.problem_path,
++        "target_solution_schema_path": args.solution_schema,
++        "instance_path": args.instance_path,
+     }
+     if not os.path.exists(state["log_folder"]):
+         os.makedirs(state["log_folder"])
+ 
+     sanity_check(state)
+     try:
+-        final_state = manager.solve(state=state)
+-        with open(f"data/{dataset}/{problem}/output.json", "w") as f:
++        _, final_state = manager.solve(state=state)
++        if final_state.get("raw_solution_path") and args.solution_schema:
++            message, final_state = result_formatter.generate_reply(
++                task="Convert the saved incumbent to the required target solution format.",
++                state=final_state,
++                sender=manager,
++            )
++            print(message)
++        with open(os.path.join(state["log_folder"], "output.json"), "w") as f:
+             json.dump(final_state, f, indent=4)
+ 
+     except Exception as e:
+diff --git a/utils/misc.py b/utils/misc.py
+index b1c02c0276f52c07f34d372d2f59698365848235..1803deb7dce37a533b14411cf14cfb95e253ba79 100644
+--- a/utils/misc.py
++++ b/utils/misc.py
+@@ -3,10 +3,10 @@ Define templates for json file
+ """
+ 
+ import json
++import os
+ from typing import List, Dict, Union
+ import openai
+ import numpy as np
+-from mistralai.client import MistralClient
+ 
+ 
+ INPUT_FIELD_DEF = "definition"
+@@ -235,43 +235,40 @@ def sanity_check(state):
+             raise KeyError(f"code is not defined for parameter {param['definition']}")
+ 
+ 
+-def get_openai_client():
+-    with open("config.json") as f:
+-        config = json.load(f)
+-    if len(config["openai_api_key"]) < 10:
+-        raise ValueError("Please provide a valid OpenAI API key in config.json")
+-    config["openai_api_key"]
++DEFAULT_LLM_BASE_URL = "https://api.deepseek.com/v1"
+ 
+-    client = openai.Client(
+-        api_key=config["openai_api_key"], organization=config["openai_org_id"]
+-    )
+ 
+-    return client
++def get_llm_client():
++    """One OpenAI-compatible client for every agent in the pipeline.
+ 
++    Upstream builds three clients up front -- OpenAI, Together and Mistral --
++    and picks between them by model-name prefix, so running against a single
++    endpoint would fail at startup on the two unused keys. This evaluation runs
++    every agent on one endpoint, configured by environment variables that match
++    the names already used on the host.
++    """
++    key = os.environ.get("LLM_API_KEY") or os.environ.get("ADAPTER_API_KEY") or ""
++    url = os.environ.get("LLM_MODEL_URL") or DEFAULT_LLM_BASE_URL
+ 
+-def get_tai_client():
+-    with open("config.json") as f:
+-        config = json.load(f)
+-    if len(config["together_api_key"]) < 10:
+-        raise ValueError("Please provide a valid Together API key in config.json")
+-
+-    client = openai.OpenAI(
+-        api_key=config["together_api_key"],
+-        base_url="https://api.together.xyz",
+-    )
+-
+-    return client
++    if not key and os.path.exists("config.json"):
++        with open("config.json") as f:
++            key = json.load(f).get("llm_api_key", "")
+ 
++    if len(key) < 10:
++        raise ValueError(
++            "No LLM API key. Set LLM_API_KEY (or add llm_api_key to config.json)."
++        )
+ 
+-def get_mistral_client():
+-    with open("config.json") as f:
+-        config = json.load(f)
+-    if len(config["mistral_api_key"]) < 10:
+-        raise ValueError("Please provide a valid Mistral API key in config.json")
++    # The OpenAI SDK appends /chat/completions itself.
++    base_url = url.removesuffix("/chat/completions").rstrip("/")
++    return openai.OpenAI(api_key=key, base_url=base_url)
+ 
+-    client = MistralClient(api_key=config["mistral_api_key"])
+ 
+-    return client
++# Kept so the agent modules and run.py keep working unchanged; all three now
++# resolve to the same endpoint.
++get_openai_client = get_llm_client
++get_tai_client = get_llm_client
++get_mistral_client = get_llm_client
+ 
+ 
+ if __name__ == "__main__":

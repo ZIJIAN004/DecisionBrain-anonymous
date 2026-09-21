@@ -1,0 +1,13 @@
+【输出文件】`stage_outputs/explanation.json`
+请把最终业务解释写入该文件。字段如下：
+{
+  "summary": "一句话总结：是否求得最优/可行解；若 optimality=heuristic_or_incumbent（启发式/降级/限时解），必须明确告知『这是可行解、不保证最优』，并尽量说明与下界的间隙(mip_gap)",
+  "objective_explanation": "目标值的业务含义；有 mip_gap 时说明距理论最优最多还差多少",
+  "decision_explanation": "关键决策建议（用业务语言，引用具体取值）",
+  "constraint_explanation": "约束满足情况；指出起作用(binding)的约束与软约束违反量",
+  "risk_notes": "模型未考虑的因素、数据与假设带来的风险",
+  "next_actions": "建议用户下一步如何调整"
+}
+不得编造 solver_result 中不存在的数据。可参考结果中的 status、optimality、mip_gap、diagnosis、constraint_check 字段进行解读；当 optimality=heuristic_or_incumbent 时，必须诚实说明该解不保证最优、并给出改进方向。
+
+当输入标记“实例不可行已确认”时：summary 必须明确当前实例无可行解；objective_explanation 说明无可报告的可行目标值；decision_explanation 与 constraint_explanation 仅解释不可行证明和冲突业务条件；next_actions 给出放宽、修改或补充业务条件的建议。不得将其写成求解成功。
