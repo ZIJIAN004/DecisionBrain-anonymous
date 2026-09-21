@@ -253,7 +253,7 @@ class WorkspaceAccessPolicy:
         self.rules = rules or DEFAULT_WORKSPACE_ACCESS_RULES
 
     def with_solving_feasibility_self_check(self) -> "WorkspaceAccessPolicy":
-        """Restore branch-9 checker access for Solving when Reviewer is disabled."""
+        """Restore checker access for Solving when independent review is disabled."""
 
         adjusted: list[WorkspaceAccessRule] = []
         for rule in self.rules:
@@ -438,7 +438,7 @@ DEFAULT_WORKSPACE_ACCESS_RULES: tuple[WorkspaceAccessRule, ...] = (
     WorkspaceAccessRule(
         # No stage may write the checker result directly: it is produced only by
         # run_feasibility_checker, which spawns the audited checker itself.  The
-        # branch-9 self-check view re-adds SOLVING (see
+        # The Solving self-check view re-adds SOLVING (see
         # with_solving_feasibility_self_check) because that path has no reviewer.
         SOLVING_FEASIBILITY_RESULT_FILE,
         writer_stages=frozenset(),

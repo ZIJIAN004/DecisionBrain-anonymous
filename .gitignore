@@ -4,6 +4,7 @@
 .env.*.local
 *.pem
 *.key
+*.lic
 
 # OS and editor state
 .DS_Store

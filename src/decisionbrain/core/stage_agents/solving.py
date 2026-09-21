@@ -163,10 +163,10 @@ class SolvingAgent(StageAgent):
             return "input_schema.json"
         return "你自行读取 `data/` 确定的输入结构（本次运行不提供 input schema）"
 
-    def _algorithm_guide_lines(self, state: Any, *, branch9: bool) -> str:
+    def _algorithm_guide_lines(self, state: Any, *, self_check: bool) -> str:
         """Guide-calling rules plus this run's package-pool / single-package constraints."""
 
-        return self._guide_call_lines(branch9=branch9) + solving_addendum(
+        return self._guide_call_lines(self_check=self_check) + solving_addendum(
             self.services.package_policy, self._design(state)
         )
 
@@ -187,7 +187,7 @@ class SolvingAgent(StageAgent):
         if callable(binder):
             binder(self._design(state))
 
-    def _guide_call_lines(self, *, branch9: bool) -> str:
+    def _guide_call_lines(self, *, self_check: bool) -> str:
         """Guide-calling rules, or the neutral notice when no algorithm library is mounted."""
 
         if not self._algorithm_library_enabled:
@@ -197,7 +197,7 @@ class SolvingAgent(StageAgent):
                 "- 你可以使用环境中已安装的任意 Python 包；写 solver.py 前必须用 shell "
                 "验证导入、版本与接口签名，不要凭记忆假定 API 存在。\n"
             )
-        if branch9:
+        if self_check:
             return (
                 "- 对 selection.components 和 fallback.components 中每个 source=package 的组件，"
                 "先按精确 package ID 调用 get_algorithm_guide 获取经过校验的精确接口，"
@@ -246,8 +246,8 @@ class SolvingAgent(StageAgent):
             system_prompt = system_prompt.replace("algorithm_design", "your complete solving plan")
             contract_prompt = contract_prompt.replace("algorithm_design", "your complete solving plan")
         if not self._feasibility_review_enabled:
-            system_prompt = self._solution_schema_prompt_text(prompts.solving_branch9_system)
-            contract_prompt = self._solution_schema_prompt_text(prompts.solving_branch9_contract)
+            system_prompt = self._solution_schema_prompt_text(prompts.solving_self_check_system)
+            contract_prompt = self._solution_schema_prompt_text(prompts.solving_self_check_contract)
         if self._is_gurobi_formulator_arm():
             system_prompt = prompts.solving_translation_system
             contract_prompt = prompts.solving_translation_contract
@@ -279,19 +279,19 @@ class SolvingAgent(StageAgent):
             "- shell 默认从 workspace 根目录执行；根目录文件直接使用相对路径。\n"
             "- 需要从子目录执行时，使用 shell 的相对 workdir；不要 cd 到猜测的绝对路径。\n"
             "- 你可以使用 list_files/read_file/write_file/replace_in_file/shell 完成建模与修复；必须用 `run_solver` 实际执行 solver.py，再调用 `submit_solving_outcome`。\n"
-            + self._algorithm_guide_lines(state, branch9=False)
+            + self._algorithm_guide_lines(state, self_check=False)
             +
             "- 详细执行信息放在 submit_solving_outcome 的 result 参数；不要直接写 solver_result.json 或 solving.json。\n"
             "- `run_solver` 会清理旧候选并生成 Runtime 执行 receipt；完成执行后调用 submit_solving_outcome，工具会按当前解 schema 验收解文件。最终 message 只需简短说明完成，"
             "不要粘贴完整 JSON 或展开完整 solution。\n"
         )
         if not self._feasibility_review_enabled:
-            message = self._branch9_self_check_message(state)
+            message = self._self_check_message(state)
         mb.add_user(message if not self._feasibility_review_enabled else message + feasibility_repair)
         return mb
 
-    def _branch9_self_check_message(self, state: Any) -> str:
-        """The legacy branch-9 Solving user prompt, used verbatim when review is off."""
+    def _self_check_message(self, state: Any) -> str:
+        """Build the Solving user prompt used when independent review is disabled."""
         workspace_root = self._workspace_root(state)
         return (
             "【当前阶段】solving\n"
@@ -311,7 +311,7 @@ class SolvingAgent(StageAgent):
             "【workspace】\n"
             f"- 当前工作目录: {workspace_root or '由工具环境提供'}\n"
             "- 你可以使用 list_files/read_file/write_file/replace_in_file/shell 完成建模与修复；必须使用 `run_solver` 执行 solver.py。\n"
-            + self._algorithm_guide_lines(state, branch9=True)
+            + self._algorithm_guide_lines(state, self_check=True)
             + "- 详细执行信息只写入 solver_result.json；solving.json 仅引用该文件。\n"
             "- 写完后请自行 read_file 或 shell json.load 验收所有 JSON 文件；最终 message 只需简短说明完成，"
             "不要粘贴完整 JSON 或展开完整 solution。"

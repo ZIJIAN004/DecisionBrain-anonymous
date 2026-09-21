@@ -337,7 +337,7 @@ def test_submission_lists_every_file_changed_after_the_recorded_run(tmp_path):
     assert "run run_solver again" in result
 
 
-def test_branch9_solving_tools_do_not_expose_submission_tool(tmp_path):
+def test_self_check_solving_tools_do_not_expose_submission_tool(tmp_path):
     toolset = fake_workspace_toolset(tmp_path)
     tools = toolset.tools(stage=AgentStage.SOLVING, solving_feasibility_self_check=True)
     assert "submit_solving_outcome" not in {tool.name for tool in tools}
@@ -1437,7 +1437,7 @@ def test_reviewer_shell_cannot_rewrite_the_evidence_it_judges(tmp_path):
     assert not (tmp_path / "feasibility_result.json").exists()
 
 
-def test_solving_self_check_view_restores_branch9_checker_permissions(tmp_path):
+def test_solving_self_check_view_restores_checker_permissions(tmp_path):
     checker = tmp_path / "feasibility_checker.py"
     checker.write_text("# audited\n", encoding="utf-8")
     toolset = fake_workspace_toolset(tmp_path)

@@ -1,8 +1,10 @@
 # DecisionBrain
 
-DecisionBrain is a conversational operations-research agent that gathers requirements,
-inspects data, creates and audits a problem contract, designs and executes a solution
-approach, reviews feasibility, and explains the result.
+DecisionBrain is an agentic optimization framework that turns access to heterogeneous
+general-purpose and domain-specific methods into an explicit capability layer. It designs
+instance-dependent solution strategies, independently verifies feasibility, and routes rejected
+outcomes back to the stage responsible for targeted repair while preserving recoverable runtime
+traces.
 
 ## Workflow
 
@@ -50,14 +52,6 @@ The repository tracks benchmark task contracts under `benchmarks/` and data acqu
 material under `data/`. Prepare each release suite from the repository root before an
 evaluation.
 
-`FrontierOR10-Inf` includes all ten derived instances directly in Git:
-
-```bash
-python -m decisionbrain.benchmark.runner \
-  --suite FrontierOR10-Inf \
-  --large-root data/FrontierOR10-Inf
-```
-
 `Hard32-Fea` is reconstructed locally from pinned upstream sources. The preparation command
 downloads the selected instances, applies the fixed transformations and limits in
 `selection.json`, and verifies all 32 generated files:
@@ -83,6 +77,14 @@ python data/FrontierOR65-Fea/fetch.py --download
 python -m decisionbrain.benchmark.runner \
   --suite FrontierOR65-Fea \
   --large-root data/FrontierOR65-Fea/dataset
+```
+
+`FrontierOR10-Inf` includes all ten derived instances directly in Git:
+
+```bash
+python -m decisionbrain.benchmark.runner \
+  --suite FrontierOR10-Inf \
+  --large-root data/FrontierOR10-Inf
 ```
 
 See `data/README.md` and each dataset README for provenance, licenses, layouts, and validation

@@ -27,8 +27,8 @@ class PromptBundle(BaseModel):
     solving_contract: str
     solving_translation_system: str = ""
     solving_translation_contract: str = ""
-    solving_branch9_system: str = ""
-    solving_branch9_contract: str = ""
+    solving_self_check_system: str = ""
+    solving_self_check_contract: str = ""
     feasibility_review_system: str
     feasibility_review_contract: str
     explain_system: str
@@ -64,8 +64,8 @@ _PROMPT_SENSITIVITY: dict[str, tuple[str, ...]] = {
     "algorithm_design_contract.txt": ("algorithm_library", "feasible_review"),
     "solving_system.txt": ("input_schema", "algorithm_library"),
     "solving_contract.txt": ("input_schema", "algorithm_library"),
-    "solving_branch9_system.txt": ("input_schema", "algorithm_library", "feasible_review"),
-    "solving_branch9_contract.txt": ("input_schema", "algorithm_library", "feasible_review"),
+    "solving_self_check_system.txt": ("input_schema", "algorithm_library", "feasible_review"),
+    "solving_self_check_contract.txt": ("input_schema", "algorithm_library", "feasible_review"),
 }
 
 
@@ -171,8 +171,8 @@ def load_prompt_bundle(
             gurobi_formulator_contract = ""
             solving_translation_system = ""
             solving_translation_contract = ""
-        solving_branch9_system = solving_system
-        solving_branch9_contract = solving_contract
+        solving_self_check_system = solving_system
+        solving_self_check_contract = solving_contract
     else:
         gurobi_formulator_system = ""
         gurobi_formulator_contract = ""
@@ -191,18 +191,18 @@ def load_prompt_bundle(
             else _read_prompt(dev_dir, "algorithm_design_contract.txt")
         )
         if feasibility_review_enabled:
-            solving_branch9_system = _read_optional_prompt(
-                sys_dir, "solving_branch9_system.txt", fallback=solving_system
+            solving_self_check_system = _read_optional_prompt(
+                sys_dir, "solving_self_check_system.txt", fallback=solving_system
             )
-            solving_branch9_contract = _read_optional_prompt(
-                dev_dir, "solving_branch9_contract.txt", fallback=solving_contract
+            solving_self_check_contract = _read_optional_prompt(
+                dev_dir, "solving_self_check_contract.txt", fallback=solving_contract
             )
         else:
-            solving_branch9_system = _read_variant_prompt(
-                sys_dir, "solving_branch9_system.txt", disabled
+            solving_self_check_system = _read_variant_prompt(
+                sys_dir, "solving_self_check_system.txt", disabled
             )
-            solving_branch9_contract = _read_variant_prompt(
-                dev_dir, "solving_branch9_contract.txt", disabled
+            solving_self_check_contract = _read_variant_prompt(
+                dev_dir, "solving_self_check_contract.txt", disabled
             )
     feasibility_review_contract = _read_prompt(
         dev_dir,
@@ -247,10 +247,10 @@ def load_prompt_bundle(
         solving_translation_contract=solving_translation_contract,
         solving_system=solving_system,
         solving_contract=solving_contract,
-        # Parse branch9 strictly because review-off arms actually use it; falling back to
+        # Parse self-check prompts strictly because review-off arms actually use them; falling back to
         # solving_* would reintroduce Feasibility Reviewer instructions.
-        solving_branch9_system=solving_branch9_system,
-        solving_branch9_contract=solving_branch9_contract,
+        solving_self_check_system=solving_self_check_system,
+        solving_self_check_contract=solving_self_check_contract,
         feasibility_review_system=_read_prompt(
             sys_dir,
             (

@@ -15,7 +15,7 @@ def test_prompt_markdown_fences_are_balanced() -> None:
 def test_solving_prompts_require_deterministic_input_conversion():
     prompt_pairs = (
         ("solving_system.txt", "solving_contract.txt"),
-        ("solving_branch9_system.txt", "solving_branch9_contract.txt"),
+        ("solving_self_check_system.txt", "solving_self_check_contract.txt"),
     )
 
     for system_name, contract_name in prompt_pairs:
@@ -36,8 +36,8 @@ def test_no_review_algorithm_design_prompt_removes_reviewer_semantics() -> None:
     assert "为结果转换和文件输出保留安全余量" in combined
 
 
-def test_no_review_branch9_guide_rule_uses_component_source_schema() -> None:
-    prompt = _prompt("system", "solving_branch9_system_no_feasible_review.txt")
+def test_no_review_self_check_guide_rule_uses_component_source_schema() -> None:
+    prompt = _prompt("system", "solving_self_check_system_no_feasible_review.txt")
 
     assert "selection.components 和 fallback.components" in prompt
     assert "source=package" in prompt
