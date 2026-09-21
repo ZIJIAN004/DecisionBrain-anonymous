@@ -4,6 +4,23 @@ DecisionBrain is a conversational operations-research agent that gathers require
 inspects data, creates and audits a problem contract, designs and executes a solution
 approach, reviews feasibility, and explains the result.
 
+## Workflow
+
+![DecisionBrain workflow](docs/assets/decisionbrain-workflow.png)
+
+DecisionBrain advances a task through six fixed stages. The Runtime Harness validates each
+stage artifact before the workflow can continue, controls access to the algorithm library,
+and routes rejected outcomes back to the stage responsible for the failure.
+
+## Worked Example
+
+![DecisionBrain worked example](docs/assets/decisionbrain-worked-example.png)
+
+In this recorded pickup-and-delivery run, the first strategy returned an incomplete solution.
+Feasibility Review attributed the failure to Algorithm Design, which replaced the single-method
+strategy with a four-component hybrid. The second Solving pass served all 101 requests with four
+routes, and the generated checker accepted the result with no violations.
+
 ## Source Installation and Release Policy
 
 DecisionBrain is released as a source repository. It is not published to PyPI, and the
@@ -81,7 +98,7 @@ dbn --help
 dbn --version
 
 dbn init examples/demo
-dbn run examples/vrp
+dbn run examples/demo
 dbn run . --debug
 dbn run . --json
 dbn chat --file data/orders.csv
