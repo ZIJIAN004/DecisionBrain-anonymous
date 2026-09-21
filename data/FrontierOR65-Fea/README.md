@@ -20,7 +20,7 @@ data/FrontierOR65-Fea/dataset/
 Verify all 65 upstream instance and reference-solution records without
 downloading their contents:
 
-```powershell
+```bash
 python data/FrontierOR65-Fea/fetch.py
 ```
 
@@ -29,15 +29,15 @@ writes `remote_manifest.json` containing upstream Git/LFS/Xet identifiers. The
 manifest can be committed after a successful complete verification. To fetch
 the payload only when an evaluation machine needs it:
 
-```powershell
+```bash
 python data/FrontierOR65-Fea/fetch.py --download
 ```
 
 Run the suite with:
 
-```powershell
-python -m decisionbrain.benchmark.runner `
-  --suite FrontierOR65-Fea `
+```bash
+python -m decisionbrain.benchmark.runner \
+  --suite FrontierOR65-Fea \
   --large-root data/FrontierOR65-Fea/dataset
 ```
 

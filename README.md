@@ -28,10 +28,11 @@ project does not provide wheel (`.whl`) or source-distribution (`sdist`) archive
 download the complete repository, keep the checkout in place, and install it in editable
 mode so runtime resources under `prompts/`, `algorithms/`, and `frontend/` remain available.
 
-Python 3.10 or newer is required. From the repository root, install the development
-environment with:
+Python 3.10 or newer is required; Python 3.11 is recommended. Create an isolated
+environment and install the development dependencies from the repository root:
 
 ```bash
+conda create --name decisionbrain python=3.11 -y
 conda activate decisionbrain
 python -m pip install -e ".[dev]"
 ```
@@ -51,9 +52,9 @@ evaluation.
 
 `FrontierOR10-Inf` includes all ten derived instances directly in Git:
 
-```powershell
-python -m decisionbrain.benchmark.runner `
-  --suite FrontierOR10-Inf `
+```bash
+python -m decisionbrain.benchmark.runner \
+  --suite FrontierOR10-Inf \
   --large-root data/FrontierOR10-Inf
 ```
 
@@ -61,10 +62,10 @@ python -m decisionbrain.benchmark.runner `
 downloads the selected instances, applies the fixed transformations and limits in
 `selection.json`, and verifies all 32 generated files:
 
-```powershell
+```bash
 python data/Hard32-Fea/prepare.py
-python -m decisionbrain.benchmark.runner `
-  --suite Hard32-Fea `
+python -m decisionbrain.benchmark.runner \
+  --suite Hard32-Fea \
   --large-root data/Hard32-Fea/instances
 ```
 
@@ -72,15 +73,15 @@ python -m decisionbrain.benchmark.runner `
 checks remote metadata without downloading the multi-gigabyte payload. Pass `--download`
 only on an evaluation machine that needs the data:
 
-```powershell
+```bash
 # Metadata verification only; no instance payload is downloaded.
 python data/FrontierOR65-Fea/fetch.py
 
 # Explicitly download and checksum-verify selected instances and solutions.
 python data/FrontierOR65-Fea/fetch.py --download
 
-python -m decisionbrain.benchmark.runner `
-  --suite FrontierOR65-Fea `
+python -m decisionbrain.benchmark.runner \
+  --suite FrontierOR65-Fea \
   --large-root data/FrontierOR65-Fea/dataset
 ```
 
@@ -208,7 +209,6 @@ labels only; it does not translate user input, Agent output, prompts, or stored 
 ```bash
 python -m pytest
 python -m ruff check .
-python -m ruff format --check .
 ```
 
 The default pytest run is offline and excludes tests marked `solver` or `network`. Select a
@@ -239,3 +239,8 @@ deterministic local fakes and do not call a real LLM or consume a Gurobi license
 - `benchmarks/`: release benchmark task contracts.
 - `data/`: dataset acquisition and reconstruction workflows.
 - `frontend/index.html`: web interface served by the API.
+
+## License and Citation
+
+DecisionBrain is released under the [Apache License 2.0](LICENSE). Citation metadata for
+the anonymous review artifact is available in [CITATION.cff](CITATION.cff).

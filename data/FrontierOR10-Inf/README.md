@@ -13,9 +13,9 @@ data/FrontierOR10-Inf/<case_id>/instance/large_instance_<n>.json
 
 Run the suite with:
 
-```powershell
-python -m decisionbrain.benchmark.runner `
-  --suite FrontierOR10-Inf `
+```bash
+python -m decisionbrain.benchmark.runner \
+  --suite FrontierOR10-Inf \
   --large-root data/FrontierOR10-Inf
 ```
 

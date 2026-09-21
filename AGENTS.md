@@ -22,7 +22,6 @@ Useful commands:
 - `dbn dev demo-events --view normal`: create a sample Run and render event output.
 - `conda run -n decisionbrain pytest`: run the test suite.
 - `conda run -n decisionbrain ruff check .`: lint Python files.
-- `conda run -n decisionbrain ruff format --check .`: verify formatting.
 - `conda run -n decisionbrain python -m decisionbrain.api.app`: start the local API/UI after loading `.env`.
 
 ## Coding Style & Naming Conventions

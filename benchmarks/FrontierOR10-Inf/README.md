@@ -17,6 +17,6 @@ External instances use the case IDs in `index.json`:
 
 Run the suite from the repository root:
 
-```powershell
-python -m decisionbrain.benchmark.runner --suite FrontierOR10-Inf --large-root <path>
+```bash
+python -m decisionbrain.benchmark.runner --suite FrontierOR10-Inf --large-root /path/to/data
 ```

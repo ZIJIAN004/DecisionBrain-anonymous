@@ -11,7 +11,7 @@ ignored by Git.
 
 From the repository root, run:
 
-```powershell
+```bash
 python data/Hard32-Fea/prepare.py
 ```
 

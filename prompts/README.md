@@ -21,7 +21,7 @@ prompts/
     └── explain_contract.txt
 ```
 
-`src/decisionbrain/core/prompts.py` 启动时加载当前 StageAgent 流水线需要的提示词。`debug_*`、`acceptance_*` 等历史提示词文件可以保留在目录中作为素材，但不参与当前 Core 装配。改完任何运行中使用的文件需重启服务生效。
+`src/decisionbrain/core/prompts.py` 启动时加载当前 StageAgent 流水线需要的提示词。目录中的文件只保留当前 Core 装配、论文消融和 Gurobi workflow 所需的版本；改完任何运行中使用的文件需重启服务生效。
 
 ## 当前流水线
 

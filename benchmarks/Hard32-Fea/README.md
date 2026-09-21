@@ -49,10 +49,10 @@ Task-local indices are contiguous from 1 and match the benchmark runner layout.
 
 ## Validation
 
-```powershell
-python benchmarks\Hard32-Fea\<task>\hidden\feasibility_check.py `
-  --instance_path data\Hard32-Fea\instances\<task>\instance\large_instance_<n>.json `
-  --solution_path data\Hard32-Fea\solutions\<task>\gurobi_solution\large_solution_<n>.json `
+```bash
+python benchmarks/Hard32-Fea/jssp_deadline/hidden/feasibility_check.py \
+  --instance_path data/Hard32-Fea/instances/jssp_deadline/instance/large_instance_1.json \
+  --solution_path data/Hard32-Fea/solutions/jssp_deadline/gurobi_solution/large_solution_1.json \
   --result_path r.json
 ```
 

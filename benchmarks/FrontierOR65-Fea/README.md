@@ -18,6 +18,6 @@ Expected external layout:
 
 Run the complete suite from the repository root:
 
-```powershell
-python -m decisionbrain.benchmark.runner --suite FrontierOR65-Fea --large-root <path>
+```bash
+python -m decisionbrain.benchmark.runner --suite FrontierOR65-Fea --large-root /path/to/data
 ```
