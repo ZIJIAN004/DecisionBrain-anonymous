@@ -1,10 +1,11 @@
 # DecisionBrain
 
-DecisionBrain is an agentic optimization framework that turns access to heterogeneous
-general-purpose and domain-specific methods into an explicit capability layer. It designs
-instance-dependent solution strategies, independently verifies feasibility, and routes rejected
-outcomes back to the stage responsible for targeted repair while preserving recoverable runtime
-traces.
+DecisionBrain is an optimization agent for natural-language operations-research problems that
+does not require a single monolithic mathematical model. It designs instance-dependent
+strategies by composing validated general-purpose and domain-specific methods, records which
+interfaces actually run through an auditable capability layer, and independently checks each
+candidate with a task- and instance-specific feasibility checker that routes failures to the
+stage responsible for targeted repair.
 
 ## Workflow
 
