@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  COLUMNS: "200"
+
 jobs:
   test:
     runs-on: ubuntu-latest

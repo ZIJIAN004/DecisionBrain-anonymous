@@ -878,7 +878,8 @@ async def evaluate_task(
 
             await asyncio.wait_for(execute_runtime(), timeout=task_timeout_seconds)
             current_task = asyncio.current_task()
-            if current_task is not None and current_task.cancelling():
+            cancelling = getattr(current_task, "cancelling", None)
+            if cancelling is not None and cancelling():
                 runtime.cancel()
                 raise asyncio.CancelledError
         except asyncio.TimeoutError:
