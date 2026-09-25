@@ -7,7 +7,54 @@ interfaces actually run through an auditable capability layer, and independently
 candidate with a task- and instance-specific feasibility checker that routes failures to the
 stage responsible for targeted repair.
 
-## Workflow
+## Pluggable Algorithm Library
+
+Extending DecisionBrain is a catalog operation, not a code change. Every method the Agent can
+reach is declared in one strict YAML manifest under `algorithms/manifests/`, and the Agent reads
+that catalog at run time. Adding a solver, a metaheuristic framework, or an in-house domain
+routine means adding one manifest. Nothing in `src/decisionbrain/` is touched, and no stage
+prompt is rewritten.
+
+```bash
+# Plug a package in; the Agent sees it on the next run.
+dbn algorithms add path/to/package.yaml
+
+# Also run the declared import and minimal-call checks before the catalog is updated.
+dbn algorithms add path/to/package.yaml --check-runtime
+
+# Overwrite an entry that already uses the same package ID.
+dbn algorithms add path/to/package.yaml --replace
+
+# Inspect the catalog: package ID, verified version, status.
+dbn algorithms list
+
+# Unplug a package by removing its manifest from the catalog.
+rm algorithms/manifests/<package-id>.yaml
+```
+
+The catalog directory is `algorithms/manifests/` by default and follows
+`OPT_ALGORITHM_MANIFESTS_DIR` when it is set, so an evaluation machine can carry its own catalog
+without editing the checkout. `dbn algorithms add` validates the manifest against the
+package-specific interface profile, rejects a duplicate ID unless `--replace` is explicit,
+installs the file atomically, and reloads the catalog.
+
+The eight manifests shipped here are a starting catalog rather than a fixed one. They cover
+Gurobi, OR-Tools, PySCIPOpt, RSOME, ALNS, PyVRP, PyJobShop, and JobShopLib, spanning exact
+solvers, a robust-optimization modeling layer, metaheuristic frameworks, and domain-specific
+routing and scheduling packages. A manifest records the problem families, the method class, the
+optimality guarantee, the selection conditions, the limitations, and the verified distribution
+version, so a new package becomes usable by Algorithm Design and Solving the moment it is
+installed. See [Add an Algorithm Package](#add-an-algorithm-package) for the manifest
+requirements.
+
+## System Overview
+
+![DecisionBrain system overview](docs/assets/decisionbrain-overview.png)
+
+DecisionBrain replaces a model-first route with strategy-level design over components,
+validated heterogeneous methods, and independent feasibility review.
+
+## Full Workflow
 
 ![DecisionBrain workflow](docs/assets/decisionbrain-workflow.png)
 
@@ -21,8 +68,8 @@ and routes rejected outcomes back to the stage responsible for the failure.
 
 In this recorded pickup-and-delivery run, the first strategy returned an incomplete solution.
 Feasibility Review attributed the failure to Algorithm Design, which replaced the single-method
-strategy with a four-component hybrid. The second Solving pass served all 101 requests with four
-routes, and the generated checker accepted the result with no violations.
+strategy with a three-component hybrid and a generated fallback. The second Solving pass served
+all 101 requests with four routes, and the generated checker accepted the result with no violations.
 
 ## Source Installation and Release Policy
 
