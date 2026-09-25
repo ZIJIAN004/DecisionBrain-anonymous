@@ -7,6 +7,13 @@ interfaces actually run through an auditable capability layer, and independently
 candidate with a task- and instance-specific feasibility checker that routes failures to the
 stage responsible for targeted repair.
 
+## System Overview
+
+![DecisionBrain system overview](docs/assets/decisionbrain-overview.png)
+
+DecisionBrain replaces a model-first route with strategy-level design over components,
+validated heterogeneous methods, and independent feasibility review.
+
 ## Pluggable Algorithm Library
 
 Extending DecisionBrain is a catalog operation, not a code change. Every method the Agent can
@@ -46,13 +53,6 @@ optimality guarantee, the selection conditions, the limitations, and the verifie
 version, so a new package becomes usable by Algorithm Design and Solving the moment it is
 installed. See [Add an Algorithm Package](#add-an-algorithm-package) for the manifest
 requirements.
-
-## System Overview
-
-![DecisionBrain system overview](docs/assets/decisionbrain-overview.png)
-
-DecisionBrain replaces a model-first route with strategy-level design over components,
-validated heterogeneous methods, and independent feasibility review.
 
 ## Full Workflow
 

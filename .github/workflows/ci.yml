@@ -10,6 +10,9 @@ permissions:
 
 env:
   COLUMNS: "200"
+  # GitHub Actions makes Typer force colored help output, which breaks option
+  # names such as --json across style resets and hides them from plain matching.
+  _TYPER_FORCE_DISABLE_TERMINAL: "1"
 
 jobs:
   test:
